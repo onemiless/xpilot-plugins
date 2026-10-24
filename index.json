@@ -178,7 +178,7 @@
       "author": "xpilot",
       "description": "Stops for red lights seen by the car's own traffic-control perception. Only ever slows down.",
       "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/traffic_light-1.0.0.tar.gz",
-      "sha256": "e923e02bcdb1857c8706c2abaa240d27fffcc637665dba14e85c5e00e7753140",
+      "sha256": "0eeefe286fcc6aa858885d448a3b01a1599bb616ee02faf921db779f11fbb90a",
       "platform": null
     }
   ]

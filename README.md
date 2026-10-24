@@ -46,6 +46,8 @@ Trust comes from this reviewed repository, so only merge what you have read.
 
 - `plugins/overspeed_warning`: example. Alerts category, one store-backed setting, an `alert` claim, a relative import.
 - `plugins/tn_long`: TN longitudinal (TN-NoDEC) as a `long_planner`, with prebuilt acados solvers. See its README.
+- `plugins/navassist`: phone navigation ingest, maneuver speed ceiling, OEM lane-change veto and a bounded physical
+turn signal on 0x3E9. See its README; the panda side is `navassist` in the system repository's `safety.json`.
 
 Moved from the xpilot repository (keep their original param keys):
 

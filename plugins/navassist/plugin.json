@@ -1,0 +1,48 @@
+{
+  "id": "navassist",
+  "name": "Navigation Assist (phone)",
+  "version": "1.0.0",
+  "api": 1,
+  "category": "navigation",
+  "entry": "plugin:NavAssist",
+  "author": "Sniper-Eon",
+  "description": "Receives canonical v3 Android/iOS navigation over UDP 4213, shows the next maneuver and lane guidance, lowers the cruise ceiling before a supported turn, and lets Tesla's own lane verdict plus an optional phone blind spot veto a lane change. Requests one bounded physical turn signal on 0x3E9; SP's ALC remains the start authority.",
+  "priority": 100,
+  "enable_param": "ExtNavAssistEnabled",
+  "claims": [
+    "process:navassistd",
+    "msg:nav.state",
+    "msg:lanes.topology",
+    "msg:lanes.intent",
+    "msg:oem.lanes",
+    "long.target",
+    "role:lane_change.policy",
+    "can.tx:0x3E9:1"
+  ],
+  "safety": {
+    "header": "navassist.h",
+    "param_bit": "0x8000",
+    "tx": ["0x3E9:1"]
+  },
+  "settings": [
+    {"key": "ExtNavAssistLaneChange", "label": "Navigation lane positioning"},
+    {"key": "ExtNavAssistTurnSignal", "label": "Physical turn signal"},
+    {"key": "ExtNavAssistTurnSlowdown", "label": "Maneuver speed ceiling"},
+    {"key": "ExtNavAssistLookahead", "label": "Turn lane lookahead", "range": [100, 1500, 50, "m", 1]},
+    {"key": "ExtNavAssistExitLookahead", "label": "Exit/ramp lookahead", "range": [300, 3000, 100, "m", 1]},
+    {"key": "ExtNavAssistSignalLead", "label": "Turn signal lead", "range": [3, 12, 1, "s", 1]},
+    {"key": "ExtNavAssistTurnSpeed", "label": "Turn target speed", "range": [10, 30, 1, "km/h", 1]},
+    {"key": "ExtNavAssistMaxChanges", "label": "Lane changes per maneuver", "range": [1, 5, 1, "", 1]}
+  ],
+  "params": {
+    "ExtNavAssistEnabled": {"type": "BOOL", "default": "0"},
+    "ExtNavAssistLaneChange": {"type": "BOOL", "default": "0"},
+    "ExtNavAssistTurnSignal": {"type": "BOOL", "default": "0"},
+    "ExtNavAssistTurnSlowdown": {"type": "BOOL", "default": "1"},
+    "ExtNavAssistLookahead": {"type": "INT", "default": "1000", "note": "metres before an ordinary turn to align lanes"},
+    "ExtNavAssistExitLookahead": {"type": "INT", "default": "2000", "note": "metres before an exit/ramp/merge"},
+    "ExtNavAssistSignalLead": {"type": "INT", "default": "8", "note": "seconds of lead time for the pre-turn lamp"},
+    "ExtNavAssistTurnSpeed": {"type": "INT", "default": "18", "note": "km/h target for ordinary left/right turns"},
+    "ExtNavAssistMaxChanges": {"type": "INT", "default": "5", "note": "completed lane changes allowed per maneuver event"}
+  }
+}

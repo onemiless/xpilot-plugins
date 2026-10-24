@@ -34,3 +34,4 @@ class TrafficLight(Plugin):
   @classmethod
   def plan_filter(cls, CP, params):
     return create_final_plan_arbitrator(CP, params)
+# auto-merge test

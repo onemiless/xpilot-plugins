@@ -46,6 +46,8 @@ Trust comes from this reviewed repository, so only merge what you have read.
 
 - `plugins/overspeed_warning`: example. Alerts category, one store-backed setting, an `alert` claim, a relative import.
 - `plugins/tn_long`: TN longitudinal (TN-NoDEC) as a `long_planner`, with prebuilt acados solvers. See its README.
+- `plugins/tesla_mixed_control`: dzid26 angle-based cooperative steering. Enable while parked and restart;
+  SP must own steering and stock Autosteer must not steer concurrently. See its README for timing and host-only validation limits.
 
 Moved from the xpilot repository (keep their original param keys):
 

@@ -88,7 +88,7 @@ def main():
      conn.sendall(hello if connections>1 else b'X'*48)
      try:
       while True:
-       data=wire.receive(conn,152);road=wire.HEADER.unpack_from(data)[-1]
+       data=wire.receive(conn,152,time.monotonic()+2);road=wire.HEADER.unpack_from(data)[-1]
        wire.receive(conn,road);wide=struct.unpack('<I',wire.receive(conn,4))[0];wire.receive(conn,wide+16)
        index=struct.unpack_from('<I',data,8)[0];eof=struct.unpack_from('<Q',data,16)[0]
        # Corrupt reply first, then a real server reset on road-only IDR.

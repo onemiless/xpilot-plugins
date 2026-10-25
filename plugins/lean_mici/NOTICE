@@ -1,7 +1,9 @@
 The common-model head layout/decoder contract derives from lochuan/lean-mici
 commit 617e00670a123da12809a65796985aae05710a08. v4 framing was checked against
 the installed Chipmunk 0.17-os library and real phone wire. Owner confirmed
-licence authorization. Models and native binaries are not redistributed.
+licence authorization. Models and phone runtime binaries are not redistributed.
+warp_pack.cpp and warp_pack.h are copied unchanged from the same lean-master commit.
+libcamera.so is built from this plugin and the matching xpilot system encoder.
 
 Copyright (c) 2018, Comma.ai, Inc.
 

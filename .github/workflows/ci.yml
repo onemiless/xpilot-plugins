@@ -3,7 +3,7 @@ name: plugin checks
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, task/X-20261025-42]
   workflow_dispatch:
 
 permissions:
@@ -61,7 +61,7 @@ jobs:
         raise SystemExit(catalog.main())
         PY
     - name: Tell the owner main is broken
-      if: failure() && github.event_name != 'pull_request'
+      if: failure() && github.ref == 'refs/heads/main'
       env:
         GH_TOKEN: ${{ github.token }}
       run: gh issue create --title "main checks failed at ${GITHUB_SHA::10}" --body "@onemiless $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"

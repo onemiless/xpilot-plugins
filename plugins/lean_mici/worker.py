@@ -62,7 +62,8 @@ def main(path, parent):
   resource.setrlimit(resource.RLIMIT_AS, (1024 * 1024 * 1024, 1024 * 1024 * 1024))
   resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
   params = ParamsView(None, {'ExtLeanMiciPeer': {'type': 'JSON'}})
-  pinned = params.get('ExtLeanMiciPeer')
+  p = params.get('ExtLeanMiciPeer')
+  pinned = p if isinstance(p, dict) and isinstance(p.get('name'), str) else None
   ignored = set()
   fd = os.open(path, os.O_RDWR)
   epoch = 0
@@ -140,7 +141,8 @@ def main(path, parent):
             except Exception:
               time.sleep(.1)
             finally:
-              camera = None
+              if camera is not None:
+                camera.close()
       except Exception:
         time.sleep(1)
   finally:

@@ -78,3 +78,16 @@ metadata must remain default off with no model/container files.
   as reset_without_epoch; reconnect and require dual IDR rather than forge pairing.
 - Manager/store import must not import modeld/tinygrad. Existing host refusal and
   store rollback/default-off/update-toggle behaviour remain covered by E2E.
+
+## X-20261025-42 (before implementation)
+X-20261025-42, fixed before implementation
+1. PyAV absent: production prepare and import must pass with no extra package.
+2. Raw encoderd stream is not 512x256 model view; never send full-size camera HEVC to the v4 phone. Use upstream calibrated warp and system V4LEncoder with venus-aligned ION NV12.
+3. Packet callbacks must not claim the production encoderd publishers. Normal encoderd constructor retains its publisher.
+4. Invalid camera ID/EOF/geometry/calibration, overwritten VIPC buffer or unpaired SOF must drop the pair and reset; never mislabel metadata.
+5. Both encoders submit before waiting; input buffers remain owned until input_done. Codec config accompanies actual IDR. Gap/reconnect starts dual IDR and epoch; metadata frame mapping must echo exact model frame/EOF.
+6. Encoder timeout/crash, phone loss or malformed reply remains optional and local. Reconnection must recover automatically without phone writes.
+7. Malformed ExtLeanMiciPeer JSON values (including truthy non-dicts and non-string name) are unpinned. Valid dict/name still pins.
+8. Native library must be loadable on production Python; package platform and reproducible source/build hash must match. Host CI uses archive encoding only in tests.
+9. Real parked A/B/A >=600 B frames, >=90% adoption after 100 warmup; record every selection, latency percentiles/reasons, loop/drop/resources. Fault withdrawal->local next frame, recovery and manager restart. No latch/event caused by worker.
+10. Check hostname/offroad before every mutation/restart; protect five params and existing store params/toggles. Leave ExtLeanMici=0 unless every gate passes.

@@ -20,8 +20,6 @@ def ready():
     with (MODELS_DIR / f'driving_warp_{width}x{height}_tinygrad.pkl').open('rb') as f:
       if 'run' not in pickle.load(f):
         raise ValueError('stock camera warp incomplete')
-  from .camera import Encoder
-  import numpy as np
-  encoder = Encoder()
-  data, keyframe = encoder.encode(np.zeros((384, 512), dtype=np.uint8), reset=True)
-  return bool(data) and keyframe
+  from .camera import library
+  library()
+  return True

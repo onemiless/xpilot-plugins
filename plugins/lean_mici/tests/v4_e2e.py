@@ -13,7 +13,8 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 sys.modules['openpilot.common.params']=types.SimpleNamespace(Params=type('Params',(),{}),UnknownKeyName=KeyError)
-from plugins.lean_mici import wire, camera
+from plugins.lean_mici import wire
+from plugins.lean_mici.tests import archive_camera as camera
 
 p=argparse.ArgumentParser()
 p.add_argument('--output', type=Path, required=True)

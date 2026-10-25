@@ -44,6 +44,7 @@ def tcp_peer(path, control):
   server.listen(1)
   endpoint = server.getsockname()
   class Capture:
+    def close(self): pass
     def capture(self, meta, reset):
       payload = bytes.fromhex('000000012601')
       return 3 if reset else 0, payload, payload
@@ -164,13 +165,13 @@ def main():
       real_run = store.subprocess.run
       def probe(command, **kw):
         command = list(command)
-        command[2] = 'import sys, types\nsys.modules["openpilot.common.params"] = types.SimpleNamespace(Params=type("Params", (), {}), UnknownKeyName=KeyError)\nfrom unittest.mock import patch\nfrom openpilot.tesla import plugins\nwith patch("xpilot_ext.lean_mici.plugin.ready", return_value=True):\n' + ''.join('  ' + line + '\n' for line in command[2].splitlines())
+        command[2] = 'import sys, types\nsys.modules["openpilot.common.params"] = types.SimpleNamespace(Params=type("Params", (), {}), UnknownKeyName=KeyError)\nfrom unittest.mock import patch\nfrom openpilot.tesla import manifest\nmanifest.HOST_CAPS["native"]={"machine":"aarch64","python":"cpython-312"}\nfrom openpilot.tesla import plugins\nwith patch("openpilot.tesla.manifest.platform_ok", return_value=True), patch("xpilot_ext.lean_mici.plugin.ready", return_value=True):\n' + ''.join('  ' + line + '\n' for line in command[2].splitlines())
         return real_run(command, **kw)
-      archive = (root / 'dist/lean_mici-0.5.0.tar.gz').read_bytes()
-      entry = store.IndexEntry('lean_mici', 'lean mici', '0.5.0', 1, 'perception_model', 'xpilot', '', 'local',
+      archive = (root / 'dist/lean_mici-0.5.1.tar.gz').read_bytes()
+      entry = store.IndexEntry('lean_mici', 'lean mici', '0.5.1', 1, 'perception_model', 'xpilot', '', 'local',
                                hashlib.sha256(archive).hexdigest(), installable=True)
       with (patch.object(mf, 'INSTALL_DIR', installed), patch.object(store, '_get', return_value=archive),
-            patch.object(store.subprocess, 'run', probe), patch('openpilot.common.params.Params', return_value=params)):
+            patch.dict(mf.HOST_CAPS, {'native':{'machine':'aarch64','python':'cpython-312'}}), patch.object(mf, 'host_platform', return_value={'machine':'aarch64','python':'cpython-312'}), patch.object(store.subprocess, 'run', probe), patch('openpilot.common.params.Params', return_value=params)):
         error = store.install(entry, activate=True)
         assert error is None, error
         assert params.get_bool('DoReboot')

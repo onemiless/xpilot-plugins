@@ -1,7 +1,7 @@
 name: lean mici candidate
 on:
   push:
-    branches: [task/X-20261025-39]
+    branches: [task/X-20261025-39, task/X-20261025-42]
   pull_request:
     paths: [plugins/lean_mici/**, dist/lean_mici-*, .github/workflows/lean_mici.yml]
   workflow_dispatch:
@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: onemiless/xpilot
-          ref: 044edf530f7075022a29aff9aa84f9d24a5c03db  # xpilot, PR #14
+          ref: 17227fd31e6d9b0c73a09d2d1b82fd84c4911df8  # packet callback does not claim an encoderd publisher
           path: system
           lfs: false
       - name: Matching system dependencies
@@ -31,7 +31,7 @@ jobs:
       - name: Build system IPC bindings
         run: |
           (cd system/msgq_repo && scons -j4 msgq/ipc_pyx.so msgq/visionipc/visionipc_pyx.so)
-      - name: Reproducible package and Python v4 camera path
+      - name: Reproducible package and v4 wire and offline replay fixture
         run: |
           python tools/build_index.py --check
           PYTHONPATH=$X:$X/tinygrad_repo:$X/msgq_repo:$X/opendbc_repo python plugins/lean_mici/tests/v4_e2e.py --output /tmp/x39-camera

@@ -1,11 +1,29 @@
-# lean_mici 0.5.0 — REVIEW FIX
+# lean_mici 0.5.1
 
 Default off; model role plus `lean_modeld` only, `rules: []`, no CAN sends.
-No model, native library or compiled model container is packaged or committed.
-Requires system `xpilot` commit `044edf530f7075022a29aff9aa84f9d24a5c03db`
-(PR #14); CI is pinned to that merged commit.
+No model or compiled model container is packaged or committed. The aarch64 native camera bridge is shipped with reproducible build_native.py.
+Requires system `17227fd31e6d9b0c73a09d2d1b82fd84c4911df8` (X-20261025-42 packet-callback publisher fix). The bridge uses the system V4LEncoder and upstream WarpLut, not PyAV. Build on the target from the matching built xpilot checkout with `python3 <plugin>/build_native.py`. The normal recorder remains on its original stream; the private model-view encoders publish no msgq or files.
 
-## Qualification
+## C3XL camera path (0.5.1)
+
+lean-master `617e00670a123da12809a65796985aae05710a08` feeds the phone calibrated
+512x256 NV12 model views through the system Venus V4LEncoder. Full-resolution
+recording HEVC and H.264 livestreams do not meet that contract. This plugin uses
+that same hardware path directly, with the unchanged upstream NEON WarpLut and
+Venus-aligned ION buffers. It never decodes or re-encodes the recording stream.
+Both camera IDs/EOFs must match modeld metadata, and SOFs must pair within 10 ms.
+Both encoders submit before either output is awaited. Header bytes precede actual
+IDRs; flags are parsed from the actual Annex-B NALs. Recovery requests dual IDR.
+The wire index uses the existing 50 ms time slots and the mailbox maps replies
+back to modeld's exact frame ID/EOF. The worker closes both encoders on reconnect.
+
+`prepare_install()` checks the stock model/warp and loads the prebuilt bridge;
+it neither starts cameras nor imports PyAV. A malformed saved peer shape is
+unpinned; only a dictionary with a string `name` pins a phone. Software encoding
+exists solely in the offline replay fixtures under tests/. Real device evidence
+and limitations live in `/Users/mile/work/evidence/X-20261025-42/REPORT.md`.
+
+## Historical 0.5.0 qualification
 
 **A1 waiver (coordinator FINAL decision):** the phone has only the encrypted
 compiled Walnut V3 container; the original ONNX `ceb38c593005...` is unavailable.
@@ -150,11 +168,11 @@ python plugins/lean_mici/tests/live_route.py --system <system> --stock <prepared
 python tools/build_index.py --check
 ```
 
-CI pins merged `xpilot` commit `044edf530f7075022a29aff9aa84f9d24a5c03db`
+The 0.5.1 candidate CI pins system `17227fd31e6d9b0c73a09d2d1b82fd84c4911df8`
 and records both source identities. The manifest retains `ExtLeanMici` and its
 `default: 0`; updates use the existing store transaction and preserve enabled
 and disabled user choices. The index uses the usual main-branch package URL;
 this task prepares and pushes the branch without merging or opening a PR.
 
-Remaining device checks: C3XL capture geometry/stride, hardware codec, resource
+Historical 0.5.0 remaining device checks: C3XL capture geometry/stride, hardware codec, resource
 contention, thermal/power and control continuity. No car deployment is claimed.

@@ -1,7 +1,7 @@
 {
   "id": "lean_mici",
   "name": "lean mici phone inference",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "api": 1,
   "use": "both",
   "category": "perception_model",
@@ -23,5 +23,9 @@
     "ExtLeanMiciPeer": {
       "type": "JSON"
     }
+  },
+  "platform": {
+    "machine": "aarch64",
+    "python": "cpython-312"
   }
 }

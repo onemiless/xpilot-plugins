@@ -17,6 +17,7 @@ def child(path,parent,address,root,orphan=False):
    count+=1
    if orphan:self.resource=os.open('/dev/null',os.O_RDONLY)
    (Path(root)/'camera-count').write_text(str(count))
+  def close(self):pass
   def capture(self,meta,reset):
    if orphan:
     (Path(root)/'orphan-camera-ready').touch();time.sleep(.2);return None
@@ -29,7 +30,7 @@ def child(path,parent,address,root,orphan=False):
   nonlocal calls
   calls+=1
   if calls==1 and not orphan:raise ValueError('malformed Avahi address/port')
-  return [('test phone',*address)]+([('other phone','192.0.2.1',7070)] if (Path(root)/'.params/ExtLeanMiciPeer').exists() else [])
+  return [('test phone',*address)]+([('other phone','192.0.2.1',7070)] if isinstance(json.loads((Path(root)/'.params/ExtLeanMiciPeer').read_text()),dict) else [])
  @contextlib.contextmanager
  def beacon(address):
   with socket.socket() as listener:
@@ -76,7 +77,7 @@ def main():
   checks.append(kind+'_overall_deadline')
  ctx=multiprocessing.get_context('spawn')
  with tempfile.TemporaryDirectory() as tmp:
-  root=Path(tmp);path=root/'mailbox';fd=os.open(path,os.O_RDWR|os.O_CREAT,0o600);os.ftruncate(fd,worker.SIZE);metadata(fd,1)
+  root=Path(tmp);(root/'.params').mkdir();(root/'.params/ExtLeanMiciPeer').write_text('[1]');path=root/'mailbox';fd=os.open(path,os.O_RDWR|os.O_CREAT,0o600);os.ftruncate(fd,worker.SIZE);metadata(fd,1)
   server=socket.socket();server.bind(('127.0.0.1',0));server.listen(8);server.settimeout(10)
   process=ctx.Process(target=child,args=(str(path),os.getpid(),server.getsockname(),tmp));process.start()
   connections=0;good=0;epochs=[]
@@ -113,7 +114,7 @@ def main():
      except (ConnectionError,ConnectionResetError):pass
    assert connections>=8 and epochs[1]>epochs[0] and process.is_alive()
    pin=json.loads((root/'.params/ExtLeanMiciPeer').read_text());assert pin['name']=='test phone'
-   checks+=['bad_avahi_hello_camera_encoder_struct_reply_reconnect','road_only_sequence_reset_reconnect','tofu_persisted']
+   checks+=['bad_avahi_hello_camera_encoder_struct_reply_reconnect','road_only_sequence_reset_reconnect','tofu_persisted','malformed_peer_unpinned']
   finally:
    process.terminate();process.join(3)
    if process.is_alive():process.kill();process.join()

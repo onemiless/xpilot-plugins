@@ -11,7 +11,7 @@ from unittest.mock import patch
 import numpy as np
 sys.path.insert(0,str(Path(__file__).resolve().parents[3]))
 from plugins.lean_mici import worker,network
-from plugins.lean_mici.camera import Encoder
+from archive_camera import Encoder
 from plugins.lean_mici.source import PhoneSource
 from openpilot.selfdrive.modeld import helpers,modeld
 from idle import observe, sample
@@ -22,6 +22,7 @@ def archive_worker(path,input_dir,address,output_dir,stop,ack,parent):
  manifest.INSTALL_DIR=Path(output_dir)/"store"
  cache=pickle.loads((Path(output_dir)/'encoded-cache.pkl').read_bytes())
  class ArchiveCamera:
+  def close(self):pass
   def capture(self,meta,reset):
    if reset and meta[3]!=0:raise RuntimeError('archive reference chain interrupted; requires a new encoded sequence')
    return cache[meta[3]]

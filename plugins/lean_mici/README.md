@@ -9,7 +9,7 @@ Requires system `xpilot` commit `044edf530f7075022a29aff9aa84f9d24a5c03db`
 
 **A1 waiver (coordinator FINAL decision):** the phone has only the encrypted
 compiled Walnut V3 container; the original ONNX `ceb38c593005...` is unavailable.
-The accepted substitute is the exact BGM1 v4/S1 wire audit plus **596/600
+The accepted baseline substitute was the exact BGM1 v4/S1 wire audit plus **596/600
 (99.33%) A2 envelope agreement** on an independent real driving route. This is
 not a claim of same-model numerical equivalence. Models stay outside the package
 and repository.
@@ -18,7 +18,7 @@ and repository.
 Only control-relevant divergence is compared; shapes/finite/IDs/EOF/epoch and
 hard protocol fault latches stay in S1. The plan window uses system T_IDXS <=2s.
 
-| Metric | Calibration p99.5 | Runtime bound |
+| Metric | Calibration reference | Runtime bound |
 |---|---:|---:|
 | curvature difference times max predicted speed squared | 0.8142 m/s² | 1.5 m/s² |
 | longitudinal acceleration difference | 1.5061 m/s² | 2.5 m/s² |

@@ -51,3 +51,13 @@ and the app's discovery/probe/restart logic without probing the car.
 Final contract review: preserve S1 zero-wait selection and five consecutive fresh
 replies after a rejection; a healthy-source deadline wait is not an allowed way
 to reach the adoption target. Record the actual zero-wait adoption separately.
+
+## FINAL (044edf530f, before validation adaptation)
+The merged host now owns engaged bounded waiting and tolerates short output gaps;
+test recovery against that contract without a plugin wait or sequence override.
+A1 is coordinator-waived: retain exact v4/S1 wire audit and independent real-route
+99.33% A2 envelope evidence; never label the waiver numerical equivalence.
+Live adoption must be >=90% on >=600 normal real frames with the real phone.
+Late replies still fall back at EOF+45ms. Refuse a busy phone before connecting.
+Store updates must preserve both enabled and disabled user toggles, and package
+metadata must remain default off with no model/container files.

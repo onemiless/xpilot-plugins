@@ -165,8 +165,8 @@ def main():
         command = list(command)
         command[2] = 'import sys, types\nsys.modules["openpilot.common.params"] = types.SimpleNamespace(Params=type("Params", (), {}), UnknownKeyName=KeyError)\nfrom unittest.mock import patch\nfrom openpilot.tesla import plugins\nwith patch("xpilot_ext.lean_mici.plugin.ready", return_value=True):\n' + ''.join('  ' + line + '\n' for line in command[2].splitlines())
         return real_run(command, **kw)
-      archive = (root / 'dist/lean_mici-0.3.0.tar.gz').read_bytes()
-      entry = store.IndexEntry('lean_mici', 'lean mici', '0.3.0', 1, 'perception_model', 'xpilot', '', 'local',
+      archive = (root / 'dist/lean_mici-0.4.0.tar.gz').read_bytes()
+      entry = store.IndexEntry('lean_mici', 'lean mici', '0.4.0', 1, 'perception_model', 'xpilot', '', 'local',
                                hashlib.sha256(archive).hexdigest(), installable=True)
       with (patch.object(mf, 'INSTALL_DIR', installed), patch.object(store, '_get', return_value=archive),
             patch.object(store.subprocess, 'run', probe), patch('openpilot.common.params.Params', return_value=params)):
@@ -180,6 +180,11 @@ def main():
         winners, _ = mf.resolve([(c.NAME, c.PRIORITY, c.CLAIMS) for c in classes], {c.NAME for c in classes})
         assert cls.NAME in winners and 'sp_models' not in winners
         assert [p.name for p in cls.processes()] == ['lean_modeld']
+        view = ParamsView(params)
+        for enabled in (False, True):
+          view.put_bool(cls.ENABLE_PARAM, enabled)
+          assert store.install(entry) is None
+          assert view.get_bool(cls.ENABLE_PARAM) is enabled
         before = (installed / 'lean_mici/plugin.json').read_bytes()
         with patch.object(store, '_get', return_value=b'corrupt'):
           assert store.install(entry, activate=True)
@@ -229,8 +234,7 @@ def main():
           if name=='protocol_latch':
             assert source.locked and all(r['source']=='local' for r in records[10:])
           else:
-            assert not source.locked and all(r['source']=='local' for r in records[11:16])
-            assert records[16]['source']=='phone'
+            assert not source.locked and records[11]['source']=='phone'
         finally:
           peer.terminate();peer.join(2)
           if peer.is_alive():peer.kill();peer.join()
@@ -269,7 +273,7 @@ def main():
         assert process.return_value.terminate.called
         assert not list(Path(tmp).glob('model-source-*'))
     result.update({'pass': True, 'frames': len(rows), 'store_install_enable_discover': True,
-                   'rollback': True, 'old_host_rejected': True, 'runner_cleanup': True,
+                   'rollback': True, 'user_toggles_preserved': True, 'old_host_rejected': True, 'runner_cleanup': True,
                    'synthetic_decoder_match': True, 'production_profile_admission': True, 'tcp_worker_pipeline': True, 'frozen_crashed_fallback': True, 'base_failures_propagate': True})
   except BaseException as error:
     result['error'] = repr(error)

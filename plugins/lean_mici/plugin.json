@@ -1,13 +1,13 @@
 {
   "id": "lean_mici",
   "name": "lean mici phone inference",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "api": 1,
   "use": "both",
   "category": "perception_model",
   "entry": "plugin:LeanMici",
   "author": "xpilot",
-  "description": "BGM1 v4 phone inference with a calibrated physical/control envelope and stock fallback. Same-Walnut ONNX reference qualification is pending.",
+  "description": "BGM1 v4 Walnut V3 phone inference with a calibrated control envelope and local fallback. Uses the system engaged bounded-wait contract.",
   "priority": 100,
   "enable_param": "ExtLeanMici",
   "claims": [

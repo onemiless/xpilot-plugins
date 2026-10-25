@@ -173,13 +173,13 @@ try:
  np.savez_compressed(a.output/'phone-outputs.npz',outputs=np.array(phone),desire=desires,action_t=actions)
  latency=np.array([r['latency_ms'] for r in rows])
  result.update({'frames':len(rows),'latency_ms':dict(zip(('p50','p95','p99'),map(float,np.percentile(latency,[50,95,99])))),
-                'within_45ms':float(np.mean(latency<=45)), 'envelope_acceptance_rate':passed/len(rows), 'host_adoption_replay_rate':host_selected/len(rows), 'rejection_counts':dict(__import__('collections').Counter(r['reject_reason'] for r in rows if r['selected_source']=='local')), 'envelope_rejection_counts':dict(__import__('collections').Counter(r['envelope_reason'] for r in rows if r['envelope_reason'])), 'A1':{'status':'BLOCKED','reason':'same Walnut ONNX unavailable; phone file is a compiled model container','required_sha256':'ceb38c593005b3338aee4ca057d5ad9ee64c58f8fdba0b41641a9d4cc6c36e36'},
+                'within_45ms':float(np.mean(latency<=45)), 'envelope_acceptance_rate':passed/len(rows), 'host_adoption_replay_rate':host_selected/len(rows), 'rejection_counts':dict(__import__('collections').Counter(r['reject_reason'] for r in rows if r['selected_source']=='local')), 'envelope_rejection_counts':dict(__import__('collections').Counter(r['envelope_reason'] for r in rows if r['envelope_reason'])), 'A1':{'status':'WAIVED','reason':'coordinator FINAL: exact v4 wire audit plus independent real-route A2 envelope 99.33% substitute','required_sha256':'ceb38c593005b3338aee4ca057d5ad9ee64c58f8fdba0b41641a9d4cc6c36e36'},
                 'stock_comparison_is_divergence_not_equality':True, 'local_inference_ms':{'p50':float(np.median(local_times))},
                 'stock_walnut_head_divergence':{k:{'p50':float(np.median(v)),'p99':float(np.percentile(v,99)),'max':max(v)} for k,v in errors.items()},
                 'stock_sha256':hashlib.sha256((a.stock/'driving_supercombo.onnx').read_bytes()).hexdigest()})
  result['route_start']=a.start
  result['route_input']=str(a.input)
- result['pass']=len(rows)>=600 and result.get('inference_idle',False) and passed>=.95*len(rows) and result['A1']['status']=='PASS'
+ result['pass']=len(rows)>=600 and result.get('inference_idle',False) and passed>=.95*len(rows) and result['A1']['status'] in ('PASS','WAIVED')
 except BaseException as e:
  result['error']=repr(e)
  raise

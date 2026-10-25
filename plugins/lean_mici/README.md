@@ -1,21 +1,18 @@
-# lean_mici 0.3.0 — FIX round 2
+# lean_mici 0.4.0 — FINAL
 
 Default off; model role plus `lean_modeld` only, `rules: []`, no CAN sends.
 No model, native library or compiled model container is packaged or committed.
-Overall qualification is **BLOCKED on A1 and the Mac live adoption target**.
+Requires system `xpilot` commit `044edf530f7075022a29aff9aa84f9d24a5c03db`
+(PR #14); CI is pinned to that merged commit.
 
-## Two independent gates
+## Qualification
 
-**A1: same-model reference.** The required Walnut V3 source ONNX SHA256 is
-`ceb38c593005b3338aee4ca057d5ad9ee64c58f8fdba0b41641a9d4cc6c36e36`.
-The licensed phone file was copied to private evidence outside Git and verified:
-`walnutV3.bin`, 782864384 bytes, SHA256
-`1ccf14a18a00448ca68b1b8f432f66bef65a214532fc18c363e51fd74b68f150`.
-It is the compiled/encrypted context container, not that ONNX. No ONNX was
-found on the phone; 10389 local ONNX files were hashed with no match. A1's
-per-head max/p99 error and a justified NPU tolerance are therefore unavailable.
-Neither stock prediction differences nor upstream decoder equality passes A1.
-No key was exported and the model remains outside every repository.
+**A1 waiver (coordinator FINAL decision):** the phone has only the encrypted
+compiled Walnut V3 container; the original ONNX `ceb38c593005...` is unavailable.
+The accepted substitute is the exact BGM1 v4/S1 wire audit plus **596/600
+(99.33%) A2 envelope agreement** on an independent real driving route. This is
+not a claim of same-model numerical equivalence. Models stay outside the package
+and repository.
 
 **A2: runtime control envelope.** Stock and Walnut may make different predictions.
 Only control-relevant divergence is compared; shapes/finite/IDs/EOF/epoch and
@@ -39,10 +36,10 @@ physical action/pose and confident lead distance [0,300]m. Irrelevant far-plan
 position and ordinary pose differences are not equality failures.
 
 An envelope outlier falls back without permanently latching the source.
-Structural faults still latch. S1's zero-wait selection, five consecutive fresh
-warm-up replies, exact frame association and EOF+45ms deadline are unchanged.
-The small PhoneSource subclass changes only admission rejection to recoverable;
-it does not wait, skip sequence checks or preserve warmth across missed replies.
+Structural faults still latch. The system owns selection: cold/absent sources
+never wait; recently valid sources may wait for the current frame only until
+EOF+45ms. Its three-frame liveness window, warm-up and exact frame/epoch checks
+come directly from ModelSource. The plugin adds no wait or sequence override.
 
 ## Real driving validation on this Mac
 
@@ -54,24 +51,26 @@ system's own camera config; decoded video stride/UV offset are honoured.
 Auxiliary inputs are retained/reconstructed from the recording, identically
 supplied to stock and phone; this is not a live-car test.
 
-On OnePlus 3B162S00PHS00000 / Chipmunk OS 2.3 / Walnut V3:
+On OnePlus 3B162S00PHS00000 / Chipmunk OS 2.3 / Walnut V3, the FINAL run
+uses the merged host and real concurrent stock inference, a separate production
+worker, phone TCP and S1 IPC. The first 100 frames prime phone history; the next
+600 real driving frames are the adoption gate (>=90%). All inputs/replies and
+startup outcomes are retained. Fresh FINAL results against `044edf530f`:
 
-- Independent 600-frame direct batch: envelope acceptance **99.33%**. Four
-  curvature-envelope rejects were recorded separately. Replaying already-arrived
-  replies measures eligibility, not live zero-wait adoption.
-- Final actual concurrent stock + separate production worker + real phone + S1
-  IPC: **700 replies / 700 published frames**. The first 100 prime phone history;
-  all are retained. Next 600 normal frames: actual adoption **0% (0/600)**;
-  rejected **596 old_frame, 3 absent, 1 late**. Whole-run adoption is also 0%;
-  whole-run rejects: 695 old_frame, 4 absent, 1 late.
-- Normal replay EOF→reply: p50 **35.4520ms**, p95 **46.7955ms**, p99 **52.8671ms**.
-  Encoding is offline for this archived-HEVC acceptance test. Raw Mac software
-  encoding was also measured and does not meet the 45ms budget; C3XL's existing
-  hardware codec availability/performance remains a device-task gate.
-- Mac stock inference takes about 13ms, so phone replies are not present at the
-  zero-wait selection point. The earlier 96.17% experiment added a bounded wait
-  and relaxed rewarming; it is retained as an **unshipped contract deviation**.
-  This plugin does not silently change S1 to meet the adoption target.
+- **700/700 replies**, normal adoption **561/600 (93.50%)**, above the 90% gate.
+  Including startup, adoption is **642/700 (91.71%)**.
+- Normal EOF→reply p50/p95/p99: **35.5500 / 43.3656 / 49.3112 ms**.
+- Normal fallback reasons: **25 absent, 8 late, 1 old_frame, 5 warmup**. All-run
+  counts: 28 absent, 8 late, 7 old_frame, 15 warmup. Expired replies stay local.
+- Passive inference-idle observation after beacon withdrawal: **PASS**.
+
+Evidence: `/Users/mile/work/evidence/X-20261025-39/final/`, including raw wire,
+frames.csv, telemetry, source identities, checks and SHA256SUMS.
+
+Encoding is offline for this archived-HEVC test. Raw Mac software encoding does
+not meet the budget; C3XL camera/codec/resource performance remains a device task.
+The prior zero-wait measurements and plugin wait prototypes are historical;
+FINAL uses only the merged system's engaged bounded wait.
 
 The live test uses a separate worker process: POSIX byte-range locks are per
 process, so a shared-process threaded producer is not a valid IPC test. Earlier
@@ -93,7 +92,7 @@ of ongoing inference or a new task-caused process restart.
 
 After withdrawing the task beacon, passive 15s observations found no BGM client,
 server blocked in accept (or absent), and <=2% of one CPU core during the final
-10s; the final run peak was **0.7998%**. All replies completed before withdrawal.
+10s; the FIX2 run peak was **0.7998%**. All replies completed before withdrawal.
 This passes inference-idle acceptance while a listener/service may remain.
 No taps, force-stop, OS/network/hardware parameter writes were used to make it idle.
 
@@ -115,7 +114,11 @@ python plugins/lean_mici/tests/live_route.py --system <system> --stock <prepared
 python tools/build_index.py --check
 ```
 
-CI uses system `xpilot` directly and records its resolved commit. No system
-branch was required. Remaining gates: original same-Walnut ONNX/A1, live adoption
-under the zero-wait contract, broader real-road validation, and C3XL camera/codec/
-resources/thermal/control continuity. No system contract change is included.
+CI pins merged `xpilot` commit `044edf530f7075022a29aff9aa84f9d24a5c03db`
+and records both source identities. The manifest retains `ExtLeanMici` and its
+`default: 0`; updates use the existing store transaction and preserve enabled
+and disabled user choices. The index uses the usual main-branch package URL;
+this task prepares and pushes the branch without merging or opening a PR.
+
+Remaining device checks: C3XL capture geometry/stride, hardware codec, resource
+contention, thermal/power and control continuity. No car deployment is claimed.

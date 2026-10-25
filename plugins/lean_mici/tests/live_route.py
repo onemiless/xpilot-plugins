@@ -14,7 +14,7 @@ from plugins.lean_mici import worker,network
 from plugins.lean_mici.camera import Encoder
 from plugins.lean_mici.source import PhoneSource
 from openpilot.selfdrive.modeld import helpers,modeld
-from idle import observe
+from idle import observe, sample
 
 
 def archive_worker(path,input_dir,address,output_dir,stop,ack):
@@ -59,6 +59,9 @@ def main():
  for key in ['system','stock','input','output']:p.add_argument('--'+key,type=Path,required=True)
  p.add_argument('--address',required=True);p.add_argument('--frames',type=int,default=700);p.add_argument('--encoded-cache',type=Path)
  a=p.parse_args();a.output.mkdir(parents=True,exist_ok=False)
+ state=sample()
+ (a.output/'phone-before.json').write_text(json.dumps(state,indent=2)+'\n')
+ if state['bgm_clients']:raise RuntimeError('phone busy; no connection started')
  helpers.MODELS_DIR=a.stock;modeld.MODELS_DIR=a.stock
  local=modeld.ModelState(512,256,False);local.warmup()
  images=[np.memmap(a.input/f'camera-{j}.nv12',mode='r',dtype=np.uint8).reshape(-1,384,512) for j in range(2)]
@@ -113,8 +116,8 @@ def main():
  normal=rows[100:];lat=[r['latency_ms'] for r in normal if r['latency_ms'] is not None]
  counts=dict(__import__('collections').Counter(r['reason'] for r in normal if r['source']=='local'))
  rate=sum(r['source']=='phone' for r in normal)/len(normal)
- result={'pass':rate>=.95 and idle['pass'],'scope':'B/C live-path test only; A1 remains unavailable',
-  'A1':{'status':'BLOCKED','reason':'same-Walnut original ONNX unavailable; copied phone artifact is compiled container'},
+ result={'pass':len(normal)>=600 and rate>=.90 and idle['pass'],'scope':'FINAL real-phone adoption with system engaged bounded wait; A1 coordinator-waived',
+  'A1':{'status':'WAIVED','reason':'coordinator FINAL: original ONNX unavailable; exact v4 wire audit plus independent real-route A2 envelope 99.33% substitute'},
   'frames_published':len(rows),'phone_replies':len(arrivals),'normal_frames':len(normal),'normal_adoption_rate':rate,
   'all_frame_adoption_rate':sum(r['source']=='phone' for r in rows)/len(rows),
   'latency_ms':dict(zip(('p50','p95','p99'),map(float,np.percentile(lat,[50,95,99])))),

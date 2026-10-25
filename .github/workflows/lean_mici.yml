@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: onemiless/xpilot
-          ref: xpilot
+          ref: 044edf530f7075022a29aff9aa84f9d24a5c03db  # xpilot, PR #14
           path: system
           lfs: false
       - name: Matching system dependencies

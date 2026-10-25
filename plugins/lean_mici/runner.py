@@ -25,7 +25,7 @@ def status(directory, source, stop):
     state = ('Phone active' if source.selected else 'Phone warming' if source.reason in ('warmup','warmup_flags','need_dual_idr') else
              'Local fallback' if source.epoch or source.locked else 'Local ready')
     path = directory / 'status.tmp'
-    path.write_text(json.dumps({'state': state, 'version': '0.4.0', 'updated_at': time.time()}))
+    path.write_text(json.dumps({'state': state, 'version': '0.5.0', 'updated_at': time.time()}))
     os.replace(path, directory / 'status.json')
     stop.wait(1)
 
@@ -34,7 +34,7 @@ def main():
   from .worker import main as child
   directory = data_dir()
   source = PhoneSource(directory)
-  process = multiprocessing.Process(target=child, args=(source.path,), daemon=True)
+  process = multiprocessing.Process(target=child, args=(source.path, os.getpid()), daemon=True)
   stop = threading.Event()
   reporter = threading.Thread(target=status, args=(directory, source, stop), daemon=True)
   def terminate(signum, frame):

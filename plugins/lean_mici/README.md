@@ -1,4 +1,4 @@
-# lean_mici 0.4.0 — FINAL
+# lean_mici 0.5.0 — REVIEW FIX
 
 Default off; model role plus `lean_modeld` only, `rules: []`, no CAN sends.
 No model, native library or compiled model container is packaged or committed.
@@ -22,10 +22,10 @@ hard protocol fault latches stay in S1. The plan window uses system T_IDXS <=2s.
 |---|---:|---:|
 | curvature difference times max predicted speed squared | 0.8142 m/s² | 1.5 m/s² |
 | longitudinal acceleration difference | 1.5061 m/s² | 2.5 m/s² |
-| lead probability difference | 0.8658 | 0.98 |
-| first lead distance difference, both probability >0.5 | 22.3247 m | 35 m |
+| lead probability difference (calibration p99) | 0.7129 | 0.80 |
+| first lead distance difference, either probability >0.5 (p99) | 32.2000 m | 35 m |
 
-These leave 84%, 66%, 13% and 57% margin above calibration p99.5 respectively.
+These leave 84% and 66% margin above plan calibration p99.5, and 12% and 9% above lead calibration p99 respectively.
 Curvature is speed-normalised because raw yaw-rate/speed is ill-conditioned near
 standstill. At 20m/s the bound is 0.00375m^-1; it is not an unbounded low-speed
 steering target. System MAX_CURVATURE still caps absolute curvature.
@@ -35,11 +35,47 @@ within 5m, longitudinal acceleration [-8,5]m/s², lateral acceleration <=6m/s²,
 physical action/pose and confident lead distance [0,300]m. Irrelevant far-plan
 position and ordinary pose differences are not equality failures.
 
-An envelope outlier falls back without permanently latching the source.
+An envelope outlier resets warm-up and requires five fresh accepted replies before
+phone selection resumes; it does not permanently latch the source.
 Structural faults still latch. The system owns selection: cold/absent sources
 never wait; recently valid sources may wait for the current frame only until
 EOF+45ms. Its three-frame liveness window, warm-up and exact frame/epoch checks
 come directly from ModelSource. The plugin adds no wait or sequence override.
+
+## Action, lifecycle and peer fixes
+
+Admission compares the actual action means against local action, or derives a
+reference from the local first plan point when stock has no action head. Action
+lateral-demand/acceleration differences use the same 1.5/2.5 m/s² bounds. Their
+calibration p99.5 errors are 0.9945/1.1624 m/s². The physical lateral action limit
+is min(6, MAX_CURVATURE*max(v,1)^2). S1 passes only heads to admit, so v is the
+local first-plan speed proxy. Every action comparison remains a pure bounded
+calculation. On the same calibration/independent routes, acceptance changes from
+100%/99.33% to **99.33%/99.17%**; independent rejects are four curvature and one
+lead-probability outlier. One-sided lead detection uses the same distance bound.
+
+Bad discovery, wire, calibration, struct and codec input drops the connection;
+new Camera/encoders and dual IDR are required on reconnect. Linux child startup
+sets PR_SET_PDEATHSIG(SIGKILL), with the parent's PID supplied before spawn and
+checked for the startup race. Mac validation also exits when its parent changes.
+Each HELLO or REPLY has one monotonic 200ms message budget, including header and
+body, in addition to individual recv timeouts. Manager/store discovery imports
+no modeld/tinygrad; the existing isolated prepare probe checks the host ABI.
+
+TOFU stores the first successfully HELLO-validated discovery instance name in
+plugin JSON param `ExtLeanMiciPeer`. Later connections accept only that name and
+log other advertisers. HELLO has no stable device ID: instance_id is random on
+each server start. To select another phone or accept a changed NSD name, stop the
+plugin offroad and remove only `/data/xpilot_plugins/.params/ExtLeanMiciPeer`;
+the next unique peer is learned. The enable toggle is preserved.
+
+lean-master `617e00670a` frame_codec.h defines REPLY bit0 as SEQ_RESET (server
+created a sequence), bit1 as ZERO_PAIR (zero t-4 image). FRAME bit0 is separately
+road IDR. That branch's codec is v2; the retained v4 reference `5edae8e285` and
+captured v4 replies keep these flag meanings while adding NavExt. Road-only IDR
+alone does not advance the epoch. A SEQ_RESET reply without a sent dual IDR
+closes the connection and starts again with fresh codecs/dual IDR; it is never
+published as reset_without_epoch. The direct phone replay enforces the same rule.
 
 ## Real driving validation on this Mac
 
@@ -51,26 +87,26 @@ system's own camera config; decoded video stride/UV offset are honoured.
 Auxiliary inputs are retained/reconstructed from the recording, identically
 supplied to stock and phone; this is not a live-car test.
 
-On OnePlus 3B162S00PHS00000 / Chipmunk OS 2.3 / Walnut V3, the FINAL run
+On OnePlus 3B162S00PHS00000 / Chipmunk OS 2.3 / Walnut V3, the REVIEW FIX run
 uses the merged host and real concurrent stock inference, a separate production
 worker, phone TCP and S1 IPC. The first 100 frames prime phone history; the next
 600 real driving frames are the adoption gate (>=90%). All inputs/replies and
-startup outcomes are retained. Fresh FINAL results against `044edf530f`:
+startup outcomes are retained. Fresh REVIEW FIX results against `044edf530f`:
 
-- **700/700 replies**, normal adoption **561/600 (93.50%)**, above the 90% gate.
-  Including startup, adoption is **642/700 (91.71%)**.
-- Normal EOF→reply p50/p95/p99: **35.5500 / 43.3656 / 49.3112 ms**.
-- Normal fallback reasons: **25 absent, 8 late, 1 old_frame, 5 warmup**. All-run
-  counts: 28 absent, 8 late, 7 old_frame, 15 warmup. Expired replies stay local.
+- **700/700 replies**, normal adoption **564/600 (94.00%)**, above the 90% gate.
+  Including startup, adoption is **646/700 (92.29%)**.
+- Normal EOF→reply p50/p95/p99: **35.1045 / 43.5872 / 48.9179 ms**.
+- Normal fallback reasons: **20 absent, 16 late**. All-run counts:
+  24 absent, 18 late, 6 old_frame, 1 envelope:lead_probability_divergence, 5 warmup. Expired replies stay local.
 - Passive inference-idle observation after beacon withdrawal: **PASS**.
 
-Evidence: `/Users/mile/work/evidence/X-20261025-39/final/`, including raw wire,
+Evidence: `/Users/mile/work/evidence/X-20261025-39/review-fix/`, including raw wire,
 frames.csv, telemetry, source identities, checks and SHA256SUMS.
 
 Encoding is offline for this archived-HEVC test. Raw Mac software encoding does
 not meet the budget; C3XL camera/codec/resource performance remains a device task.
 The prior zero-wait measurements and plugin wait prototypes are historical;
-FINAL uses only the merged system's engaged bounded wait.
+REVIEW FIX uses only the merged system's engaged bounded wait.
 
 The live test uses a separate worker process: POSIX byte-range locks are per
 process, so a shared-process threaded producer is not a valid IPC test. Earlier

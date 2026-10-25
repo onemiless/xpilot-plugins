@@ -61,3 +61,20 @@ Live adoption must be >=90% on >=600 normal real frames with the real phone.
 Late replies still fall back at EOF+45ms. Refuse a busy phone before connecting.
 Store updates must preserve both enabled and disabled user toggles, and package
 metadata must remain default off with no model/container files.
+
+## REVIEW FIX (fixed before implementation)
+- Equal plans with divergent action means must be rejected, including a stock
+  profile without action; cap action lateral demand by MAX_CURVATURE*max(v,1)^2.
+- Reject excessive lead probability divergence and compare confident lead distance
+  if either side sees a lead. Calibrate on the original driving split, not eval.
+- An envelope rejection clears warm-up and requires five fresh accepted replies.
+- Bad HELLO/REPLY/struct/Avahi/calibration/encoder input must close that connection,
+  reset codecs and reconnect; startup camera failure must also be recoverable.
+- A killed parent must leave no child/camera/encoder/TCP/beacon (Linux PDEATHSIG).
+- Slow-drip messages time out on one overall deadline, across header and body.
+- TOFU stores discovery instance name; HELLO's instance_id is per-start random,
+  not a stable identity. Unpinned ambiguity refuses; pinned outsiders are logged.
+- Sequence-reset replies, including after a road-only IDR, must never be mislabeled
+  as reset_without_epoch; reconnect and require dual IDR rather than forge pairing.
+- Manager/store import must not import modeld/tinygrad. Existing host refusal and
+  store rollback/default-off/update-toggle behaviour remain covered by E2E.

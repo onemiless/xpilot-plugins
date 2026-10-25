@@ -49,8 +49,8 @@ def discover(interface='wlan0'):
           host, port = target.rsplit(':', 1)
           for info in socket.getaddrinfo(host, int(port), socket.AF_INET, socket.SOCK_STREAM):
             address = info[4][0]
-            if ipaddress.IPv4Address(address) in subnet:
-              peers.add((address, int(port)))
+            if ipaddress.IPv4Address(address) in subnet and int(port) == 7070:
+              peers.add((name, address, int(port)))
     return sorted(peers)
   process = subprocess.Popen(['avahi-browse', '-rp', '_bigmodel._tcp'], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
   try:
@@ -64,7 +64,7 @@ def discover(interface='wlan0'):
     if len(fields) >= 9 and fields[:3] == ['=', interface, 'IPv4'] and fields[4] == '_bigmodel._tcp':
       address, port = fields[7:9]
       if ipaddress.IPv4Address(address) in subnet and int(port) == 7070:
-        peers.add((address, int(port)))
+        peers.add((fields[3], address, int(port)))
   return sorted(peers)
 
 

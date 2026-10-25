@@ -1,6 +1,3 @@
-from openpilot.selfdrive.modeld.modeld import run_with_model_source
-from openpilot.tesla.model_source import ModelSource
-from openpilot.tesla.store import plugin_state
 from openpilot.tesla.plugin import Plugin
 from .prepare import ready
 

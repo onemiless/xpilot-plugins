@@ -92,7 +92,7 @@ try:
     if len(peers)==1: break
     time.sleep(.5)
    assert len(peers)==1,'no unique phone server'
-   with socket.create_connection(peers[0],timeout=2) as conn:
+   with socket.create_connection(peers[0][1:],timeout=2) as conn:
     conn.settimeout(2)
     conn.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
     hello=wire.receive(conn,48);wire.hello(hello)
@@ -112,6 +112,7 @@ try:
        raise ValueError(f'phone ERR {struct.unpack_from("<II",reply,16)}')
       fid,echo,rflags=wire.reply(reply)
       assert (fid,echo)==(i,eof)
+      if rflags&1 and flags!=3:raise ValueError('phone sequence reset requires fresh dual IDR')
       phone.append(np.frombuffer(reply,'<f4',2066,24).copy())
       telemetry=struct.unpack_from('<4I',reply,8288)
       rows.append({'frameId':fid,'EOF':eof,'arrival':arrival,'latency_ms':(arrival-eof)/1e6,'flags':rflags,
@@ -153,7 +154,9 @@ try:
   adopted=profile.admit({k:v.copy() for k,v in outputs.items()},remote)
   rows[i]['numeric_admitted']=int(adopted);passed+=adopted
   wire_reply=replies[i*8480:(i+1)*8480]
-  if rows[i]['flags']&1:epoch+=1
+  sent_dual=int(rows[i]['road_idr']) and int(rows[i]['wide_idr'])
+  if rows[i]['flags']&1 and not sent_dual:raise ValueError('phone sequence reset requires fresh dual IDR')
+  if sent_dual:epoch+=1
   epoch=max(epoch,1)
   source.frame=rows[i]['frameId'];source.eof=rows[i]['EOF'];source.sent=True
   publish(source.fd,source.session,epoch,rows[i]['arrival'],3,wire.to_mailbox(wire_reply,source.frame))

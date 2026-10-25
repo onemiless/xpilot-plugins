@@ -5,7 +5,7 @@ Camera/encoding are hash-pinned archived HEVC; network, IPC, stock and selection
 Mac interface and AS-limit adaptation replace device hardware.
 Failure modes are fixed in FAILURES.md; no phone response or selector is mocked.
 """
-import argparse,csv,hashlib,json,multiprocessing,sys,tempfile,time,types,pickle
+import argparse,csv,hashlib,json,multiprocessing,sys,tempfile,time,types,pickle,os
 from pathlib import Path
 from unittest.mock import patch
 import numpy as np
@@ -17,7 +17,9 @@ from openpilot.selfdrive.modeld import helpers,modeld
 from idle import observe, sample
 
 
-def archive_worker(path,input_dir,address,output_dir,stop,ack):
+def archive_worker(path,input_dir,address,output_dir,stop,ack,parent):
+ from openpilot.tesla import manifest
+ manifest.INSTALL_DIR=Path(output_dir)/"store"
  cache=pickle.loads((Path(output_dir)/'encoded-cache.pkl').read_bytes())
  class ArchiveCamera:
   def capture(self,meta,reset):
@@ -48,7 +50,7 @@ def archive_worker(path,input_dir,address,output_dir,stop,ack):
    with (patch('plugins.lean_mici.camera.Camera',return_value=ArchiveCamera()),patch.object(worker.resource,'setrlimit'),
          patch.object(worker,'scope',return_value=(address,None)),patch.object(worker,'discover',side_effect=lambda:network.discover('en0')),
          patch.object(worker.time,'sleep',sleep),patch.object(worker,'metadata',metadata),patch.object(worker,'frame',frame),patch.object(worker,'receive_reply',receive),patch.object(worker,'publish',publish)):
-    worker.main(path)
+    worker.main(path,parent)
   except EndWorker:pass
   except BaseException as e:
    (out/'worker-error.json').write_text(json.dumps({'error':repr(e)}));raise
@@ -77,7 +79,7 @@ def main():
  inputs=np.load(a.input/'inputs.npz');rows=[];ctx=multiprocessing.get_context('spawn');stop=ctx.Event();ack=ctx.Value('i',-1)
  with tempfile.TemporaryDirectory() as directory:
   source=PhoneSource(directory)
-  process=ctx.Process(target=archive_worker,args=(source.path,str(a.input),a.address,str(a.output),stop,ack));process.start()
+  process=ctx.Process(target=archive_worker,args=(source.path,str(a.input),a.address,str(a.output),stop,ack,os.getpid()));process.start()
   try:
    time.sleep(4)
    start=time.monotonic();origin=worker.now();previous=np.zeros(8,np.float32)
@@ -126,7 +128,7 @@ def main():
  (a.output/'result.json').write_text(json.dumps(result,indent=2)+'\n')
  with (a.output/'frames.csv').open('w') as f:
   w=csv.DictWriter(f,fieldnames=list(rows[0]));w.writeheader();w.writerows(rows)
- (a.output/'SHA256SUMS').write_text(''.join(f'{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.name}\n' for p in sorted(a.output.iterdir()) if p.name!='SHA256SUMS'))
+ (a.output/'SHA256SUMS').write_text(''.join(f'{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.relative_to(a.output)}\n' for p in sorted(a.output.rglob('*')) if p.is_file() and p.name!='SHA256SUMS'))
  print(json.dumps(result,indent=2))
 
 
@@ -136,5 +138,5 @@ if __name__=='__main__':
   output=Path(sys.argv[sys.argv.index('--output')+1]);output.mkdir(parents=True,exist_ok=True)
   (output/'result.json').write_text(json.dumps({'pass':False,'error':repr(error)},indent=2)+'\n')
   if not (output/'frames.csv').exists():(output/'frames.csv').write_text('frameId,source,reason\n')
-  (output/'SHA256SUMS').write_text(''.join(f'{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.name}\n' for p in sorted(output.iterdir()) if p.is_file() and p.name!='SHA256SUMS'))
+  (output/'SHA256SUMS').write_text(''.join(f'{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.relative_to(output)}\n' for p in sorted(output.rglob('*')) if p.is_file() and p.name!='SHA256SUMS'))
   raise

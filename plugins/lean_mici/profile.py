@@ -22,15 +22,17 @@ def decode(raw):
   return heads
 
 
-# Public route segment 1, frames 0..599: p99.5 plus margin; held-out frames 600..1199 are not used to fit.
-DIVERGENCE = {'curvature': 1.5, 'acceleration': 2.5, 'lead_probability': .98, 'lead_distance': 35.}
+# Calibration segment 1, frames 0..599; lead bounds use p99 plus margin, not evaluation frames.
+DIVERGENCE = {'curvature': 1.5, 'acceleration': 2.5, 'lead_probability': .8, 'lead_distance': 35.}
 NEAR = np.array(ModelConstants.T_IDXS) <= 2.
 
 
 def control_values(heads):
   plan = heads['plan'][0, NEAR]
   speed = np.linalg.norm(plan[:, Plan.VELOCITY], axis=1)
-  return {'speed': speed, 'curvature': plan[:, Plan.ORIENTATION_RATE][:, 2] / np.maximum(speed, 1.),
+  curvature = plan[:, Plan.ORIENTATION_RATE][:, 2] / np.maximum(speed, 1.)
+  action = heads['action'][0, :2] if 'action' in heads else np.array([curvature[0] * max(1., speed[0])**2, plan[0, Plan.ACCELERATION][0]])
+  return {'speed': speed, 'curvature': curvature, 'action': action,
           'acceleration': plan[:, Plan.ACCELERATION][:, 0], 'lead_probability': heads['lead_prob'][0],
           'lead_distance': float(heads['lead'][0, 0, 0, 0])}
 
@@ -39,7 +41,8 @@ def reject_reason(local, remote):
   r, l = control_values(remote), control_values(local)
   if np.linalg.norm(remote['plan'][0, 0, Plan.POSITION]) > 5:
     return 'physical_position'
-  if abs(remote['action'][0, 0]) > 6 or not -8 <= remote['action'][0, 1] <= 5:
+  # S1 gives admit only heads; use the local first-plan speed as the v_ego proxy.
+  if abs(r['action'][0]) > min(6., MAX_CURVATURE * max(1., l['speed'][0])**2) or not -8 <= r['action'][1] <= 5:
     return 'physical_action'
   if np.max(r['speed']) > 80 or np.min(remote['plan'][0, NEAR, Plan.VELOCITY][:, 0]) < -2:
     return 'physical_speed'
@@ -56,10 +59,14 @@ def reject_reason(local, remote):
   # Curvature error is bounded in lateral-acceleration units; raw curvature is ill-conditioned near standstill.
   if np.max(np.abs(r['curvature']-l['curvature']) * np.maximum(np.maximum(r['speed'],l['speed'])**2,1.)) > DIVERGENCE['curvature']:
     return 'curvature_divergence'
+  if abs(r['action'][0] - l['action'][0]) > DIVERGENCE['curvature']:
+    return 'action_curvature_divergence'
+  if abs(r['action'][1] - l['action'][1]) > DIVERGENCE['acceleration']:
+    return 'action_acceleration_divergence'
   for key in ('acceleration', 'lead_probability'):
     if np.max(np.abs(r[key] - l[key])) > DIVERGENCE[key]:
       return key + '_divergence'
-  if r['lead_probability'][0] > .5 and l['lead_probability'][0] > .5 and abs(r['lead_distance'] - l['lead_distance']) > DIVERGENCE['lead_distance']:
+  if max(r['lead_probability'][0], l['lead_probability'][0]) > .5 and abs(r['lead_distance'] - l['lead_distance']) > DIVERGENCE['lead_distance']:
     return 'lead_distance_divergence'
   return ''
 

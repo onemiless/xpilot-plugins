@@ -3,6 +3,9 @@ import pickle
 
 
 def ready():
+  # Check host ABI in the isolated preparation probe, not in manager discovery.
+  from openpilot.selfdrive.modeld.modeld import run_with_model_source
+  from openpilot.tesla.model_source import ModelSource
   from openpilot.common.hardware import HARDWARE
   from openpilot.common.transformations.camera import DEVICE_CAMERAS
   from openpilot.selfdrive.modeld.helpers import MODELS_DIR, load_oob, modeld_pkl_path

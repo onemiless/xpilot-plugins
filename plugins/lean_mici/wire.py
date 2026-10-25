@@ -1,18 +1,30 @@
 """Bounded BGM1 v4 client; explicit serialization into the unchanged S1 v2 ABI."""
 import struct
+import time
 import numpy as np
 
 HEADER = struct.Struct('<4sBBHII')
 MAX_SEGMENT = 1024 * 1024
 
 
-def receive(sock, count):
+def receive(sock, count, deadline=None):
+  deadline = time.monotonic() + .2 if deadline is None else deadline
+  timeout = sock.gettimeout()
   data = bytearray()
-  while len(data) < count:
-    chunk = sock.recv(count - len(data))
-    if not chunk:
-      raise ConnectionError('truncated BGM1 message')
-    data.extend(chunk)
+  try:
+    while len(data) < count:
+      remaining = deadline - time.monotonic()
+      if remaining <= 0:
+        raise TimeoutError('BGM1 message deadline')
+      sock.settimeout(min(timeout, remaining) if timeout is not None else remaining)
+      chunk = sock.recv(count - len(data))
+      if not chunk:
+        raise ConnectionError('truncated BGM1 message')
+      data.extend(chunk)
+    if time.monotonic() > deadline:
+      raise TimeoutError('BGM1 message deadline')
+  finally:
+    sock.settimeout(timeout)
   return bytes(data)
 
 
@@ -54,12 +66,13 @@ def to_mailbox(data, host_frame_id):
 
 
 def receive_reply(sock):
-  header = receive(sock, HEADER.size)
+  deadline = time.monotonic() + .2
+  header = receive(sock, HEADER.size, deadline)
   magic, version, kind, flags, index, length = HEADER.unpack(header)
   if (magic, version) != (b'BGM1', 4):
     raise ValueError('bad v4 message header')
   if kind == 0x7f and length == 8:
-    return header + receive(sock, 24)
+    return header + receive(sock, 24, deadline)
   if kind != 0x11 or length != 8440:
     raise ValueError(f'bad v4 reply framing: type={kind} length={length}')
-  return header + receive(sock, 8464)
+  return header + receive(sock, 8464, deadline)

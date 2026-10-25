@@ -15,5 +15,6 @@ class PhoneSource(ModelSource):
   def _reject(self, reason, lock=False):
     if reason == 'admission':
       # A control outlier is recoverable; structural/protocol failures still latch in S1.
+      self.fresh = 0
       reason, lock = 'envelope:' + self.envelope_reason, False
     return super()._reject(reason, lock)

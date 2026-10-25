@@ -53,9 +53,10 @@ def tcp_peer(path, control):
           patch.object(worker.signal, 'signal'),
           patch.object(worker, 'scope', return_value=('127.0.0.1', None)),
           patch.object(worker, 'Beacon', side_effect=lambda address: contextlib.nullcontext()),
-          patch.object(worker, 'discover', return_value=[endpoint]),
+          patch.object(worker, 'discover', return_value=[('test phone', *endpoint)]),
+          patch('openpilot.tesla.manifest.INSTALL_DIR', Path(path).parent),
           patch.object(worker, 'now', side_effect=lambda: META.unpack(os.pread(fd, META.size, 0))[5] + 20_000_000)):
-      worker.main(path)
+      worker.main(path, os.getppid())
   thread = threading.Thread(target=run_worker, daemon=True)
   thread.start()
   try:
@@ -165,8 +166,8 @@ def main():
         command = list(command)
         command[2] = 'import sys, types\nsys.modules["openpilot.common.params"] = types.SimpleNamespace(Params=type("Params", (), {}), UnknownKeyName=KeyError)\nfrom unittest.mock import patch\nfrom openpilot.tesla import plugins\nwith patch("xpilot_ext.lean_mici.plugin.ready", return_value=True):\n' + ''.join('  ' + line + '\n' for line in command[2].splitlines())
         return real_run(command, **kw)
-      archive = (root / 'dist/lean_mici-0.4.0.tar.gz').read_bytes()
-      entry = store.IndexEntry('lean_mici', 'lean mici', '0.4.0', 1, 'perception_model', 'xpilot', '', 'local',
+      archive = (root / 'dist/lean_mici-0.5.0.tar.gz').read_bytes()
+      entry = store.IndexEntry('lean_mici', 'lean mici', '0.5.0', 1, 'perception_model', 'xpilot', '', 'local',
                                hashlib.sha256(archive).hexdigest(), installable=True)
       with (patch.object(mf, 'INSTALL_DIR', installed), patch.object(store, '_get', return_value=archive),
             patch.object(store.subprocess, 'run', probe), patch('openpilot.common.params.Params', return_value=params)):
@@ -192,8 +193,13 @@ def main():
         assert store.install(entry, activate=True, offroad=lambda: False) == 'park first'
         with patch.object(h.modeld, 'run_with_model_source'):
           del h.modeld.run_with_model_source
-          _, errors, _ = plugins._discover()
-        assert 'lean_mici' in errors
+          from plugins.lean_mici.prepare import ready
+          try:
+            ready()
+          except ImportError:
+            pass
+          else:
+            raise AssertionError('old host preparation accepted')
       h.decode = profile.decode
       ctx = multiprocessing.get_context('fork')
       # Reuse the system's same-frame fault peer and real Capnp/msgq health replay.
@@ -234,7 +240,11 @@ def main():
           if name=='protocol_latch':
             assert source.locked and all(r['source']=='local' for r in records[10:])
           else:
-            assert not source.locked and records[11]['source']=='phone'
+            assert not source.locked
+            if name=='envelope_recovery':
+              assert all(r['source']=='local' for r in records[11:16]) and records[16]['source']=='phone'
+            else:
+              assert records[11]['source']=='phone'
         finally:
           peer.terminate();peer.join(2)
           if peer.is_alive():peer.kill();peer.join()

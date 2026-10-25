@@ -6,9 +6,9 @@ xpilot repository (plugin interfaces, claims, code layout) and this repository's
 ## Which repository
 
 - **Here**: plugin code (`plugins/<id>/`), its tests, `dist/` and `index.json`.
-- **onemiless/xpilot**: the host, the store, the UI, the core plugins, panda safety code and `safety.json`.
-  A plugin that sends CAN needs its panda safety plugin merged there first; the store refuses to install it until the
-  device runs a system whose `safety.json` declares it.
+- **onemiless/xpilot**: the host, the store, the UI, the core plugins and panda safety code.
+  CAN senders require host/firmware runtime rule ABI 1 support merged there first. Declare `rules` and
+  `requires.rule_abi` here; legacy `safety` manifests are rejected.
 
 ## Pull requests
 
@@ -22,7 +22,7 @@ xpilot repository (plugin interfaces, claims, code layout) and this repository's
 ## Automatic merge
 
 When CI passes, `.github/workflows/automerge.yml` squash-merges a pull request from a collaborator if `tools/pr_risk.py`
-finds only display plugins (category `ui`/`overlays`, no claims, no safety block, no platform, no binaries, only the UI
+finds only display plugins (category `ui`/`overlays`, no claims, no safety/rules, no platform, no binaries, only the UI
 host API and a few stdlib imports, no dynamic code). Anything else, or any outside author, gets one comment asking the
 owner to review. A failing check on `main` after a merge opens an issue. `tools/pr_risk_check.py` lists the failure
 modes the classifier is tested against.

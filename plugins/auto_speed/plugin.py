@@ -1,6 +1,6 @@
 """Auto speed plugin: follows the car's own speed limit (DAS_fusedSpeedLimit, upstream carStateSP.speedLimit)
 plus an offset by sending single right scroll-wheel ticks (0x3C2) cloned from the car's idle frame.
-Panda side: opendbc_repo/opendbc/safety/plugins/auto_speed.h. Params: TeslaAutoSpeedLimit(Offset)."""
+Panda permissions: plugin.json runtime rules. Params: TeslaAutoSpeedLimit(Offset)."""
 from types import SimpleNamespace
 
 from opendbc.can import CANParser
@@ -37,7 +37,6 @@ class AutoSpeed(Plugin):
     # openpilot longitudinal and the vehicle-bus harness are required to see and send the wheel frame
     if self.CP.openpilotLongitudinalControl and CP_SP.flags & TeslaFlagsSP.HAS_VEHICLE_BUS:
       self.controller.configured = True
-      CP_SP.safetyParam |= int(self.MANIFEST.safety["param_bit"], 0)
 
   def _wheel_frame(self, data: bytes, now_ns: int) -> None:
     s = self.state

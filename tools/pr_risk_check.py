@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Failure modes of tools/pr_risk.py, each a real commit in a throwaway git repository:
 - a change outside plugins/<id>/, dist/ and index.json (CI, tools, plugins/conftest.py) is auto-merged
-- a plugin with claims, a safety block, a platform, or a control category is auto-merged
+- a plugin with claims, safety/rules, a platform, or a control category is auto-merged
 - a control plugin moved to category ui in the same pull request is auto-merged
 - a display plugin that imports outside the allowlist, uses dynamic code, dunder attributes or ui_state.params is auto-merged
 - a binary file or a deleted plugin is auto-merged
@@ -29,6 +29,7 @@ CASES = {  # label: (files to write, files to delete, expected auto)
   "conftest": ({"plugins/conftest.py": "x"}, [], False),
   "claims": ({"plugins/t/plugin.json": manifest(claims=["can.tx:0x3E9:1"])}, [], False),
   "safety": ({"plugins/t/plugin.json": manifest(safety={"param_bit": "0x8000"})}, [], False),
+  "rules": ({"plugins/t/plugin.json": manifest(rules=[{"type": "template_clone.v1"}])}, [], False),
   "platform": ({"plugins/t/plugin.json": manifest(platform={"machine": "aarch64"})}, [], False),
   "control-category": ({"plugins/t/plugin.json": manifest(category="longitudinal_planning")}, [], False),
   "control-to-ui": ({"plugins/c/plugin.json": manifest(id="c")}, [], False),

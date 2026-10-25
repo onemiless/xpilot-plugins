@@ -1,7 +1,7 @@
 {
   "id": "auto_speed",
   "name": "Auto Speed Limit",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "api": 1,
   "use": "onroad",
   "category": "longitudinal_planning",
@@ -37,11 +37,110 @@
       "note": "car display units"
     }
   },
-  "safety": {
-    "header": "auto_speed.h",
-    "param_bit": "0x4000",
-    "tx": [
-      "0x3C2:1"
-    ]
-  }
+  "requires": {
+    "rule_abi": 1
+  },
+  "rules": [
+    {
+      "type": "template_clone.v1",
+      "tx_bus": 1,
+      "rx_bus": 1,
+      "template_ttl_us": 1500000,
+      "min_interval_us": 250000,
+      "session": 1,
+      "max_count": 50,
+      "idle_reset_us": 3000000,
+      "max_span_us": 0,
+      "counter": {
+        "kind": 0,
+        "bit_offset": 0,
+        "width": 0
+      },
+      "tx_checksum": {
+        "kind": 0,
+        "checksum_byte": 0
+      },
+      "rx_checksum": {
+        "kind": 0,
+        "checksum_byte": 0
+      },
+      "predicate_mask": [
+        3,
+        0,
+        0,
+        63,
+        0,
+        0,
+        0,
+        0
+      ],
+      "predicate_value": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "constant_mask": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "constant_value": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "tx_address": 962,
+      "rx_address": 962,
+      "tx_length": 8,
+      "rx_length": 8,
+      "copy_mask": [
+        255,
+        255,
+        255,
+        192,
+        255,
+        255,
+        255,
+        255
+      ],
+      "fields": [
+        {
+          "bit_offset": 24,
+          "width": 6,
+          "min": 1,
+          "max": 63,
+          "exempt_values": []
+        }
+      ],
+      "legal_tuples": [
+        {
+          "field_mask": 1,
+          "values": [
+            1
+          ]
+        },
+        {
+          "field_mask": 1,
+          "values": [
+            63
+          ]
+        }
+      ]
+    }
+  ]
 }

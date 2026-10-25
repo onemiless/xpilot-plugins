@@ -35,7 +35,7 @@ from opendbc.car.tesla.values import CarControllerParams, DBC
 from opendbc.car.vehicle_model import VehicleModel
 from opendbc.sunnypilot.car.tesla.values import TeslaFlagsSP
 from openpilot.selfdrive.controls.lib.latcontrol_angle import LatControlAngle
-from openpilot.tesla import manifest as mf, plugins
+from openpilot.tesla import manifest as mf, panda_rules, plugins
 from openpilot.tesla.plugin_params import ParamsView
 
 if __package__:
@@ -106,7 +106,7 @@ def run(output):
     params = ParamsView(core, specs)
     cls = next(c for c in classes if c.NAME == PLUGIN.name)
     assert cls.CATEGORY == "controller" and cls.CLAIMS == ("role:lateral.controller",)
-    assert cls.MANIFEST.safety is None
+    assert cls.MANIFEST.rules == []
     assert cls.MANIFEST.params == {"XpTeslaMixedControl": {"type": "BOOL", "default": "0"}}
     sp_cp = structs.CarParamsSP(flags=flags)
     ci = CarInterface(cp, sp_cp)
@@ -118,6 +118,7 @@ def run(output):
     disabled = controller()
     assert disabled.__class__ is LatControlAngle
     plugins.CarPlugins(cp, core).setup(sp_cp)
+    assert core.values.pop("XpilotPandaRules") == panda_rules.param(panda_rules.encode_rules([]))
     assert sp_cp.flags == flags
     for row in rows:
       a = args(state(row["speed"], row["torque"]), vm, row["desired"], row["active"])
@@ -127,6 +128,7 @@ def run(output):
 
     params.put_bool("XpTeslaMixedControl", True)
     plugins.CarPlugins(cp, core).setup(sp_cp)
+    assert core.values.pop("XpilotPandaRules") == panda_rules.param(panda_rules.encode_rules([]))
     assert sp_cp.flags == flags & ~TeslaFlagsSP.COOP_STEERING.value
     assert sp_cp.safetyParam == 0 and core.values == {"TeslaCoopSteering": True}
     checks.append("enabled setup: only COOP bit cleared; persistent TeslaCoopSteering untouched")

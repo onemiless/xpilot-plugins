@@ -4,7 +4,7 @@
   python3 tools/pr_risk.py <base> <head>   # prints {"auto": bool, "reasons": [...]}; exit 0 either way
 
 Auto only when every changed file is plugins/<id>/..., dist/<id>-*.tar.gz or index.json, and every touched plugin,
-before and after, is a display plugin (category ui/overlays) with no claims, no safety block, no platform, only
+before and after, is a display plugin (category ui/overlays) with no claims, no safety/rules, no platform, only
 .py/.json/.md files, and Python that imports only the UI host API and a few stdlib modules, with no dynamic code.
 Reads the head as git objects only; never runs pull request code, so it is safe in a privileged workflow.
 This is a guard rail, not a sandbox: the workflow also requires a trusted author.
@@ -59,7 +59,7 @@ def manifest_problems(rev: str, pid: str, side: str) -> list[str]:
   out = []
   if m.get("category") not in CATEGORIES:
     out.append(f"{pid}: category {m.get('category')!r} at {side}")
-  out += [f"{pid}: has {k} at {side}" for k in ("claims", "safety", "platform") if m.get(k)]
+  out += [f"{pid}: has {k} at {side}" for k in ("claims", "safety", "rules", "platform") if m.get(k)]
   return out
 
 

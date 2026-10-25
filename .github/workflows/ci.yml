@@ -21,7 +21,7 @@ jobs:
     - uses: actions/checkout@v4
       with:
         repository: onemiless/xpilot
-        ref: xpilot
+        ref: 2c77664a55eb1b0bdae320b533087b9202d43c48
         path: xpilot
     - run: git -C xpilot submodule update --init --depth 1 msgq_repo
     - uses: actions/setup-python@v5
@@ -35,6 +35,13 @@ jobs:
       run: python3 tools/pr_risk_check.py > /tmp/pr_risk_check.json
     - name: Archives and index match the source
       run: python3 tools/build_index.py --check
+    - name: Runtime rules match the host and reference tables
+      run: PYTHONPATH=$X:$X/msgq_repo:$X/opendbc_repo python3 tools/runtime_rules_check.py --output /tmp/runtime-rules
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: runtime-rules
+        path: /tmp/runtime-rules
     - name: Plugin tests
       working-directory: plugins
       run: PYTHONPATH=$X:$X/msgq_repo:$X/opendbc_repo python3 -m pytest -q -p no:cacheprovider .

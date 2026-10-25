@@ -1,7 +1,7 @@
 {
   "id": "ambient_light",
   "name": "Blindspot Ambient Lights",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "api": 1,
   "use": "onroad",
   "category": "body_comfort",
@@ -51,11 +51,136 @@
       "default": "100"
     }
   },
-  "safety": {
-    "header": "ambient_light.h",
-    "param_bit": "0x2000",
-    "tx": [
-      "0x679:1"
-    ]
-  }
+  "requires": {
+    "rule_abi": 1
+  },
+  "rules": [
+    {
+      "type": "template_clone.v1",
+      "tx_bus": 1,
+      "rx_bus": 1,
+      "template_ttl_us": 1000000,
+      "min_interval_us": 80000,
+      "session": 1,
+      "max_count": 150,
+      "idle_reset_us": 1000000,
+      "max_span_us": 15000000,
+      "counter": {
+        "kind": 0,
+        "bit_offset": 0,
+        "width": 0
+      },
+      "tx_checksum": {
+        "kind": 0,
+        "checksum_byte": 0
+      },
+      "rx_checksum": {
+        "kind": 0,
+        "checksum_byte": 0
+      },
+      "predicate_mask": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "predicate_value": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "constant_mask": [
+        254,
+        255,
+        255,
+        255,
+        0,
+        1,
+        0,
+        0
+      ],
+      "constant_value": [
+        2,
+        255,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "tx_address": 1657,
+      "rx_address": 1657,
+      "tx_length": 7,
+      "rx_length": 7,
+      "copy_mask": [
+        1,
+        0,
+        0,
+        0,
+        128,
+        6,
+        254,
+        0
+      ],
+      "fields": [
+        {
+          "bit_offset": 32,
+          "width": 7,
+          "min": 0,
+          "max": 100,
+          "exempt_values": []
+        },
+        {
+          "bit_offset": 43,
+          "width": 5,
+          "min": 0,
+          "max": 31,
+          "exempt_values": []
+        },
+        {
+          "bit_offset": 48,
+          "width": 1,
+          "min": 0,
+          "max": 1,
+          "exempt_values": []
+        }
+      ],
+      "legal_tuples": [
+        {
+          "field_mask": 6,
+          "values": [
+            0,
+            21,
+            0
+          ]
+        },
+        {
+          "field_mask": 6,
+          "values": [
+            0,
+            10,
+            1
+          ]
+        },
+        {
+          "field_mask": 6,
+          "values": [
+            0,
+            31,
+            1
+          ]
+        }
+      ]
+    }
+  ]
 }

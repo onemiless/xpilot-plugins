@@ -27,9 +27,10 @@ tools/build_index.py     builds dist/ and index.json; --check verifies they are 
    `show="always"` requires `both`. This declaration does not change hook runtime conditions.
 3. Use relative imports inside the plugin (`from .logic import x`): installed plugins load as `xpilot_ext.<id>`.
 4. Prefer pure Python. Compiled code must ship as prebuilt binaries with a `platform` and a `build_native.py`
-   that reproduces them (see Native plugins). panda safety code is compiled into the firmware and lives in the
-   xpilot repository (`opendbc/safety/plugins/safety.json`). A plugin with `can.tx` claims or a `safety` block
-   installs only if both match that file exactly on the device's xpilot version.
+   that reproduces them (see Native plugins). CAN senders declare `rules` (`template_clone.v1`) and
+   `requires: {"rule_abi": 1}`; `can.tx` claims must equal the rules' TX address/bus pairs. The host validates
+   and compiles these rules for the Panda runtime engine. Legacy `safety` manifests are rejected;
+   there is no translation layer.
 5. Run `python3 tools/build_index.py` and commit `dist/` and `index.json` with the source.
 6. Describe in the PR what the plugin changes on the road, which claims it takes, and how you tested it.
 
@@ -57,9 +58,13 @@ Moved from the xpilot repository (keep their original param keys):
 - Display, installed by default on first boot: `speed_card`, `lead_card`, `speed_limit_card`, `car_tile`, `map_tile`,
   `clock_tile`, `ip_tile`, `blindspot_edges`.
 - `bms`: battery tile. `traffic_light`: traffic light stop/start. `external_compute`: external compute bridge.
-- Safety-backed (need the matching panda firmware entry): `auto_speed` (0x3C2), `ambient_light` (0x679).
+- Runtime Panda rules (need host/firmware ABI 1): `auto_speed` (0x3C2), `ambient_light` (0x679), both 1.1.0.
+  The old 1.0.x archives are withdrawn. Merge the X-33 host support before this plugin release.
 
 Tests: `cd plugins && python3 -m pytest -q .` with an xpilot checkout on `PYTHONPATH` (see `.github/workflows/ci.yml`).
+Run `python3 tools/runtime_rules_check.py --output /tmp/runtime-rules` with that same `PYTHONPATH` to validate
+source and archives against the real host, compare AUTO/AMBIENT reference bytes and exercise card setup.
+It saves `result.json` with source identities/hashes, table binaries and the CRC-bearing card param.
 
 ## Native plugins / 带二进制的插件
 

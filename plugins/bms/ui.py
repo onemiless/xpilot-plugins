@@ -4,7 +4,7 @@ from openpilot.tesla.ui.tiles import TileSpec
 
 
 class BmsTile(Tile):
-  SPEC = TileSpec("bms", "Battery", sizes=("small", "medium", "wide"), services=("carStateSP",), hz=2, order=90)
+  SPEC = TileSpec("bms", "Battery", sizes=("small", "medium", "wide"), services=("carStateSP",), show="always", hz=2, order=90)
 
   def state(self, sm):
     b = sm["carStateSP"].teslaBattery

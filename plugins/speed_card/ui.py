@@ -8,7 +8,7 @@ SET_SPEED_NA = 255  # vCruiseCluster (km/h) when cruise is not set
 
 
 class SpeedCardTile(Tile):
-  SPEC = TileSpec("speed_card", "Speed", sizes=("small", "medium", "wide"), hz=10, order=10)
+  SPEC = TileSpec("speed_card", "Speed", sizes=("small", "medium", "wide"), show="always", hz=10, order=10)
 
   def state(self, sm):
     cs = sm['carState']

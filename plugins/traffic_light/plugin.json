@@ -1,7 +1,7 @@
 {
   "id": "traffic_light",
   "name": "Traffic Light Control (Experimental)",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "api": 1,
   "category": "longitudinal_planning",
   "entry": "plugin:TrafficLight",

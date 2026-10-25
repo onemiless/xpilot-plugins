@@ -4,10 +4,10 @@ from dataclasses import dataclass
 
 import pyray as rl
 
-from openpilot.selfdrive.ui.ui_state import ui_state
 from .controller import TrafficControlPhase
 from openpilot.system.ui.lib.application import gui_app
-from openpilot.tesla.ui.plugin_ui import HudOverlay
+from openpilot.tesla.ui.tile import Tile
+from openpilot.tesla.ui.tiles import TileSpec
 
 
 RED = rl.Color(255, 72, 72, 255)
@@ -17,22 +17,10 @@ LAMP_OFF = rl.Color(65, 69, 76, 220)
 BORDER = rl.Color(255, 255, 255, 38)
 TRAFFIC_CARD_WIDTH = 128.0
 TRAFFIC_CARD_HEIGHT = 256.0
-TRAFFIC_CARD_TOP_OFFSET = 47.0
 TRAFFIC_LIGHT_HOUSING_WIDTH = 104.0
 TRAFFIC_LIGHT_HOUSING_HEIGHT = 232.0
 TRAFFIC_LIGHT_RADIUS = 20.0
 CONTROL_OUTLINE = rl.Color(64, 156, 255, 255)
-
-
-def traffic_card_rect(rect: rl.Rectangle, compact: bool = False) -> rl.Rectangle:
-  if compact:
-    return rl.Rectangle(rect.x + 8, rect.y + 60, 32, 64)
-  return rl.Rectangle(
-    rect.x + 46.0,
-    rect.y + 300 + TRAFFIC_CARD_TOP_OFFSET,  # 300: former tici header height
-    TRAFFIC_CARD_WIDTH,
-    TRAFFIC_CARD_HEIGHT,
-  )
 
 
 def traffic_control_highlighted(state: TrafficSignalDisplayState) -> bool:
@@ -103,41 +91,39 @@ def write_traffic_ui_debug(target, sm) -> None:
   target.trafficDisplayedControlActive = _latest_traffic_display_state.control_active
 
 
-class TrafficControlRenderer(HudOverlay):
+class TrafficControlRenderer(Tile):
   """Icon-only traffic signal driven by the already-published final plan."""
 
-  def __init__(self, *, compact: bool = True) -> None:
-    super().__init__()
-    self.compact = compact
-    self.state = TrafficSignalDisplayState()
+  SPEC = TileSpec("traffic_light", "Traffic Light", sizes=("small",), services=("longitudinalPlanSP",),
+                  show="onroad", hz=10, order=40)
 
-  def update(self) -> None:
+  def state(self, sm):
     global _latest_traffic_display_frame, _latest_traffic_display_state
-    sm = ui_state.sm
-    if not sm.alive["longitudinalPlanSP"] or not sm.valid["longitudinalPlanSP"]:
-      self.state = TrafficSignalDisplayState()
-      _latest_traffic_display_state = self.state
-      _latest_traffic_display_frame = gui_app.frame
-      return
     # updated is a one-poll pulse, not an acknowledgement by this renderer.
-    # A skipped HUD frame must not leave an older lamp/control outline cached
+    # A skipped tile poll must not leave an older lamp/control outline cached
     # after a newer healthy plan has already arrived.
-    self.state = TrafficSignalDisplayState.from_plan(
+    state = TrafficSignalDisplayState.from_plan(
       sm["longitudinalPlanSP"].teslaTrafficControl,
-      valid=bool(sm.valid["longitudinalPlanSP"]),
+      valid=bool(sm.alive["longitudinalPlanSP"] and sm.valid["longitudinalPlanSP"]),
     )
-    _latest_traffic_display_state = self.state
+    _latest_traffic_display_state = state
     _latest_traffic_display_frame = gui_app.frame
+    # Include the flash half-cycle in the cache key so an unchanged plan still animates.
+    return state, state.flashing and int(gui_app.frame / max(1, gui_app.target_fps // 2)) % 2 == 0
 
-  def _render(self, rect: rl.Rectangle) -> None:
-    if not self.state.visible:
+  def draw(self, rect: rl.Rectangle, size: str, value) -> None:
+    self.face(rect)
+    state, flash_on = value
+    if not state.visible:
       return
 
-    icon = traffic_card_rect(rect, self.compact)
-    scale = icon.width / TRAFFIC_CARD_WIDTH
+    scale = min((rect.width - 32) / TRAFFIC_CARD_WIDTH,
+                (rect.height - self.title_size(rect) - 42) / TRAFFIC_CARD_HEIGHT)
+    icon = rl.Rectangle(rect.x + (rect.width - TRAFFIC_CARD_WIDTH * scale) / 2, rect.y + 14,
+                        TRAFFIC_CARD_WIDTH * scale, TRAFFIC_CARD_HEIGHT * scale)
     housing = rl.Rectangle(icon.x + 12 * scale, icon.y + 12 * scale,
                            TRAFFIC_LIGHT_HOUSING_WIDTH * scale, TRAFFIC_LIGHT_HOUSING_HEIGHT * scale)
-    highlighted = traffic_control_highlighted(self.state)
+    highlighted = traffic_control_highlighted(state)
     if highlighted:
       rl.draw_rectangle_rounded(icon, 0.6, 24, rl.Color(CONTROL_OUTLINE.r, CONTROL_OUTLINE.g, CONTROL_OUTLINE.b, 38))
     rl.draw_rectangle_rounded(housing, 0.6, 24, rl.Color(12, 15, 19, 210))
@@ -146,9 +132,9 @@ class TrafficControlRenderer(HudOverlay):
 
     for index, (color, light) in enumerate(zip((RED, AMBER, GREEN), (1, 3, 2), strict=True)):
       center = rl.Vector2(housing.x + housing.width / 2, housing.y + housing.height * (2 * index + 1) / 6)
-      active = self.state.has_signal and self.state.light_state == light
-      if self.state.has_signal and self.state.flashing and light == 2:
-        active = int(gui_app.frame / max(1, gui_app.target_fps // 2)) % 2 == 0
+      active = state.has_signal and state.light_state == light
+      if state.has_signal and state.flashing and light == 2:
+        active = flash_on
       if active:
         rl.draw_circle_v(center, (TRAFFIC_LIGHT_RADIUS + 6) * scale, rl.Color(color.r, color.g, color.b, 35))
       rl.draw_circle_v(center, TRAFFIC_LIGHT_RADIUS * scale, color if active else LAMP_OFF)

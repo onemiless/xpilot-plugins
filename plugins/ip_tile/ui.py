@@ -16,7 +16,7 @@ def ip_address() -> str:
 
 
 class IpTile(Tile):
-  SPEC = TileSpec("ip", "IP", sizes=("medium", "wide", "small"), hz=0.2, order=80)
+  SPEC = TileSpec("ip", "IP", sizes=("medium", "wide", "small"), show="always", hz=0.2, order=80)
 
   def state(self, sm):
     return ip_address(), str(sm["deviceState"].networkType).replace("NetworkType.", "")

@@ -7,7 +7,7 @@ from openpilot.tesla.ui.tiles import TileSpec
 
 
 class MapTile(Tile):
-  SPEC = TileSpec("map", "Map", sizes=("small", "medium", "wide"), services=("liveMapDataSP", "navInstruction"), hz=2, order=60)
+  SPEC = TileSpec("map", "Map", sizes=("small", "medium", "wide"), services=("liveMapDataSP", "navInstruction"), show="always", hz=2, order=60)
 
   def state(self, sm):
     lines = []

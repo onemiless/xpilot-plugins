@@ -6,7 +6,7 @@ from openpilot.tesla.ui.tiles import TileSpec
 
 
 class LeadCardTile(Tile):
-  SPEC = TileSpec("lead_card", "Lead", sizes=("small", "medium", "wide"), hz=5, order=30)
+  SPEC = TileSpec("lead_card", "Lead", sizes=("small", "medium", "wide"), show="always", hz=5, order=30)
 
   def state(self, sm):
     lead = sm['radarState'].leadOne

@@ -1,7 +1,7 @@
 {
   "id": "map_tile",
   "name": "Map Tile",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "api": 1,
   "category": "ui",
   "entry": "plugin:MapTile",

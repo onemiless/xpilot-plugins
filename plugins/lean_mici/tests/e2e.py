@@ -18,6 +18,7 @@ from pathlib import Path
 import struct
 import sys
 import tempfile
+import threading
 from unittest.mock import patch
 
 import numpy as np
@@ -49,13 +50,14 @@ def tcp_peer(path, control):
   def run_worker():
     with (patch('plugins.lean_mici.camera.Camera', return_value=Capture()),
           patch.object(worker.resource, 'setrlimit'),
+          patch.object(worker.signal, 'signal'),
           patch.object(worker, 'scope', return_value=('127.0.0.1', None)),
           patch.object(worker, 'Beacon', side_effect=lambda address: contextlib.nullcontext()),
           patch.object(worker, 'discover', return_value=[endpoint]),
           patch.object(worker, 'now', side_effect=lambda: META.unpack(os.pread(fd, META.size, 0))[5] + 20_000_000)):
       worker.main(path)
-  process = multiprocessing.get_context('fork').Process(target=run_worker)
-  process.start()
+  thread = threading.Thread(target=run_worker, daemon=True)
+  thread.start()
   try:
     conn, _ = server.accept()
     conn.settimeout(2)
@@ -92,11 +94,6 @@ def tcp_peer(path, control):
         else:
           raise AssertionError('worker did not commit REPLY')
   finally:
-    process.terminate()
-    process.join(2)
-    if process.is_alive():
-      process.kill()
-      process.join()
     server.close()
     os.close(fd)
 
@@ -214,6 +211,9 @@ def main():
         finally:
           peer.terminate()
           peer.join(2)
+          if peer.is_alive():
+            peer.kill()
+            peer.join()
           source.close()
       # Frozen/killed child cannot hold up the host; base inference failures propagate.
       source = ModelSource(tmp, profile.decode, h.admit)

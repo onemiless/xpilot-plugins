@@ -57,10 +57,14 @@ change or X-40 branch was needed.
   staggered dual HEVC.
   Latency measures replay EOF to reply, excluding offline archive encoding.
 - EOF→reply p50 **32.2187ms**, p95 **40.4523ms**, p99 **62.3921ms**;
-  **98.2258%** arrived within 45ms. These are Mac replay measurements, not C3XL.
+  **98.2258%** arrived within 45ms. A second committed-driver 620-frame run measured
+  31.7117/40.4725/73.3464ms and 96.9355% within 45ms, with the same numeric
+  rejection. These are Mac replay measurements, not C3XL.
 - Beacon withdrawal stopped the server automatically; subsequent read-only
-  snapshots showed no NPU process or NpuService. No taps during/after the run,
-  no ADB force-stop.
+  snapshots showed no NPU process or NpuService. A passive-only repeat observed
+  NPU exit **10.805s** after withdrawal. Active TCP polling was removed from
+  the stop test because it creates new clients; its 30s timeout is retained
+  in the evidence. No taps during/after the run, no ADB force-stop.
 - All **1,280,920 decoded values** matched the pinned upstream decoder exactly.
   This proves codec/head parsing, not equivalence of different model weights.
 - Real stock model SHA256 `65a08adc31d5c456219687d99b7bf5e44d61dae2d49ea67850e76105c7248cce`

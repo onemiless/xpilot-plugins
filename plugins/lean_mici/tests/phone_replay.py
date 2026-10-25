@@ -9,6 +9,7 @@ import json
 from pathlib import Path
 import socket
 import struct
+import subprocess
 import sys
 import time
 import types
@@ -116,12 +117,14 @@ try:
    result['beacon_requests']=beacon.requests
   # No taps or force-stop after withdrawing the beacon.
   stopped=False
-  for attempt in range(30):
-   try:
-    with socket.create_connection(peers[0],timeout=.3): pass
-   except OSError:
+  withdrawn=time.monotonic()
+  for attempt in range(60):
+   state=subprocess.run(['adb','-s','3B162S00PHS00000','shell','pidof','com.chipmunk.inference:npu'],capture_output=True,text=True)
+   if not state.stdout.strip():
     stopped=True;break
    time.sleep(1)
+  result['auto_stop_observed_s']=time.monotonic()-withdrawn
+  result['stop_observation']='passive ADB process identity; no new TCP client during withdrawal'
   result['server_auto_stopped']=stopped
   result['model_selection']=json.loads((a.output.parent/'model-selection.json').read_text())
  # Load the real stock ModelState; only Params hardware boundary is isolated on this Mac.

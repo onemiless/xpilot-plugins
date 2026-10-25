@@ -118,7 +118,7 @@
       "author": "xpilot",
       "description": "BGM1 v4 phone inference with per-frame local stock fallback, Python VisionIPC/HEVC and no CAN sends.",
       "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/lean_mici-0.2.0.tar.gz",
-      "sha256": "851cee5403286e3780947aa1195b0c205ac1349cfbe134feb04dba38b11d3a33",
+      "sha256": "2ed23d1cad86c3bfed6d9a46fb1fd634bc61f44791de5b5c9d3dbcddb5f6cb60",
       "platform": null
     },
     {

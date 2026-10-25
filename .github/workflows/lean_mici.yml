@@ -27,15 +27,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: pip install pyzmq numpy pycapnp pytest zstandard setproctitle cython scons setuptools cffi tqdm jeepney
-      - name: Build msgq and native warp seam
+      - run: pip install pyzmq numpy pycapnp pytest zstandard setproctitle cython scons setuptools cffi tqdm jeepney av
+      - name: Build system IPC bindings
         run: |
           (cd system/msgq_repo && scons -j4 msgq/ipc_pyx.so msgq/visionipc/visionipc_pyx.so)
-          python plugins/lean_mici/build_native.py --host --output /tmp/liblean_mici-host.so
-      - name: Reproducible package and native ABI
+      - name: Reproducible package and Python v4 camera path
         run: |
           python tools/build_index.py --check
-          python plugins/lean_mici/tests/native_e2e.py --library /tmp/liblean_mici-host.so --output /tmp/x39-native
+          PYTHONPATH=$X:$X/tinygrad_repo:$X/msgq_repo:$X/opendbc_repo python plugins/lean_mici/tests/v4_e2e.py --output /tmp/x39-camera
       - name: Store, runner, TCP peer, host publication and faults
         run: PYTHONPATH=$X:$X/tinygrad_repo:$X/msgq_repo:$X/opendbc_repo python plugins/lean_mici/tests/e2e.py --system $X --output /tmp/x39-host
       - name: Record source identities
@@ -51,4 +50,4 @@ jobs:
           name: lean-mici-host-evidence
           path: |
             /tmp/x39-host
-            /tmp/x39-native
+            /tmp/x39-camera

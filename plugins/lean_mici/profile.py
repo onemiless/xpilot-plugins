@@ -1,5 +1,5 @@
 """L@617e00670a123da12809a65796985aae05710a08 common-model layout.
-Walnut V3 qualification is deliberately closed until same-input phone proof exists.
+v4 retains these 2066 common-model heads; navigation is not consumed.
 """
 import numpy as np
 from openpilot.selfdrive.modeld.parse_model_outputs import Parser
@@ -21,5 +21,16 @@ def decode(raw):
 
 
 def admit(local, remote):
-  # shortcut: Walnut V3 numeric/control qualification is missing, open only after same-input and device gates pass.
-  return False
+  # Compare near-term motion, not distant alternative trajectories from different models.
+  limits = {'plan': 2., 'lead': 10., 'pose': 5.}
+  for key, limit in limits.items():
+    a, b = local[key], remote[key]
+    if key == 'plan':
+      a, b = a[:, :6], b[:, :6]
+    if not np.isfinite(b).all() or np.max(np.abs(b - a)) > limit:
+      return False
+  if np.max(np.abs(remote['action'])) > 5.:
+    return False
+  if 'action' in local and np.max(np.abs(remote['action'] - local['action'][:, :2])) > .5:
+    return False
+  return True

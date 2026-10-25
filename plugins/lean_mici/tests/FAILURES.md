@@ -17,3 +17,19 @@ F13 trajectory/lead/pose/action discontinuity: bounded admission plus device/con
 Host tests replace QCOM inference/VisionIPC and stock readiness only. A synthetic peer
 is not Walnut qualification. No test may set a production profile qualification flag.
 Every E2E directory contains result.json, frames.csv, wire logs and SHA256SUMS.
+
+## FIX round 1 (before v4/camera implementation)
+- Validate full v4 HELLO=48B and REPLY=8480B/8440 payload, all 2066 outputs,
+  echoed frame/EOF and flags; preserve full NavExt in wire evidence. Serialize an
+  explicit S1 v2 envelope from known fields; never guess/pad a model layout.
+- Python VisionIPC must match both IDs/EOF, copy before the next receive, honour
+  real width/height/stride/UV offset and reject uncalibrated transforms. Verify
+  padded geometry against the system warp and decode both HEVC streams.
+- Encoder gap/reconnect requires fresh codec state, dual IDR and a new epoch;
+  ordinary GOPs must not continuously reset the phone history.
+- Runtime admission compares finite common heads and actual bounded source
+  discontinuities; extreme plan/lead/pose/action candidates still fail closed.
+- Real-phone replay: >=600 frames, all raw FRAME/REPLY and telemetry, same decoded
+  camera bytes and desire/traffic/action_t for stock inference. Report head errors
+  and acceptance honestly; different model weights are not numeric equivalence.
+- Withdraw beacon, wait without taps/force-stop, then prove server and NPU stop.

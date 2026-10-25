@@ -1,8 +1,6 @@
-"""Optional child: native camera/warp/HEVC, bounded TCP and private S1 mailbox."""
-import ctypes
+"""Optional child: Python VisionIPC/warp and existing HEVC, bounded TCP and private S1 mailbox."""
 import fcntl
 import os
-from pathlib import Path
 import resource
 import signal
 import socket
@@ -11,7 +9,7 @@ import time
 from jeepney.wrappers import DBusErrorResponse
 
 from .network import Beacon, discover, scope
-from .wire import frame, hello, reply, receive
+from .wire import frame, hello, reply, receive, to_mailbox, receive_reply
 
 META = struct.Struct('<4sIQIIQQ30f')
 ENVELOPE = struct.Struct('<QQQII')
@@ -50,15 +48,12 @@ def metadata(fd):
 
 
 def main(path):
+  from .camera import Camera
   # A stuck encoder/network stack stays optional. The parent kills this whole child offroad.
   signal.signal(signal.SIGTERM, signal.SIG_DFL)
-  resource.setrlimit(resource.RLIMIT_AS, (512 * 1024 * 1024, 512 * 1024 * 1024))
+  resource.setrlimit(resource.RLIMIT_AS, (1024 * 1024 * 1024, 1024 * 1024 * 1024))
   resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
-  lib = ctypes.CDLL(str(Path(__file__).with_name('native') / 'liblean_mici.so'))
-  if lib.lean_abi() != 1 or lib.lean_camera_available() != 1:
-    raise RuntimeError('native camera bridge unavailable')
-  lib.lean_capture.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_void_p, ctypes.c_int]
-  output = ctypes.create_string_buffer(2 * 1024 * 1024 + 8)
+  camera = Camera()
   fd = os.open(path, os.O_RDWR)
   epoch = 0
   try:
@@ -75,6 +70,7 @@ def main(path):
               with socket.create_connection(peers[0], timeout=1) as conn:
                 conn.settimeout(.2)
                 hello(receive(conn, 48))
+                first_eof = None
                 epoch += 1
                 last = None
                 paired = 0
@@ -89,29 +85,29 @@ def main(path):
                     epoch += 1
                     paired = 0
                   last = meta[3]
-                  rawmeta = META.pack(*meta)
-                  count = lib.lean_capture(rawmeta, int(reset), output, len(output))
-                  if count <= 0:
+                  encoded = camera.capture(meta, reset)
+                  if encoded is None:
                     reset = True
                     continue
-                  flags, road_size = struct.unpack_from('<II', output)
-                  road = output.raw[8:8 + road_size]
-                  wide = output.raw[8 + road_size:count]
+                  flags, road, wide = encoded
                   if reset and flags != 3:
                     continue
                   if flags == 3:
                     epoch += 1
                     paired = 3
                   reset = False
-                  first, second = frame(meta, road, wide, flags)
+                  if first_eof is None:
+                    first_eof = meta[5]
+                  frame_idx = (meta[5] - first_eof + 25_000_000) // 50_000_000
+                  first, second = frame(meta, road, wide, flags, frame_idx)
                   conn.sendall(first)
                   conn.sendall(second)
-                  data = receive(conn, 8320)
+                  data = receive_reply(conn)
                   arrival = now()
                   index, eof, _ = reply(data)
-                  if (index, eof) != (meta[3], meta[5]):
+                  if (index, eof) != (frame_idx, meta[5]):
                     raise ValueError('REPLY does not echo sent frame/EOF')
-                  publish(fd, meta[2], epoch, arrival, paired, data)
+                  publish(fd, meta[2], epoch, arrival, paired, to_mailbox(data, meta[3]))
             except OSError:
               time.sleep(.1)
       except (OSError, DBusErrorResponse):

@@ -23,20 +23,20 @@ jobs:
         repository: onemiless/xpilot
         ref: xpilot
         path: xpilot
-    - run: git -C xpilot submodule update --init --depth 1 msgq_repo
+    - run: git -C xpilot submodule update --init --depth 1 msgq_repo tinygrad_repo opendbc_repo
     - uses: actions/setup-python@v5
       with:
         python-version: '3.12'
-    - run: pip install pyzmq numpy pycapnp pytest zstandard setproctitle cython scons setuptools
+    - run: pip install pyzmq numpy pycapnp pytest zstandard setproctitle cython scons setuptools cffi tqdm jeepney av
     - name: Build msgq
       working-directory: xpilot/msgq_repo
-      run: scons -j4 msgq/ipc_pyx.so
+      run: scons -j4 msgq/ipc_pyx.so msgq/visionipc/visionipc_pyx.so
     - name: Classifier failure modes
       run: python3 tools/pr_risk_check.py > /tmp/pr_risk_check.json
     - name: Archives and index match the source
       run: python3 tools/build_index.py --check
     - name: Runtime rules match the host and reference tables
-      run: PYTHONPATH=$X:$X/msgq_repo:$X/opendbc_repo python3 tools/runtime_rules_check.py --output /tmp/runtime-rules
+      run: PYTHONPATH=$X:$X/tinygrad_repo:$X/msgq_repo:$X/opendbc_repo python3 tools/runtime_rules_check.py --output /tmp/runtime-rules
     - uses: actions/upload-artifact@v4
       if: always()
       with:
@@ -44,10 +44,10 @@ jobs:
         path: /tmp/runtime-rules
     - name: Plugin tests
       working-directory: plugins
-      run: PYTHONPATH=$X:$X/msgq_repo:$X/opendbc_repo python3 -m pytest -q -p no:cacheprovider .
+      run: PYTHONPATH=$X:$X/tinygrad_repo:$X/msgq_repo:$X/opendbc_repo python3 -m pytest -q -p no:cacheprovider .
     - name: Store end to end (install, discover, enable)
       run: |
-        PYTHONPATH=$X/msgq_repo python3 - --repo . <<'PY'
+        PYTHONPATH=$X:$X/tinygrad_repo:$X/msgq_repo:$X/opendbc_repo python3 - --repo . <<'PY'
         import importlib.util, os, sys
         spec = importlib.util.spec_from_file_location('catalog', os.environ['X'] + '/tools/sp_tesla_e2e/store_e2e.py')
         catalog = importlib.util.module_from_spec(spec)

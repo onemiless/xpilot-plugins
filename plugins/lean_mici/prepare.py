@@ -1,7 +1,5 @@
 """Installation never waits for the phone or downloads a model."""
-import ctypes
 import pickle
-from pathlib import Path
 
 
 def ready():
@@ -19,5 +17,8 @@ def ready():
     with (MODELS_DIR / f'driving_warp_{width}x{height}_tinygrad.pkl').open('rb') as f:
       if 'run' not in pickle.load(f):
         raise ValueError('stock camera warp incomplete')
-  lib = ctypes.CDLL(str(Path(__file__).with_name('native') / 'liblean_mici.so'))
-  return lib.lean_abi() == 1 and lib.lean_camera_available() == 1
+  from .camera import Encoder
+  import numpy as np
+  encoder = Encoder()
+  data, keyframe = encoder.encode(np.zeros((384, 512), dtype=np.uint8), reset=True)
+  return bool(data) and keyframe

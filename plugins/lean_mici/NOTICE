@@ -1,9 +1,7 @@
-warp_pack.cpp / warp_pack.h derive from lochuan/lean-mici
-commit 617e00670a123da12809a65796985aae05710a08.
-Original blob IDs: 4ce4271c12299c198d614474e1a2dfb5b3ccc61c,
-74605f47566ba1103e1346c5503c792671c6810b.
-The source-camera defaults were removed; production geometry is supplied by xpilot.
-Owner confirmed licence authorization. Models are not included or redistributed.
+The common-model head layout/decoder contract derives from lochuan/lean-mici
+commit 617e00670a123da12809a65796985aae05710a08. v4 framing was checked against
+the installed Chipmunk 0.17-os library and real phone wire. Owner confirmed
+licence authorization. Models and native binaries are not redistributed.
 
 Copyright (c) 2018, Comma.ai, Inc.
 

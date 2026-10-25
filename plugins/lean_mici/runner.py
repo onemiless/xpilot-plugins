@@ -26,7 +26,7 @@ def status(directory, source, stop):
     state = ('Phone active' if source.selected else 'Phone warming' if source.fresh else
              'Local fallback' if source.epoch or source.locked else 'Local ready')
     path = directory / 'status.tmp'
-    path.write_text(json.dumps({'state': state, 'version': '0.1.0', 'updated_at': time.time()}))
+    path.write_text(json.dumps({'state': state, 'version': '0.2.0', 'updated_at': time.time()}))
     os.replace(path, directory / 'status.json')
     stop.wait(1)
 

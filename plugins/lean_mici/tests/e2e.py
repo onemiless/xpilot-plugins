@@ -5,7 +5,6 @@ Failure cases were fixed in FAILURES.md before implementation. Run with system o
 import argparse
 import csv
 import contextlib
-import ctypes
 import fcntl
 import socket
 import signal
@@ -44,20 +43,11 @@ def tcp_peer(path, control):
   server.listen(1)
   endpoint = server.getsockname()
   class Capture:
-    argtypes = None
-    def __call__(self, metadata, reset, output, capacity):
-      # Only the QCOM camera/encoder seam is synthetic; production worker does TCP/IPC.
-      data = struct.pack('<II', 3 if reset else 0, 6) + bytes.fromhex('000000012601') * 2
-      ctypes.memmove(output, data, len(data))
-      return len(data)
-  class Library:
-    lean_capture = Capture()
-    def lean_abi(self):
-      return 1
-    def lean_camera_available(self):
-      return 1
+    def capture(self, meta, reset):
+      payload = bytes.fromhex('000000012601')
+      return 3 if reset else 0, payload, payload
   def run_worker():
-    with (patch.object(worker.ctypes, 'CDLL', return_value=Library()),
+    with (patch('plugins.lean_mici.camera.Camera', return_value=Capture()),
           patch.object(worker.resource, 'setrlimit'),
           patch.object(worker, 'scope', return_value=('127.0.0.1', None)),
           patch.object(worker, 'Beacon', side_effect=lambda address: contextlib.nullcontext()),
@@ -70,23 +60,23 @@ def tcp_peer(path, control):
     conn, _ = server.accept()
     conn.settimeout(2)
     with conn:
-      hello = wire.HEADER.pack(b'BGM1', 2, 1, 0, 0, 16) + struct.pack('<QII', 12, 1024 * 1024, 0) + bytes(16)
+      hello = wire.HEADER.pack(b'BGM1', 4, 1, 0, 0, 16) + struct.pack('<QII', 12, 1024 * 1024, 0) + bytes(16)
       conn.sendall(hello)
       while True:
         scenario, epoch, now, expected = control.recv()
-        data = wire.receive(conn, 160)
+        data = wire.receive(conn, 152)
         magic, version, kind, flags, frame, road_size = wire.HEADER.unpack_from(data)
-        assert (magic, version, kind) == (b'BGM1', 2, 0x10)
+        assert (magic, version, kind) == (b'BGM1', 4, 0x10)
         road = wire.receive(conn, road_size)
         wide_size = struct.unpack('<I', wire.receive(conn, 4))[0]
         wide = wire.receive(conn, wide_size + 16)
         meta = os.pread(fd, META.size, 0)
         values = META.unpack(meta)
-        assert frame == values[3]
+        assert frame == values[3] - 1
         assert struct.unpack_from('<Q', data, 16)[0] == values[5]
         np.testing.assert_array_equal(np.frombuffer(data, '<f4', 12, 24), expected)
-        reply = struct.pack('<4sBBHIIQ', b'BGM1', 2, 0x11, 0, frame, 8280, values[5])
-        reply += h.raw_output(.1).tobytes() + bytes(32)
+        reply = struct.pack('<4sBBHIIQ', b'BGM1', 4, 0x11, 0, frame, 8440, values[5])
+        reply += h.raw_output(.1).tobytes() + bytes(192)
         # Exercise arbitrary fragmentation, including across the wire header.
         for start in range(0, len(reply), 137):
           conn.sendall(reply[start:start + 137])
@@ -96,7 +86,7 @@ def tcp_peer(path, control):
           envelope = os.pread(fd, ENVELOPE.size, OFFSET)
           fcntl.lockf(fd, fcntl.LOCK_UN, SIZE - OFFSET, OFFSET)
           if ENVELOPE.unpack(envelope)[-1]:
-            control.send((envelope + reply, meta))
+            control.send((envelope + wire.to_mailbox(reply, values[3]), meta))
             break
           time.sleep(.001)
         else:
@@ -119,8 +109,8 @@ def main():
   os.environ['X39_SYSTEM'] = str(args.system.resolve())
   out = args.output.resolve()
   out.mkdir(parents=True, exist_ok=False)
-  result = {'pass': False, 'limits': ['synthetic QCOM inference/VisionIPC/native capture/local preparation; arm64 platform overridden for Mac store fixture',
-                                    'no Walnut profile qualification or device proof']}
+  result = {'pass': False, 'limits': ['synthetic QCOM inference/VisionIPC camera capture/local preparation',
+                                    'real phone/stock qualification runs separately; no C3XL device proof']}
   rows = []
   try:
     h = load(args.system / 'tools/sp_tesla_e2e/model_source_e2e.py', 's1_replay')
@@ -143,10 +133,14 @@ def main():
         raise AssertionError('wrong raw shape accepted')
       except ValueError:
         pass
-    assert profile.admit(expected, actual) is False, 'unqualified Walnut must remain local'
-    good = struct.pack('<4sBBHIIQ', b'BGM1', 2, 0x11, 0, 1, 8280, 123) + raw.tobytes() + bytes(32)
-    assert len(good) == 8320 and wire.reply(good)[0] == 1
-    for bad in (good[:-1], good + b'\0', good[:4] + b'\4' + good[5:], good[:6] + b'\4\0' + good[8:]):
+    assert profile.admit(expected, actual) is True
+    for key in ('plan','lead','pose','action'):
+      jumped = {k:v.copy() for k,v in actual.items()}
+      jumped[key] += 100
+      assert profile.admit(expected, jumped) is False
+    good = struct.pack('<4sBBHIIQ', b'BGM1', 4, 0x11, 0, 1, 8440, 123) + raw.tobytes() + bytes(192)
+    assert len(good) == 8480 and wire.reply(good)[0] == 1
+    for bad in (good[:-1], good + b'\0', good[:4] + b'\2' + good[5:], good[:6] + b'\4\0' + good[8:]):
       try:
         wire.reply(bad)
         raise AssertionError('bad wire accepted')
@@ -171,14 +165,12 @@ def main():
       real_run = store.subprocess.run
       def probe(command, **kw):
         command = list(command)
-        command[2] = 'import sys, types\nsys.modules["openpilot.common.params"] = types.SimpleNamespace(Params=type("Params", (), {}), UnknownKeyName=KeyError)\nfrom unittest.mock import patch\nfrom openpilot.tesla import manifest as mf\nmf.host_platform = lambda: {"machine":"aarch64","python":"cpython-312"}\nmf.HOST_CAPS["native"] = mf.host_platform()\nfrom openpilot.tesla import plugins\nwith patch("xpilot_ext.lean_mici.plugin.ready", return_value=True):\n' + ''.join('  ' + line + '\n' for line in command[2].splitlines())
+        command[2] = 'import sys, types\nsys.modules["openpilot.common.params"] = types.SimpleNamespace(Params=type("Params", (), {}), UnknownKeyName=KeyError)\nfrom unittest.mock import patch\nfrom openpilot.tesla import plugins\nwith patch("xpilot_ext.lean_mici.plugin.ready", return_value=True):\n' + ''.join('  ' + line + '\n' for line in command[2].splitlines())
         return real_run(command, **kw)
-      archive = (root / 'dist/lean_mici-0.1.0.tar.gz').read_bytes()
-      entry = store.IndexEntry('lean_mici', 'lean mici', '0.1.0', 1, 'perception_model', 'xpilot', '', 'local',
+      archive = (root / 'dist/lean_mici-0.2.0.tar.gz').read_bytes()
+      entry = store.IndexEntry('lean_mici', 'lean mici', '0.2.0', 1, 'perception_model', 'xpilot', '', 'local',
                                hashlib.sha256(archive).hexdigest(), installable=True)
-      with (patch.object(mf, 'host_platform', return_value={'machine': 'aarch64', 'python': 'cpython-312'}),
-            patch.object(mf, 'HOST_CAPS', mf.HOST_CAPS | {'native': {'machine': 'aarch64', 'python': 'cpython-312'}}),
-            patch.object(mf, 'INSTALL_DIR', installed), patch.object(store, '_get', return_value=archive),
+      with (patch.object(mf, 'INSTALL_DIR', installed), patch.object(store, '_get', return_value=archive),
             patch.object(store.subprocess, 'run', probe), patch('openpilot.common.params.Params', return_value=params)):
         error = store.install(entry, activate=True)
         assert error is None, error
@@ -257,7 +249,7 @@ def main():
         assert not list(Path(tmp).glob('model-source-*'))
     result.update({'pass': True, 'frames': len(rows), 'store_install_enable_discover': True,
                    'rollback': True, 'old_host_rejected': True, 'runner_cleanup': True,
-                   'synthetic_decoder_match': True, 'production_profile_admission': False, 'tcp_worker_pipeline': True, 'frozen_crashed_fallback': True, 'base_failures_propagate': True})
+                   'synthetic_decoder_match': True, 'production_profile_admission': True, 'tcp_worker_pipeline': True, 'frozen_crashed_fallback': True, 'base_failures_propagate': True})
   except BaseException as error:
     result['error'] = repr(error)
     raise

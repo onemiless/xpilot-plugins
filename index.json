@@ -112,17 +112,14 @@
     {
       "id": "lean_mici",
       "name": "lean mici phone inference",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "api": 1,
       "category": "perception_model",
       "author": "xpilot",
-      "description": "Optional BGM1 v2 phone source with per-frame local stock fallback. Candidate: Walnut profile and C3XL device qualification pending.",
-      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/lean_mici-0.1.0.tar.gz",
-      "sha256": "aee6ee6b33bfe67fb9a833222a52fe7be2661129c0f76f02ca9bed8f04e1ec77",
-      "platform": {
-        "machine": "aarch64",
-        "python": "cpython-312"
-      }
+      "description": "BGM1 v4 phone inference with per-frame local stock fallback, Python VisionIPC/HEVC and no CAN sends.",
+      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/lean_mici-0.2.0.tar.gz",
+      "sha256": "851cee5403286e3780947aa1195b0c205ac1349cfbe134feb04dba38b11d3a33",
+      "platform": null
     },
     {
       "id": "map_tile",

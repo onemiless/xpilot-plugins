@@ -1,17 +1,24 @@
 {
   "id": "lean_mici",
   "name": "lean mici phone inference",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "api": 1,
   "use": "both",
   "category": "perception_model",
   "entry": "plugin:LeanMici",
   "author": "xpilot",
-  "description": "Optional BGM1 v2 phone source with per-frame local stock fallback. Candidate: Walnut profile and C3XL device qualification pending.",
+  "description": "BGM1 v4 phone inference with per-frame local stock fallback, Python VisionIPC/HEVC and no CAN sends.",
   "priority": 100,
   "enable_param": "ExtLeanMici",
-  "claims": ["role:perception.model", "process:lean_modeld"],
+  "claims": [
+    "role:perception.model",
+    "process:lean_modeld"
+  ],
   "rules": [],
-  "platform": {"machine": "aarch64", "python": "cpython-312"},
-  "params": {"ExtLeanMici": {"type": "BOOL", "default": "0"}}
+  "params": {
+    "ExtLeanMici": {
+      "type": "BOOL",
+      "default": "0"
+    }
+  }
 }

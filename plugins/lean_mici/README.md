@@ -25,10 +25,9 @@ C3XL sender. Rebuild the full DSO and validate it before a store release.
 ## Host contracts
 
 - S1: system `057a6f76b8c8001301a6136c6e7db3efa8e50f7d`.
-- S2 initially reviewed at `43ff22ab27`; rechecked and host replay updated to
-  `1736882a681a42b23d66e2a220f96327a5a5d6bf` (journal/recovery fixes). Still in review.
-- CI overlays only S2 `store.py` and `ui/offroad.py` onto S1 in its disposable
-  checkout. After S2 lands, pin the workflow to `xpilot` and remove that overlay.
+- S2 merged to system `xpilot` at `f2000d3ec6dee5f42d02d01384851febca60ac03`.
+- CI checks out system `xpilot` directly and records the resolved system HEAD.
+  No task-branch pin or source overlay remains.
 - Entry import requires both S1 and S2 before taking the model role. Preparation
   reads the stock model/warps and checks native ABI; it never waits for a phone.
 - Runner calls `run_with_model_source(ModelSource(...))`. Network, discovery and

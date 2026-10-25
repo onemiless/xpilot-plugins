@@ -19,23 +19,18 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: onemiless/xpilot
-          ref: 057a6f76b8c8001301a6136c6e7db3efa8e50f7d
+          ref: xpilot
           path: system
           lfs: false
-      - name: S1 plus the reviewed S2 transaction
-        # Once S2 lands, use xpilot directly and remove this temporary overlay.
-        run: |
-          git -C system fetch --no-tags origin 1736882a681a42b23d66e2a220f96327a5a5d6bf
-          git -C system show FETCH_HEAD:openpilot/tesla/store.py > system/openpilot/tesla/store.py
-          git -C system show FETCH_HEAD:openpilot/tesla/ui/offroad.py > system/openpilot/tesla/ui/offroad.py
-          git -C system submodule update --init --depth 1 msgq_repo tinygrad_repo opendbc_repo
+      - name: Matching system dependencies
+        run: git -C system submodule update --init --depth 1 msgq_repo tinygrad_repo opendbc_repo
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - run: pip install pyzmq numpy pycapnp pytest zstandard setproctitle cython scons setuptools cffi tqdm jeepney
       - name: Build msgq and native warp seam
         run: |
-          (cd system/msgq_repo && scons -j4 msgq/ipc_pyx.so)
+          (cd system/msgq_repo && scons -j4 msgq/ipc_pyx.so msgq/visionipc/visionipc_pyx.so)
           python plugins/lean_mici/build_native.py --host --output /tmp/liblean_mici-host.so
       - name: Reproducible package and native ABI
         run: |
@@ -48,8 +43,7 @@ jobs:
         run: |
           mkdir -p /tmp/x39-host
           git rev-parse HEAD > /tmp/x39-host/plugin-head.txt
-          git -C system rev-parse HEAD > /tmp/x39-host/system-s1.txt
-          echo 1736882a681a42b23d66e2a220f96327a5a5d6bf > /tmp/x39-host/system-s2.txt
+          git -C system rev-parse HEAD > /tmp/x39-host/system-head.txt
           (cd /tmp/x39-host && find . -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS)
       - uses: actions/upload-artifact@v4
         if: always()

@@ -118,7 +118,7 @@
       "author": "xpilot",
       "description": "Optional BGM1 v2 phone source with per-frame local stock fallback. Candidate: Walnut profile and C3XL device qualification pending.",
       "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/lean_mici-0.1.0.tar.gz",
-      "sha256": "92cbfe61e8154b2c2097778504463cb61f7edaa3cdb94b629e50e49f71cac325",
+      "sha256": "aee6ee6b33bfe67fb9a833222a52fe7be2661129c0f76f02ca9bed8f04e1ec77",
       "platform": {
         "machine": "aarch64",
         "python": "cpython-312"

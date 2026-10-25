@@ -118,11 +118,19 @@ try:
   # No taps or force-stop after withdrawing the beacon.
   stopped=False
   withdrawn=time.monotonic()
+  absent_since=None;restarts=0
   for attempt in range(60):
    state=subprocess.run(['adb','-s','3B162S00PHS00000','shell','pidof','com.chipmunk.inference:npu'],capture_output=True,text=True)
    if not state.stdout.strip():
-    stopped=True;break
+    if absent_since is None:absent_since=time.monotonic()
+    if time.monotonic()-absent_since>=10:
+     stopped=True;break
+   else:
+    if absent_since is not None:restarts+=1
+    absent_since=None
    time.sleep(1)
+  result['auto_stop_restarts']=restarts
+  result['auto_stop_absence_required_s']=10
   result['auto_stop_observed_s']=time.monotonic()-withdrawn
   result['stop_observation']='passive ADB process identity; no new TCP client during withdrawal'
   result['server_auto_stopped']=stopped

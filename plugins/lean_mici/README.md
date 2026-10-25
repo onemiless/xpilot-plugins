@@ -3,9 +3,8 @@
 Default off; claims only `role:perception.model` and `process:lean_modeld`;
 `rules: []`; no CAN sender. No models or native binaries are redistributed.
 
-This candidate now runs the real BGM1 v4 phone path. Its **numeric release gate
-remains blocked**: Walnut V3 did not match the system stock model on the same
-620 decoded camera pairs. Do not treat working transport or green host CI as
+This candidate now runs the real BGM1 v4 phone path. Its **release gate remains blocked**: Walnut V3 did not match the system stock model on the same
+620 decoded camera pairs, and stable phone auto-stop is not proven. Do not treat working transport or green host CI as
 phone model qualification.
 
 ## Implementation
@@ -62,9 +61,13 @@ change or X-40 branch was needed.
   rejection. These are Mac replay measurements, not C3XL.
 - Beacon withdrawal stopped the server automatically; subsequent read-only
   snapshots showed no NPU process or NpuService. A passive-only repeat observed
-  NPU exit **10.805s** after withdrawal. Active TCP polling was removed from
-  the stop test because it creates new clients; its 30s timeout is retained
-  in the evidence. No taps during/after the run, no ADB force-stop.
+  NPU exit **10.805s** after withdrawal, but a later passive snapshot again
+  found NpuService and a 7070 listener without a task beacon. This is a
+  transient stop, **not stable auto-stop proof**; the restart cause is unknown.
+  The passive test now requires 10s continuous absence. Active TCP polling
+  was removed because it creates new clients; its timeout is retained.
+  A later 64.24s passive check did not achieve 10s continuous NPU absence.
+  No taps during/after the run, no ADB force-stop.
 - All **1,280,920 decoded values** matched the pinned upstream decoder exactly.
   This proves codec/head parsing, not equivalence of different model weights.
 - Real stock model SHA256 `65a08adc31d5c456219687d99b7bf5e44d61dae2d49ea67850e76105c7248cce`
@@ -72,8 +75,10 @@ change or X-40 branch was needed.
   compiler for Mac. Same decoded image bytes and auxiliary inputs were used.
   At predeclared rtol=.02/atol=.05, numeric match was **0%**; per-frame admission
   **3.5484%**; replay through unchanged S1 selected **0%** phone, correctly locking
-  on admission failure. The reason for the prediction difference is unproven;
-  do not attribute it solely to decoder layout, weights or temporal state.
+  on admission failure. The phone manifest identifies source ONNX
+  `ceb38c593005b3338aee4ca057d5ad9ee64c58f8fdba0b41641a9d4cc6c36e36`,
+  which differs from stock. This is not a same-model equivalence proof; the
+  exact contribution of weights, frontend and temporal state is unproven.
 
 ## Repeatable checks
 
@@ -94,6 +99,7 @@ python plugins/lean_mici/tests/phone_replay.py --address <Mac-LAN-IPv4> \
 python tools/build_index.py --check
 ```
 
-Remaining gates: stock numeric qualification and source/control continuity;
+Remaining gates: stock numeric qualification, stable automatic phone shutdown
+and source/control continuity;
 C3XL's PyAV/V4L2 availability, actual geometry/resource contention, onroad cycles,
 thermal/power and road qualification. No car was contacted in this task.

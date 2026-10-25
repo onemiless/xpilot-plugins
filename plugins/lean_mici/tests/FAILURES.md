@@ -33,3 +33,21 @@ Every E2E directory contains result.json, frames.csv, wire logs and SHA256SUMS.
   camera bytes and desire/traffic/action_t for stock inference. Report head errors
   and acceptance honestly; different model weights are not numeric equivalence.
 - Withdraw beacon, wait without taps/force-stop, then prove server and NPU stop.
+
+## FIX round 2 (before safety-envelope implementation)
+A1 is same-Walnut ONNX versus phone, with identical decoded HEVC and auxiliary
+inputs. A stock-model equality or an upstream decoder comparison cannot pass A1.
+Refuse missing/wrong-hash ONNX as an unavailable reference, not a numeric pass.
+A2 uses real recorded driving frames, a disjoint calibration/evaluation split,
+control-relevant curvature/acceleration through 2s and lead probability/distance.
+Reject impossible physical motion and outlying control divergence; irrelevant
+far-plan/pose differences must not cause an equality failure. Record each reason.
+Retain S1 structural/freshness/frame/epoch latches. Envelope rejection is per-frame;
+structural/protocol faults still latch. Late/absent phone never waits past 45ms.
+C observes CPU ticks, waiting inference threads, sessions and processed-frame
+activity after withdrawal. Listener or bound service residency alone is not failure.
+Do not establish new BGM clients while measuring idle. Audit leftover advertisers
+and the app's discovery/probe/restart logic without probing the car.
+Final contract review: preserve S1 zero-wait selection and five consecutive fresh
+replies after a rejection; a healthy-source deadline wait is not an allowed way
+to reach the adoption target. Record the actual zero-wait adoption separately.

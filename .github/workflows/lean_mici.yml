@@ -35,6 +35,8 @@ jobs:
         run: |
           python tools/build_index.py --check
           PYTHONPATH=$X:$X/tinygrad_repo:$X/msgq_repo:$X/opendbc_repo python plugins/lean_mici/tests/v4_e2e.py --output /tmp/x39-camera
+      - name: Physical envelope refusals
+        run: PYTHONPATH=$X:$X/tinygrad_repo:$X/msgq_repo:$X/opendbc_repo python plugins/lean_mici/tests/envelope_e2e.py --output /tmp/x39-envelope
       - name: Store, runner, TCP peer, host publication and faults
         run: PYTHONPATH=$X:$X/tinygrad_repo:$X/msgq_repo:$X/opendbc_repo python plugins/lean_mici/tests/e2e.py --system $X --output /tmp/x39-host
       - name: Record source identities
@@ -51,3 +53,4 @@ jobs:
           path: |
             /tmp/x39-host
             /tmp/x39-camera
+            /tmp/x39-envelope

@@ -3,6 +3,8 @@ v4 retains these 2066 common-model heads; navigation is not consumed.
 """
 import numpy as np
 from openpilot.selfdrive.modeld.parse_model_outputs import Parser
+from openpilot.selfdrive.modeld.constants import ModelConstants, Plan
+from openpilot.selfdrive.controls.lib.drive_helpers import MAX_CURVATURE
 
 SLICES = {'lane_lines': (0, 528), 'lane_lines_prob': (528, 536), 'road_edges': (536, 800),
           'meta': (800, 855), 'desire_pred': (855, 887), 'pose': (887, 899),
@@ -20,17 +22,47 @@ def decode(raw):
   return heads
 
 
+# Public route segment 1, frames 0..599: p99.5 plus margin; held-out frames 600..1199 are not used to fit.
+DIVERGENCE = {'curvature': 1.5, 'acceleration': 2.5, 'lead_probability': .98, 'lead_distance': 35.}
+NEAR = np.array(ModelConstants.T_IDXS) <= 2.
+
+
+def control_values(heads):
+  plan = heads['plan'][0, NEAR]
+  speed = np.linalg.norm(plan[:, Plan.VELOCITY], axis=1)
+  return {'speed': speed, 'curvature': plan[:, Plan.ORIENTATION_RATE][:, 2] / np.maximum(speed, 1.),
+          'acceleration': plan[:, Plan.ACCELERATION][:, 0], 'lead_probability': heads['lead_prob'][0],
+          'lead_distance': float(heads['lead'][0, 0, 0, 0])}
+
+
+def reject_reason(local, remote):
+  r, l = control_values(remote), control_values(local)
+  if np.linalg.norm(remote['plan'][0, 0, Plan.POSITION]) > 5:
+    return 'physical_position'
+  if abs(remote['action'][0, 0]) > 6 or not -8 <= remote['action'][0, 1] <= 5:
+    return 'physical_action'
+  if np.max(r['speed']) > 80 or np.min(remote['plan'][0, NEAR, Plan.VELOCITY][:, 0]) < -2:
+    return 'physical_speed'
+  if np.min(r['acceleration']) < -8 or np.max(r['acceleration']) > 5 or np.max(np.abs(remote['plan'][0, NEAR, Plan.ACCELERATION])) > 10:
+    return 'physical_acceleration'
+  if np.max(np.abs(r['curvature'])) > MAX_CURVATURE or np.max(np.abs(r['curvature']) * r['speed']**2) > 6:
+    return 'physical_curvature'
+  if np.linalg.norm(remote['pose'][0, :3]) > 80 or np.max(np.abs(remote['pose'][0, 3:])) > 2:
+    return 'physical_pose'
+  if np.min(r['lead_probability']) < 0 or np.max(r['lead_probability']) > 1:
+    return 'physical_lead_probability'
+  if r['lead_probability'][0] > .5 and not 0 <= r['lead_distance'] <= 300:
+    return 'physical_lead_distance'
+  # Curvature error is bounded in lateral-acceleration units; raw curvature is ill-conditioned near standstill.
+  if np.max(np.abs(r['curvature']-l['curvature']) * np.maximum(np.maximum(r['speed'],l['speed'])**2,1.)) > DIVERGENCE['curvature']:
+    return 'curvature_divergence'
+  for key in ('acceleration', 'lead_probability'):
+    if np.max(np.abs(r[key] - l[key])) > DIVERGENCE[key]:
+      return key + '_divergence'
+  if r['lead_probability'][0] > .5 and l['lead_probability'][0] > .5 and abs(r['lead_distance'] - l['lead_distance']) > DIVERGENCE['lead_distance']:
+    return 'lead_distance_divergence'
+  return ''
+
+
 def admit(local, remote):
-  # Compare near-term motion, not distant alternative trajectories from different models.
-  limits = {'plan': 2., 'lead': 10., 'pose': 5.}
-  for key, limit in limits.items():
-    a, b = local[key], remote[key]
-    if key == 'plan':
-      a, b = a[:, :6], b[:, :6]
-    if not np.isfinite(b).all() or np.max(np.abs(b - a)) > limit:
-      return False
-  if np.max(np.abs(remote['action'])) > 5.:
-    return False
-  if 'action' in local and np.max(np.abs(remote['action'] - local['action'][:, :2])) > .5:
-    return False
-  return True
+  return not reject_reason(local, remote)

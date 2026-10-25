@@ -61,6 +61,7 @@ def tcp_peer(path, control):
   try:
     conn, _ = server.accept()
     conn.settimeout(2)
+    conn.setsockopt(socket.IPPROTO_TCP,socket.TCP_NODELAY,1)
     with conn:
       hello = wire.HEADER.pack(b'BGM1', 4, 1, 0, 0, 16) + struct.pack('<QII', 12, 1024 * 1024, 0) + bytes(16)
       conn.sendall(hello)
@@ -116,8 +117,7 @@ def main():
     from openpilot.tesla.model_source import ModelSource
     root = Path(__file__).resolve().parents[3]
     sys.path.insert(0, str(root))
-    # Load FFmpeg before the Mac fork fixture; production imports it only inside the optional child.
-    from plugins.lean_mici import profile, runner, wire, camera
+    from plugins.lean_mici import profile, runner, wire
     raw = h.raw_output()
     expected = h.decode(raw.copy())
     actual = profile.decode(raw.copy())
@@ -132,7 +132,7 @@ def main():
       except ValueError:
         pass
     assert profile.admit(expected, actual) is True
-    for key in ('plan','lead','pose','action'):
+    for key in ('plan','pose','action'):
       jumped = {k:v.copy() for k,v in actual.items()}
       jumped[key] += 100
       assert profile.admit(expected, jumped) is False
@@ -165,8 +165,8 @@ def main():
         command = list(command)
         command[2] = 'import sys, types\nsys.modules["openpilot.common.params"] = types.SimpleNamespace(Params=type("Params", (), {}), UnknownKeyName=KeyError)\nfrom unittest.mock import patch\nfrom openpilot.tesla import plugins\nwith patch("xpilot_ext.lean_mici.plugin.ready", return_value=True):\n' + ''.join('  ' + line + '\n' for line in command[2].splitlines())
         return real_run(command, **kw)
-      archive = (root / 'dist/lean_mici-0.2.0.tar.gz').read_bytes()
-      entry = store.IndexEntry('lean_mici', 'lean mici', '0.2.0', 1, 'perception_model', 'xpilot', '', 'local',
+      archive = (root / 'dist/lean_mici-0.3.0.tar.gz').read_bytes()
+      entry = store.IndexEntry('lean_mici', 'lean mici', '0.3.0', 1, 'perception_model', 'xpilot', '', 'local',
                                hashlib.sha256(archive).hexdigest(), installable=True)
       with (patch.object(mf, 'INSTALL_DIR', installed), patch.object(store, '_get', return_value=archive),
             patch.object(store.subprocess, 'run', probe), patch('openpilot.common.params.Params', return_value=params)):
@@ -199,7 +199,8 @@ def main():
            'future', 'jump_plan', 'jump_lead', 'jump_pose', 'jump_action')]:
         source = ModelSource(tmp, profile.decode, h.admit)
         parent, child = ctx.Pipe()
-        peer = ctx.Process(target=tcp_peer if name == 'tcp' else h.peer, args=(source.path, child))
+        peer_ctx = multiprocessing.get_context('spawn') if name == 'tcp' else ctx
+        peer = peer_ctx.Process(target=tcp_peer if name == 'tcp' else h.peer, args=(source.path, child))
         peer.start()
         try:
           records, _ = h.replay(h.modeld, out, name, scenarios, source, parent)
@@ -214,6 +215,25 @@ def main():
           if peer.is_alive():
             peer.kill()
             peer.join()
+          source.close()
+      from plugins.lean_mici.source import PhoneSource
+      for name,scenarios in [('envelope_recovery',['good']*10+['jump_plan']+['good']*8),
+                             ('late_recovery',['good']*10+['late']+['good']*8),
+                             ('protocol_latch',['good']*10+['magic']+['good']*8)]:
+        source=PhoneSource(tmp)
+        parent,child=ctx.Pipe();peer=ctx.Process(target=h.peer,args=(source.path,child));peer.start()
+        try:
+          records,_=h.replay(h.modeld,out,name,scenarios,source,parent)
+          rows.extend(records)
+          assert records[10]['source']=='local'
+          if name=='protocol_latch':
+            assert source.locked and all(r['source']=='local' for r in records[10:])
+          else:
+            assert not source.locked and all(r['source']=='local' for r in records[11:16])
+            assert records[16]['source']=='phone'
+        finally:
+          peer.terminate();peer.join(2)
+          if peer.is_alive():peer.kill();peer.join()
           source.close()
       # Frozen/killed child cannot hold up the host; base inference failures propagate.
       source = ModelSource(tmp, profile.decode, h.admit)

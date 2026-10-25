@@ -7,9 +7,8 @@ import threading
 import time
 
 from openpilot.selfdrive.modeld.modeld import run_with_model_source
-from openpilot.tesla.model_source import ModelSource
+from .source import PhoneSource
 from openpilot.tesla.manifest import INSTALL_DIR
-from .profile import decode, admit
 
 
 def data_dir():
@@ -23,10 +22,10 @@ def status(directory, source, stop):
     if not source.sent:
       stop.wait(.05)
       continue
-    state = ('Phone active' if source.selected else 'Phone warming' if source.fresh else
+    state = ('Phone active' if source.selected else 'Phone warming' if source.reason in ('warmup','warmup_flags','need_dual_idr') else
              'Local fallback' if source.epoch or source.locked else 'Local ready')
     path = directory / 'status.tmp'
-    path.write_text(json.dumps({'state': state, 'version': '0.2.0', 'updated_at': time.time()}))
+    path.write_text(json.dumps({'state': state, 'version': '0.3.0', 'updated_at': time.time()}))
     os.replace(path, directory / 'status.json')
     stop.wait(1)
 
@@ -34,7 +33,7 @@ def status(directory, source, stop):
 def main():
   from .worker import main as child
   directory = data_dir()
-  source = ModelSource(directory, decode, admit)
+  source = PhoneSource(directory)
   process = multiprocessing.Process(target=child, args=(source.path,), daemon=True)
   stop = threading.Event()
   reporter = threading.Thread(target=status, args=(directory, source, stop), daemon=True)

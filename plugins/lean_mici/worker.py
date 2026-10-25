@@ -69,6 +69,7 @@ def main(path):
             try:
               with socket.create_connection(peers[0], timeout=1) as conn:
                 conn.settimeout(.2)
+                conn.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
                 hello(receive(conn, 48))
                 first_eof = None
                 epoch += 1
@@ -76,6 +77,10 @@ def main(path):
                 paired = 0
                 reset = True
                 while True:
+                  # These unlocked words are hints only; the full metadata is still validated under its lock.
+                  if os.pread(fd,4,0)!=b'XMS1' or last is not None and int.from_bytes(os.pread(fd,4,16),'little')==last:
+                    time.sleep(.001)
+                    continue
                   meta = metadata(fd)
                   if meta is None or meta[3] == last:
                     time.sleep(.001)

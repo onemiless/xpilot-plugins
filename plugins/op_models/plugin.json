@@ -1,8 +1,9 @@
 {
   "id": "op_models",
   "name": "openpilot Model",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "api": 1,
+  "use": "both",
   "category": "perception_model",
   "entry": "plugin:OpModels",
   "author": "xpilot",

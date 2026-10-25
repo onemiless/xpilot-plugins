@@ -1,8 +1,9 @@
 {
   "id": "external_compute",
   "name": "External Compute",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "api": 1,
+  "use": "onroad",
   "category": "data_source",
   "entry": "plugin:ExternalCompute",
   "author": "xpilot",

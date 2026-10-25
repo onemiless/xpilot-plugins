@@ -1,8 +1,9 @@
 {
   "id": "lead_card",
   "name": "Lead Card",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "api": 1,
+  "use": "both",
   "category": "ui",
   "entry": "plugin:LeadCard",
   "author": "xpilot",

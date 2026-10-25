@@ -1,8 +1,9 @@
 {
   "id": "auto_speed",
   "name": "Auto Speed Limit",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "api": 1,
+  "use": "onroad",
   "category": "longitudinal_planning",
   "entry": "plugin:AutoSpeed",
   "author": "xpilot",

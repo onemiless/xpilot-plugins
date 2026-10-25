@@ -1,8 +1,9 @@
 {
   "id": "tesla_mixed_control",
   "name": "Tesla Mixed Control",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "api": 1,
+  "use": "onroad",
   "category": "controller",
   "entry": "plugin:TeslaMixedControl",
   "author": "xpilot; dzid26; Haibin Wen and sunnypilot contributors",

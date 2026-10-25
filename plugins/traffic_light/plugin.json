@@ -1,8 +1,9 @@
 {
   "id": "traffic_light",
   "name": "Traffic Light Control (Experimental)",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "api": 1,
+  "use": "onroad",
   "category": "longitudinal_planning",
   "entry": "plugin:TrafficLight",
   "author": "xpilot",

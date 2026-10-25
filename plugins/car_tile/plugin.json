@@ -1,8 +1,9 @@
 {
   "id": "car_tile",
   "name": "Car Tile",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "api": 1,
+  "use": "both",
   "category": "ui",
   "entry": "plugin:CarTile",
   "author": "xpilot",

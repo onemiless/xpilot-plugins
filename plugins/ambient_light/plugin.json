@@ -1,8 +1,9 @@
 {
   "id": "ambient_light",
   "name": "Blindspot Ambient Lights",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "api": 1,
+  "use": "onroad",
   "category": "body_comfort",
   "entry": "plugin:AmbientLight",
   "author": "xpilot",

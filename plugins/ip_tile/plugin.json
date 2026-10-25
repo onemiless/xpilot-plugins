@@ -1,8 +1,9 @@
 {
   "id": "ip_tile",
   "name": "IP Tile",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "api": 1,
+  "use": "both",
   "category": "ui",
   "entry": "plugin:IpTile",
   "author": "xpilot",

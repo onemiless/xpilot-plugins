@@ -1,8 +1,9 @@
 {
   "id": "overspeed_warning",
   "name": "Overspeed Warning",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "api": 1,
+  "use": "onroad",
   "category": "alerts",
   "entry": "plugin:OverspeedWarning",
   "author": "xpilot",

@@ -19,9 +19,12 @@ tools/build_index.py     builds dist/ and index.json; --check verifies they are 
 
 1. Fork, add `plugins/<id>/`, open a pull request (see `CONTRIBUTING.md`). Read `XPILOT.md` first.
 2. `plugin.json`: `id` equals the directory, `api` is the host's API version (1), a category from `XPILOT.md`,
+   required `use` (`onroad`, `offroad`, or `both`) for its usage context,
    `claims` for everything the plugin uses, params with types BOOL/INT/FLOAT/STRING/JSON. Downloaded plugins
    must not reuse built-in ids or param keys; prefix new keys with `Ext`. The plugins moved here from the xpilot
    repository keep their original key names so existing device settings stay valid.
+   Tiles must match `use`: `onroad` excludes offroad tiles, `offroad` excludes onroad tiles, and
+   `show="always"` requires `both`. This declaration does not change hook runtime conditions.
 3. Use relative imports inside the plugin (`from .logic import x`): installed plugins load as `xpilot_ext.<id>`.
 4. Prefer pure Python. Compiled code must ship as prebuilt binaries with a `platform` and a `build_native.py`
    that reproduces them (see Native plugins). panda safety code is compiled into the firmware and lives in the

@@ -1,8 +1,9 @@
 {
   "id": "blindspot_edges",
   "name": "Blind Spot Edges",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "api": 1,
+  "use": "onroad",
   "category": "overlays",
   "entry": "plugin:BlindspotEdges",
   "author": "xpilot",

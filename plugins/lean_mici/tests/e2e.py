@@ -119,7 +119,8 @@ def main():
     from openpilot.tesla.model_source import ModelSource
     root = Path(__file__).resolve().parents[3]
     sys.path.insert(0, str(root))
-    from plugins.lean_mici import profile, runner, wire
+    # Load FFmpeg before the Mac fork fixture; production imports it only inside the optional child.
+    from plugins.lean_mici import profile, runner, wire, camera
     raw = h.raw_output()
     expected = h.decode(raw.copy())
     actual = profile.decode(raw.copy())

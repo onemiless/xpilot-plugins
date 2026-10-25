@@ -30,7 +30,7 @@ for raw in rows:
   np.testing.assert_array_equal(actual[key],value,err_msg=key)
   count+=value.size
 result={'pass':True,'frames':len(rows),'values_compared':count,'exact_decoder_match':True,
-        'stock_weight_equivalence':False,'sha256':{str(x):hashlib.sha256(x.read_bytes()).hexdigest() for x in [a.parser,a.layout,a.outputs]}}
+        'stock_weight_equivalence':None,'sha256':{str(x):hashlib.sha256(x.read_bytes()).hexdigest() for x in [a.parser,a.layout,a.outputs]}}
 (a.output/'result.json').write_text(json.dumps(result,indent=2)+'\n')
 (a.output/'frames.csv').write_text('frameId,decoder_match\n'+''.join(f'{i},1\n' for i in range(len(rows))))
 (a.output/'wire.log').write_text('Inputs are the hash-pinned outputs of retained real-phone BGM1 v4 wire.\n')

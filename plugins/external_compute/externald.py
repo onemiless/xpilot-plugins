@@ -1,35 +1,36 @@
 #!/usr/bin/env python3
-"""externald: bridges external compute providers to cereal. Provider messages -> externalIn; externalOut -> providers.
-Providers come from the active plugins' external_provider hooks. A provider that raises is closed and dropped; the others keep running."""
+"""Plugin-owned TCP bridge: external.in envelopes to consumers; fresh external.out envelopes to TCP."""
+import json
+import secrets
+import time
+
 from openpilot.cereal import messaging
 from openpilot.common.params import Params
-from openpilot.common.swaglog import cloudlog
 from openpilot.tesla import plugins
 
-FIELDS = ("source", "kind", "seq", "payload", "validForMs")
+from .plugin import ExternalCompute
+from .provider import is_fresh
+from .tcp import TcpProvider
 
 
 def main() -> None:
-  providers = plugins.external_providers(Params())
-  pm = messaging.PubMaster(["externalIn"])
-  out_sock = messaging.sub_sock("externalOut", conflate=False)
-
-  while providers:
-    for p in list(providers):
-      try:
-        for m in p.poll(0.02):
-          msg = messaging.new_message("externalIn")
-          for k in FIELDS:
-            setattr(msg.externalIn, k, m[k])
-          pm.send("externalIn", msg)
-        for event in messaging.drain_sock(out_sock):
-          out = {k: getattr(event.externalOut, k) for k in FIELDS}
-          for q in providers:
-            q.send(out)
-      except Exception:
-        cloudlog.exception(f"external provider {p.NAME} failed, closed")
-        providers.remove(p)
-        p.close()
+  params = plugins.view(Params())
+  token = params.get("XpilotExternalToken")
+  if not token:
+    token = secrets.token_hex(8)
+    params.put("XpilotExternalToken", token)
+  provider = TcpProvider(token, port=int(params.get("XpilotExternalPort", return_default=True)))
+  out_sock = messaging.sub_sock("pluginMsg", conflate=False)
+  try:
+    while True:
+      for data in provider.poll(0.02):
+        plugins.send_msg(ExternalCompute, "external.in", data, data["validForMs"])
+      for event in messaging.drain_sock(out_sock):
+        msg = event.pluginMsg
+        if msg.kind == "external.out" and is_fresh(event.logMonoTime, msg.validForMs, time.monotonic_ns()):
+          provider.send({**json.loads(msg.payload), "source": msg.source})
+  finally:
+    provider.close()
 
 
 if __name__ == "__main__":

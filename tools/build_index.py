@@ -55,12 +55,14 @@ def build() -> dict[Path, bytes]:
     if m.get("platform") is None and (plugin / "build_native.py").exists():
       print(f"skipped {plugin.name}: native plugin not built yet (run its build_native.py on the target)", file=sys.stderr)
       continue
+    if "default" in m and type(m["default"]) is not bool:
+      raise ValueError(f"{plugin.name}: default must be boolean")
     data = archive(plugin)
     name = f"dist/{m['id']}-{m['version']}.tar.gz"
     files[ROOT / name] = data
     entries.append({"id": m["id"], "name": m["name"], "version": m["version"], "api": m["api"], "category": m["category"],
                     "author": m.get("author", ""), "description": m.get("description", ""), "url": f"{RAW}/{name}",
-                    "sha256": hashlib.sha256(data).hexdigest(), "platform": m.get("platform")})
+                    "sha256": hashlib.sha256(data).hexdigest(), "platform": m.get("platform"), "default": m.get("default", False)})
   files[ROOT / "index.json"] = (json.dumps({"api": API, "plugins": entries}, indent=2) + "\n").encode()
   return files
 

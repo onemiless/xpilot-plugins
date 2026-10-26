@@ -11,7 +11,7 @@ Devices list this repository under Settings → Plugins → Plugin Store, instal
 ```
 plugins/<id>/            plugin source: __init__.py, plugin.json (manifest), plugin.py, optional ui.py and modules
 dist/<id>-<ver>.tar.gz   reproducible archives, generated
-index.json               what devices read: id, version, api, category, url, sha256, generated
+index.json               what devices read: id, version, api, category, url, sha256, default, generated
 tools/build_index.py     builds dist/ and index.json; --check verifies they are current
 ```
 
@@ -20,6 +20,7 @@ tools/build_index.py     builds dist/ and index.json; --check verifies they are 
 1. Fork, add `plugins/<id>/`, open a pull request (see `CONTRIBUTING.md`). Read `XPILOT.md` first.
 2. `plugin.json`: `id` equals the directory, `api` is the host's API version (1), a category from `XPILOT.md`,
    required `use` (`onroad`, `offroad`, or `both`) for its usage context,
+   optional boolean `default: true` for first-boot installation (absent means false),
    `claims` for everything the plugin uses, params with types BOOL/INT/FLOAT/STRING/JSON. Downloaded plugins
    must not reuse built-in ids or param keys; prefix new keys with `Ext`. The plugins moved here from the xpilot
    repository keep their original key names so existing device settings stay valid.
@@ -63,6 +64,28 @@ Moved from the xpilot repository (keep their original param keys):
   The old 1.0.x archives are withdrawn. X-20261026-57 removes the legacy system headers and
   differential oracle; these published runtime rules stay unchanged. Merge the companion system PR
   first, then this documentation PR. No plugin archive rebuild or device flash is part of this change.
+
+`default` is store metadata, separate from the enable param. The builder copies it to `index.json`;
+the host chooses first-boot packages from that flag and keeps its one-time `.defaults_done` marker.
+An old index with no flagged packages leaves the marker unset and is retried after the plugin PR merges.
+The eight display packages above carry the flag; no plugin ids are registered in the host.
+
+`external_compute` 1.0.3 owns its TCP provider and only needs `process:externald` and `msg:external.in`.
+It publishes `pluginMsg` kind `external.in`, with the TCP dictionary (`source`, `kind`, `seq`, JSON-text
+`payload`, `validForMs`) as payload; outer source is `external_compute` and outer TTL matches the peer TTL.
+In-process consumers use `PluginMsgs().fresh("external.in")` and their own checked advisory hooks.
+For outbound data, a sender claims `msg:external.out` and uses `send_msg` with the TCP dictionary as payload.
+The bridge forwards only fresh `external.out`, sets TCP `source` to the sending plugin id and never echoes
+inbound messages. Inbound and outbound publishers run concurrently through the host's `plugin_msgd`
+broker; neither the bridge nor sending plugins create a `pluginMsg` PubMaster. Outbound events are
+forwarded once each, including repeated identical payloads. `PluginMsgs` consumers read fresh inbound data.
+The broker authenticates externald using its `process:externald` claim, with no external-specific host mapping.
+TCP hello/auth/rate/size limits stay in the plugin; the generated token lives in the store-backed
+`XpilotExternalToken` param (`/data/xpilot_plugins/.params/`). Plain TCP requires a trusted network.
+
+Merge/deploy the X-20261026-59 system PR first, then this plugin PR; no automatic merge.
+external_compute 1.0.1 uses the removed host hook/services; 1.0.2 creates its own publisher.
+Upgrade to 1.0.3 with the broker host; deploy only the matching pair after both PRs merge.
 
 ### Pure plugin/API migration: X-20261026-58
 

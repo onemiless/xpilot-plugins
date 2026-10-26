@@ -11,7 +11,8 @@
       "description": "Turns the cabin ambient lights red while a car is in the blind spot.",
       "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/ambient_light-1.1.0.tar.gz",
       "sha256": "cc3f6aa62ecb53fc660dbd0fefa4d46a2f4add74fd78d165f41e34b873293151",
-      "platform": null
+      "platform": null,
+      "default": false
     },
     {
       "id": "auto_speed",
@@ -23,19 +24,21 @@
       "description": "Sets cruise speed to the car's speed limit plus an offset. Needs openpilot longitudinal and the vehicle bus.",
       "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/auto_speed-1.1.0.tar.gz",
       "sha256": "19fb68b2c79d39017f1bea71daa8b75d8b073f13df8e236b7e02e00fbc3bb229",
-      "platform": null
+      "platform": null,
+      "default": false
     },
     {
       "id": "blindspot_edges",
       "name": "Blind Spot Edges",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "api": 1,
       "category": "overlays",
       "author": "xpilot",
       "description": "Big screen: red edge on the left or right column while a car is in that blind spot. Display only; on by default.",
-      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/blindspot_edges-1.0.1.tar.gz",
-      "sha256": "b0ddbac2f484eaa8757111d0cff7242c76ac3852c9b6fff50d9bad14823291a6",
-      "platform": null
+      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/blindspot_edges-1.0.2.tar.gz",
+      "sha256": "e66eb4bb05af6a53c5b6f12881a2f2ece1ce1eda77ccfb04cd79f53477b63ece",
+      "platform": null,
+      "default": true
     },
     {
       "id": "bms",
@@ -47,67 +50,73 @@
       "description": "Big-screen tile: battery charge, pack voltage, current and power from the BMS messages on the vehicle bus. Needs the vehicle-bus harness. Read only.",
       "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/bms-1.1.0.tar.gz",
       "sha256": "9fb625a22262b0646327aef2cd6186532f19fd5e943dd3706d482289425d2365",
-      "platform": null
+      "platform": null,
+      "default": false
     },
     {
       "id": "car_tile",
       "name": "Car Tile",
-      "version": "1.0.2",
+      "version": "1.0.3",
       "api": 1,
       "category": "ui",
       "author": "xpilot",
       "description": "Big-screen tile: cluster speed, gear, blinkers and blind spots. Display only; on by default.",
-      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/car_tile-1.0.2.tar.gz",
-      "sha256": "11d332a67ed1cddcfc36264a414252ae05c1ee0725499ad0e3222cf2e0abadca",
-      "platform": null
+      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/car_tile-1.0.3.tar.gz",
+      "sha256": "f7c8d66293a0b59ec2d0d3919748183816b600b469751e0332a9f081007015b8",
+      "platform": null,
+      "default": true
     },
     {
       "id": "clock_tile",
       "name": "Clock Tile",
-      "version": "1.0.2",
+      "version": "1.0.3",
       "api": 1,
       "category": "ui",
       "author": "xpilot",
       "description": "Big-screen tile: local time and date. Display only; on by default.",
-      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/clock_tile-1.0.2.tar.gz",
-      "sha256": "211d4366f8329ad80cbd38c60c840c8b57d69f1a331bcf3e300c01171c3ead26",
-      "platform": null
+      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/clock_tile-1.0.3.tar.gz",
+      "sha256": "b72801d54f99a3653f477a16c5220e17a72a675f36ffdf7ed924551c52bd1931",
+      "platform": null,
+      "default": true
     },
     {
       "id": "external_compute",
       "name": "External Compute",
-      "version": "1.0.1",
+      "version": "1.0.3",
       "api": 1,
       "category": "data_source",
       "author": "xpilot",
       "description": "Lets a laptop, LLM server or accelerator exchange data with the device over a cable or WiFi (TCP JSON lines). Peers need the token in /data/params/d/XpilotExternalToken.",
-      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/external_compute-1.0.1.tar.gz",
-      "sha256": "4e0bd9d3a91220a2d600a4bc38f5435f58acd50c191329682953059f1a550d69",
-      "platform": null
+      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/external_compute-1.0.3.tar.gz",
+      "sha256": "834f9e8bcdf149c210594a11c162bac5a51348bec2bbb6a9db00f10ac913ee23",
+      "platform": null,
+      "default": false
     },
     {
       "id": "ip_tile",
       "name": "IP Tile",
-      "version": "1.0.2",
+      "version": "1.0.3",
       "api": 1,
       "category": "ui",
       "author": "xpilot",
       "description": "Big-screen tile: the device IP address and network type. Display only; on by default.",
-      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/ip_tile-1.0.2.tar.gz",
-      "sha256": "dae45a0d0e4ab132df8b987233befd8d9c92e13e0412f53e3cd4abdbadd6ccf4",
-      "platform": null
+      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/ip_tile-1.0.3.tar.gz",
+      "sha256": "62a6e0e5f981c1c95029f24bbc825ec9eb0a9954ac00d2676c058c8ab7dae0fb",
+      "platform": null,
+      "default": true
     },
     {
       "id": "lead_card",
       "name": "Lead Card",
-      "version": "1.0.2",
+      "version": "1.0.3",
       "api": 1,
       "category": "ui",
       "author": "xpilot",
       "description": "Big-screen card: distance and relative speed of the lead car (radarState). Display only; on by default.",
-      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/lead_card-1.0.2.tar.gz",
-      "sha256": "0343e1dd8eb96b13a05cda9fc6258d5cffcf1a2b506e9354976d0517fd9917c8",
-      "platform": null
+      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/lead_card-1.0.3.tar.gz",
+      "sha256": "e12a8e81a8b5ad375ed6bb7b79df13cda54fbe26843fac825dac3f44d20baa41",
+      "platform": null,
+      "default": true
     },
     {
       "id": "lean_mici",
@@ -122,19 +131,21 @@
       "platform": {
         "machine": "aarch64",
         "python": "cpython-312"
-      }
+      },
+      "default": false
     },
     {
       "id": "map_tile",
       "name": "Map Tile",
-      "version": "1.0.2",
+      "version": "1.0.3",
       "api": 1,
       "category": "ui",
       "author": "xpilot",
       "description": "Big-screen tile: speed limit, road name and next maneuver from any map or navigation provider. Display only; on by default.",
-      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/map_tile-1.0.2.tar.gz",
-      "sha256": "c60e0939c2a411131c92d897bcfde176429c3f45f12ac93d1b65a1ee003a3f1f",
-      "platform": null
+      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/map_tile-1.0.3.tar.gz",
+      "sha256": "f170e51acb05227f64c52cd6a8ee6cfb72ea2e5bfe270f3c233111e71e422e61",
+      "platform": null,
+      "default": true
     },
     {
       "id": "op_models",
@@ -146,7 +157,8 @@
       "description": "Drive with the model that ships with openpilot (selfdrive/modeld, no downloads). Replaces the SP model manager while on; switch it off to go back.",
       "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/op_models-1.0.1.tar.gz",
       "sha256": "a50da8122b4199d385d15915b8d94472218fb7dafa67b2693aca6631c410e166",
-      "platform": null
+      "platform": null,
+      "default": false
     },
     {
       "id": "overspeed_warning",
@@ -158,31 +170,34 @@
       "description": "Example plugin: warns when driving faster than the resolved speed limit plus a margin. Shows the manifest, store-backed params, a settings row, an alert hook and a relative import.",
       "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/overspeed_warning-1.0.2.tar.gz",
       "sha256": "7eae4e1493856479dd63ef59fd5d1011cf13f53ab349d406932dc5a7d74b9cea",
-      "platform": null
+      "platform": null,
+      "default": false
     },
     {
       "id": "speed_card",
       "name": "Speed Card",
-      "version": "1.0.2",
+      "version": "1.0.3",
       "api": 1,
       "category": "ui",
       "author": "xpilot",
       "description": "Big-screen card: ego speed and the set speed. Display only; on by default.",
-      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/speed_card-1.0.2.tar.gz",
-      "sha256": "6404bb15db5e041a6f2ef47c7fe89126b9412de5b7e36a3ae2430a09bc6282dd",
-      "platform": null
+      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/speed_card-1.0.3.tar.gz",
+      "sha256": "e356e1d0c0644dd52d22905f579026bab0d50f9b50893f0cda690f150d47ef6a",
+      "platform": null,
+      "default": true
     },
     {
       "id": "speed_limit_card",
       "name": "Speed Limit Card",
-      "version": "1.0.2",
+      "version": "1.0.3",
       "api": 1,
       "category": "ui",
       "author": "xpilot",
       "description": "Big-screen card: the speed limit sunnypilot resolved (longitudinalPlanSP). Display only; on by default.",
-      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/speed_limit_card-1.0.2.tar.gz",
-      "sha256": "f106248b33b054555dae3b49c66f13e981a7b43d44620f8755019edf2e1654f8",
-      "platform": null
+      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/speed_limit_card-1.0.3.tar.gz",
+      "sha256": "26e59d989e33e976547ee5ff9e279d83c351e07fb701740eea3971c9e8d156bf",
+      "platform": null,
+      "default": true
     },
     {
       "id": "tesla_dynamic_acc",
@@ -194,7 +209,8 @@
       "description": "Speed-based longitudinal owner, like the old DynamicAutoStock: above High the stock ACC drives, below Low SP drives, in between the current owner stays. Switches while engaged; the host (1 s confirm, 2 s cooldown, gas/brake/AEB/lead/acceleration vetoes) and the panda (DRAIN handoff) decide whether a switch happens. Needs SP longitudinal and the G8 panda firmware. Enable while parked, then restart.",
       "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/tesla_dynamic_acc-1.0.0.tar.gz",
       "sha256": "9443071afc99d6f082295638f363b6cc6d27c8f76549a90a0f5333fdbc4bc786",
-      "platform": null
+      "platform": null,
+      "default": false
     },
     {
       "id": "tesla_mixed_control",
@@ -206,7 +222,8 @@
       "description": "Angle-based cooperative steering: light driver torque adjusts the SP steering target with speed-dependent effort. SP must own steering; stock Autosteer must not steer at the same time (AP ownership/handoff is not implemented). Enable while parked, then restart. Overrides native TeslaCoopSteering mode for this session without changing its saved setting. Host-tested only; vehicle validation is pending.",
       "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/tesla_mixed_control-1.1.0.tar.gz",
       "sha256": "635373b884116a2522bd6ce5fe668f8eefebdc1277c11db585873ec6f347baa0",
-      "platform": null
+      "platform": null,
+      "default": false
     },
     {
       "id": "traffic_light",
@@ -218,7 +235,8 @@
       "description": "Stops for red lights seen by the car's own traffic-control perception. Only ever slows down.",
       "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/traffic_light-1.1.0.tar.gz",
       "sha256": "d9f20c4051c6ecf374e8fcb8a8516853f7aa656fe9ded3763d67e0c425446a70",
-      "platform": null
+      "platform": null,
+      "default": false
     }
   ]
 }

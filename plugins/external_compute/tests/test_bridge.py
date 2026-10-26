@@ -12,13 +12,18 @@
 - E10 is_fresh accepts an expired message, or rejects one with validForMs 0 (no expiry)
 - E11 TCP -> pluginMsg loses peer fields/TTL, publishes undeclared kinds, or echoes back to TCP
 - E12 pluginMsg -> TCP loses fields, forwards unrelated/expired data, or creates a second publisher
+- E14 concurrent TCP inbound and outbound publishers displace one another or echo/repeat messages
 - E13 source manifests and built index/archive disagree on the eight default tiles
 """
 import json
+import multiprocessing
+import os
+import select
 from pathlib import Path
 import platform
 import shutil
 import socket
+import sys
 import time
 
 from ..provider import is_fresh
@@ -140,10 +145,20 @@ def test_is_fresh_e10():
   assert is_fresh(0, 0, now)
 
 
-def test_pluginmsg_bridge_e11_e12(monkeypatch, tmp_path):
-  import threading
-  from openpilot.cereal import messaging
+def bridge_sender(connection):
+  from types import SimpleNamespace
   from openpilot.tesla import plugins
+  sender = SimpleNamespace(NAME="sender", CLAIMS=("process:senderd", "msg:external.out", "msg:other"))
+  while (command := connection.recv()) is not None:
+    kind, wire, ttl = command
+    connection.send(plugins.send_msg(sender, kind, wire, ttl))
+
+
+def test_pluginmsg_bridge_e11_e12_e14(monkeypatch, tmp_path):
+  import threading
+  from types import SimpleNamespace
+  from openpilot.cereal import messaging
+  from openpilot.tesla import plugins, plugin_msgd
   from .. import externald
   from ..plugin import ExternalCompute
 
@@ -151,21 +166,25 @@ def test_pluginmsg_bridge_e11_e12(monkeypatch, tmp_path):
   monkeypatch.setattr(ExternalCompute, "NAME", manifest["id"])
   monkeypatch.setattr(ExternalCompute, "CLAIMS", tuple(manifest["claims"]))
   monkeypatch.setattr(plugins, "view", lambda params: params)
+  sender = SimpleNamespace(NAME="sender", CLAIMS=("process:senderd", "msg:external.out", "msg:other"))
+  monkeypatch.setattr(plugins, "active", lambda params: [ExternalCompute, sender])
   errors = []
 
   class StopBridge(BaseException):
     pass
 
-  for inbound in (True, False):
-    monkeypatch.setenv("OPENPILOT_PREFIX", f"{tmp_path.name}-{inbound}")
-    ipc = Path("/tmp" if platform.system() == "Darwin" else "/dev/shm") / f"msgq_{tmp_path.name}-{inbound}"
+  for inbound, outbound in ((True, False), (False, True), (True, True)):
+    prefix = f"x59-{tmp_path.parent.name}-{inbound}-{outbound}"
+    monkeypatch.setenv("OPENPILOT_PREFIX", prefix)
+    ipc = Path("/tmp" if platform.system() == "Darwin" else "/dev/shm") / f"msgq_{prefix}"
     ipc.mkdir()
     provider = TcpProvider(TOKEN, host="127.0.0.1", port=0)
-    monkeypatch.setattr(externald, "TcpProvider", lambda *a, **k: provider, raising=False)
+    monkeypatch.setattr(externald, "TcpProvider", lambda *a, **k: provider)
     class Params:
       def get(self, key, **kwargs):
-        return TOKEN if key == "XpilotExternalToken" else provider.port
+        return {"XpilotExternalToken": TOKEN, "XpilotExternalPort": provider.port}.get(key)
     monkeypatch.setattr(externald, "Params", Params)
+    monkeypatch.setattr(sys.modules["openpilot.common.params"], "Params", Params)
     stop = threading.Event()
     poll = provider.poll
     def bounded_poll(timeout):
@@ -180,44 +199,82 @@ def test_pluginmsg_bridge_e11_e12(monkeypatch, tmp_path):
         pass
       except Exception as exc:
         errors.append(repr(exc))
+    broker = plugin_msgd.Broker()
+    def relay():
+      try:
+        while not stop.is_set():
+          broker.update()
+          if select.select([broker.sock], [], [], .01)[0]:
+            broker.receive()
+      except Exception as exc:
+        errors.append(repr(exc))
+    parent, child = multiprocessing.get_context("spawn").Pipe()
+    worker = multiprocessing.get_context("spawn").Process(target=bridge_sender, args=(child,))
+    worker.start()
+    manager = messaging.PubMaster(["managerState", "deviceState"])
     reader = plugins.PluginMsgs()
+    relay_thread = threading.Thread(target=relay, daemon=True)
+    relay_thread.start()
     thread = threading.Thread(target=run, daemon=True)
     thread.start()
     peer = connect(provider.port)
+    def send(kind, wire, ttl=1000):
+      parent.send((kind, wire, ttl))
+      assert parent.poll(5) and parent.recv(), errors
     try:
+      for _ in range(10):
+        state = messaging.new_message("managerState", valid=True)
+        state.managerState.processes = [{"name": "externald", "pid": os.getpid(), "running": True},
+                                        {"name": "senderd", "pid": worker.pid, "running": True}]
+        manager.send("managerState", state)
+        manager.send("deviceState", messaging.new_message("deviceState", valid=True))
+        time.sleep(.02)
+      reader.fresh("_ready")
       line(peer, {"hello": TOKEN, "name": "laptop"})
       assert recv_lines(peer) == [{"ok": True}], errors
       wire = {"source": "laptop", "kind": "llm.reply", "seq": 7,
               "payload": json.dumps({"text": "hi"}), "validForMs": 1000}
-      if inbound:
-        end, got = time.monotonic() + 2, {}
-        while not got and time.monotonic() < end:
-          line(peer, {**wire, "payload": {"text": "hi"}})
-          time.sleep(0.05)
-          got = reader.fresh("external.in")
-        assert got == {"external_compute": wire}, errors
-        assert not reader.fresh("external.in", time.monotonic_ns() + 2_000_000_000)
-        assert recv_lines(peer) == [], "inbound message echoed"
-      else:
-        class Sender:
-          NAME, CLAIMS = "sender", ("msg:external.out", "msg:other")
-        pm = messaging.PubMaster(["pluginMsg"])
-        time.sleep(0.05)
-        assert plugins.send_msg(pm, Sender, "other", wire)
+      if outbound:
+        send("other", wire)
         expired = messaging.new_message("pluginMsg", logMonoTime=time.monotonic_ns() - 2_000_000_000)
-        expired.pluginMsg = {"source": Sender.NAME, "kind": "external.out", "payload": json.dumps(wire), "validForMs": 1}
-        pm.send("pluginMsg", expired)
-        assert recv_lines(peer) == []
-        assert plugins.send_msg(pm, Sender, "external.out", wire, 1000)
-        assert recv_lines(peer) == [{**wire, "source": "sender"}], errors
-        del pm
+        expired.pluginMsg = {"source": "sender", "kind": "external.out", "payload": json.dumps(wire), "validForMs": 1}
+        broker.pm.send("pluginMsg", expired)
+        time.sleep(.05)
+        assert recv_lines(peer) == [], "unrelated or expired message forwarded"
+      for sample in (0, 1, 2, 2, 3):
+        current = {**wire, "seq": sample}
+        if inbound:
+          line(peer, {**current, "payload": {"text": "hi"}})
+        if outbound:
+          send("external.out", current)
+          assert recv_lines(peer) == [{**current, "source": "sender"}], errors
+        if inbound:
+          end, got = time.monotonic() + 2, {}
+          while got != {"external_compute": current} and time.monotonic() < end:
+            got = reader.fresh("external.in")
+            time.sleep(.01)
+          assert got == {"external_compute": current}, errors
+      assert recv_lines(peer) == [], "inbound echoed or outbound repeated"
+      assert not reader.fresh("external.in", time.monotonic_ns() + 2_000_000_000)
     finally:
       peer.close()
       stop.set()
       thread.join(2)
+      relay_thread.join(2)
+      parent.send(None)
+      worker.join(5)
+      if worker.is_alive():
+        worker.kill()
+        worker.join()
+      parent.close()
+      child.close()
       provider.close()
+      broker.sock.close()
+      broker.lock.close()
+      del manager, reader, broker
       shutil.rmtree(ipc)
-    assert not thread.is_alive() and errors == [], errors
+      shutil.rmtree(Path(plugin_msgd.socket_path()).parent)
+    assert not thread.is_alive() and not relay_thread.is_alive() and worker.exitcode == 0 and errors == [], errors
 
 
 def test_default_catalog_e13():

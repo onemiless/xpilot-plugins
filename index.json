@@ -82,13 +82,13 @@
     {
       "id": "external_compute",
       "name": "External Compute",
-      "version": "1.0.2",
+      "version": "1.0.3",
       "api": 1,
       "category": "data_source",
       "author": "xpilot",
       "description": "Lets a laptop, LLM server or accelerator exchange data with the device over a cable or WiFi (TCP JSON lines). Peers need the token in /data/params/d/XpilotExternalToken.",
-      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/external_compute-1.0.2.tar.gz",
-      "sha256": "3e6c094eb04f26979526b5860abaf45cb9629f5406bbf254a92f10ede1e71c0f",
+      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/external_compute-1.0.3.tar.gz",
+      "sha256": "834f9e8bcdf149c210594a11c162bac5a51348bec2bbb6a9db00f10ac913ee23",
       "platform": null,
       "default": false
     },

@@ -1,7 +1,7 @@
 {
   "id": "external_compute",
   "name": "External Compute",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "api": 1,
   "use": "onroad",
   "category": "data_source",

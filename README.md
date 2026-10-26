@@ -70,19 +70,22 @@ the host chooses first-boot packages from that flag and keeps its one-time `.def
 An old index with no flagged packages leaves the marker unset and is retried after the plugin PR merges.
 The eight display packages above carry the flag; no plugin ids are registered in the host.
 
-`external_compute` 1.0.2 owns its TCP provider and only needs `process:externald` and `msg:external.in`.
+`external_compute` 1.0.3 owns its TCP provider and only needs `process:externald` and `msg:external.in`.
 It publishes `pluginMsg` kind `external.in`, with the TCP dictionary (`source`, `kind`, `seq`, JSON-text
 `payload`, `validForMs`) as payload; outer source is `external_compute` and outer TTL matches the peer TTL.
 In-process consumers use `PluginMsgs().fresh("external.in")` and their own checked advisory hooks.
 For outbound data, a sender claims `msg:external.out` and uses `send_msg` with the TCP dictionary as payload.
 The bridge forwards only fresh `external.out`, sets TCP `source` to the sending plugin id and never echoes
-inbound messages. The host's single-publisher limit still applies: inbound and outbound publishers cannot
-run together; this release does not provide simultaneous bidirectional messaging or a broker.
+inbound messages. Inbound and outbound publishers run concurrently through the host's `plugin_msgd`
+broker; neither the bridge nor sending plugins create a `pluginMsg` PubMaster. Outbound events are
+forwarded once each, including repeated identical payloads. `PluginMsgs` consumers read fresh inbound data.
+The broker authenticates externald using its `process:externald` claim, with no external-specific host mapping.
 TCP hello/auth/rate/size limits stay in the plugin; the generated token lives in the store-backed
 `XpilotExternalToken` param (`/data/xpilot_plugins/.params/`). Plain TCP requires a trusted network.
 
 Merge/deploy the X-20261026-59 system PR first, then this plugin PR; no automatic merge.
-The previous external_compute release uses the removed host hook/services and must be upgraded with the host.
+external_compute 1.0.1 uses the removed host hook/services; 1.0.2 creates its own publisher.
+Upgrade to 1.0.3 with the broker host; deploy only the matching pair after both PRs merge.
 
 Tests: `cd plugins && python3 -m pytest -q .` with an xpilot checkout on `PYTHONPATH` (see `.github/workflows/ci.yml`).
 Run `python3 tools/runtime_rules_check.py --output /tmp/runtime-rules` with that same `PYTHONPATH` to validate

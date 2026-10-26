@@ -21,14 +21,10 @@ def main() -> None:
     params.put("XpilotExternalToken", token)
   provider = TcpProvider(token, port=int(params.get("XpilotExternalPort", return_default=True)))
   out_sock = messaging.sub_sock("pluginMsg", conflate=False)
-  pm = None
   try:
     while True:
       for data in provider.poll(0.02):
-        # shortcut: pluginMsg has one publisher; add a broker when concurrent directions are needed.
-        if pm is None:
-          pm = messaging.PubMaster(["pluginMsg"])
-        plugins.send_msg(pm, ExternalCompute, "external.in", data, data["validForMs"])
+        plugins.send_msg(ExternalCompute, "external.in", data, data["validForMs"])
       for event in messaging.drain_sock(out_sock):
         msg = event.pluginMsg
         if msg.kind == "external.out" and is_fresh(event.logMonoTime, msg.validForMs, time.monotonic_ns()):

@@ -4,6 +4,9 @@
 saturation windup; inactive state leakage/resume snap; learned safety VM;
 disabled baseline/COOP mutation; non-finite input (including held frames);
 exception/non-finite output fallback; card phase/limiter-order mismatch.
+- M1 mixed switch off: stock Autosteer signal/event is hidden or SP engages.
+- M2 mixed switch on: real stock Autosteer setting is cleared, event remains, or SP cannot engage.
+- M3 no mixed plugin: stock Autosteer signal/event is hidden or SP engages.
 
 Runs real discovery, ParamsView, CarPlugins, lateral_controller guard,
 LatControlAngle and Tesla CarController/CAN encoding. No device or daemon I/O.
@@ -105,7 +108,6 @@ def run(output):
     stack.enter_context(patch.object(plugins, "record_fault", lambda *a: faults.append(str(a))))
     params = ParamsView(core, specs)
     cls = next(c for c in classes if c.NAME == PLUGIN.name)
-    assert cls.CATEGORY == "controller" and cls.CLAIMS == ("role:lateral.controller",)
     assert cls.MANIFEST.rules == []
     assert cls.MANIFEST.params == {"XpTeslaMixedControl": {"type": "BOOL", "default": "0"}}
     sp_cp = structs.CarParamsSP(flags=flags)
@@ -113,6 +115,52 @@ def run(output):
 
     def controller():
       return plugins.lateral_controller(cp, sp_cp, ci, core, LatControlAngle(cp, sp_cp, ci, DT_CTRL))
+
+    from opendbc.can import CANPacker
+    from opendbc.car.tesla.values import CANBUS, TeslaFlags
+    from openpilot.cereal import custom, log
+    from openpilot.selfdrive.car.car_events import CarEvents
+    from openpilot.selfdrive.selfdrived.events import Events
+    from openpilot.selfdrive.selfdrived.state import StateMachine
+    from openpilot.sunnypilot.selfdrive.selfdrived.events import EventsSP
+    from openpilot.tesla import core_host
+
+    event_cp = get_safety_CP()
+    event_cp.flags = int(event_cp.flags & ~TeslaFlags.MISSING_DAS_SETTINGS)
+    event_cp.pcmCruise = True
+    event_ci = CarInterface(event_cp, sp_cp)
+    event_cases = []
+    for case, present, enabled in (("M1", True, False), ("M2", True, True), ("M3", False, False)):
+      params.put_bool("XpTeslaMixedControl", enabled)
+      parsers = event_ci.CS.get_can_parsers(event_cp, sp_cp)
+      msg = CANPacker(DBC[cp.carFingerprint][Bus.party]).make_can_msg("DAS_settings", CANBUS.autopilot_party,
+                                                                  {"DAS_autosteerEnabled": 1})
+      _ = parsers[Bus.ap_party].vl["DAS_settings"]
+      parsers[Bus.ap_party].update([(0, [msg])])
+      cs, _ = event_ci.CS.update(parsers)
+      cs.gearShifter, cs.cruiseState.available, cs.cruiseState.enabled = structs.CarState.GearShifter.drive, True, True
+      cs.doorOpen = cs.seatbeltUnlatched = cs.steerFaultPermanent = False
+      d = NS(CP=event_cp, CP_SP=sp_cp, params=params, sm={"pandaStates": []}, events=Events(), events_sp=EventsSP(),
+             state_machine=StateMachine(), mads=None)
+      def update_events(CS):
+        for e in CarEvents(event_cp).update(CS, structs.CarState(), structs.CarControl()).names:
+          d.events.add(e)
+      d.update_events = update_events
+      selected = classes if present else tuple(c for c in classes if c.NAME != cls.NAME)
+      with patch.object(plugins, "PLUGINS", selected):
+        core_host.install(d)
+        d.update_events(cs)
+        engaged, active = d.state_machine.update(d.events)
+      event_present = d.events.has(log.OnroadEvent.EventName.invalidLkasSetting)
+      event_cases.append(dict(case=case, stock_autosteer=1, invalid_lkas=cs.invalidLkasSetting,
+                             plugin_present=present, switch=enabled, event_present=event_present, engaged=engaged,
+                             passed=bool(cs.invalidLkasSetting and event_present != enabled and engaged == enabled and active == enabled
+                                         and not d.events_sp.has(custom.OnroadEventSP.EventName.xpilotPluginFault))))
+    (output / "event-filter.json").write_text(json.dumps(event_cases, indent=2) + "\n")
+    assert all(c["passed"] for c in event_cases), event_cases
+    assert cls.CATEGORY == "controller" and cls.CLAIMS == ("role:lateral.controller", "event.filter")
+    checks.append("M1-M3: real DAS_settings CAN -> true CarState -> SP events -> shared filter -> SP engagement")
+    params.put_bool("XpTeslaMixedControl", False)
 
     baseline = LatControlAngle(cp, sp_cp, ci, DT_CTRL)
     disabled = controller()

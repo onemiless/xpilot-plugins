@@ -7,7 +7,7 @@ while lateral control is active and clears its override when inactive.
 
 **SP must own steering. Stock Autosteer must not steer at the same time.**
 AP ownership and handoff (path 2) are not implemented. This plugin has only
-`role:lateral.controller`; CAN encoding, driver override gates, final angle
+`role:lateral.controller` and shared `event.filter` claims; CAN encoding, driver override gates, final angle
 limits and Panda checks remain in the existing host/car port. It has no CAN
 claim, safety profile, longitudinal behavior or UI tile. Host checks do not
 establish vehicle stability or safe concurrent Autosteer operation.
@@ -20,6 +20,21 @@ the driving processes. The setting is latched for the session. Setup clears
 `CP_SP.flags.COOP_STEERING` so the native port uses angle mode; it does not
 write the saved `TeslaCoopSteering` parameter. Disable the plugin and restart
 to restore the native parameter's meaning. There are no tuning settings.
+
+## Stock Autosteer setting (1.1.0)
+
+The shared `event_filter(ctx, CS, names, names_sp)` removes only the
+`invalidLkasSetting` event while `XpTeslaMixedControl` is on. CarState keeps
+the actual DAS_settings signal. With the switch off or the plugin absent,
+SP again blocks engagement when stock Autosteer is enabled in car settings.
+This permits the setting; AP ownership and handoff remain unimplemented.
+
+Version 1.1.0 requires the host `event_filter` hook. System
+`1b52d017f4` rejects its unknown `event.filter` claim, so the new plugin does
+not install or run there. Deploy both in one offroad session, **system first,
+plugin second**, then restart before driving. The E2E checks the actual
+DAS_settings CAN -> CarState -> SP events -> filter -> SP engagement chain
+with the plugin off, on and absent, saving `event-filter.json`.
 
 ## Timing and failure behavior
 

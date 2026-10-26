@@ -17,3 +17,8 @@ class TeslaMixedControl(Plugin):
   def lat_controller(cls, CP, CP_SP, CI, params):
     if params.get_bool(cls.ENABLE_PARAM):
       return MixedControl(CP, CP_SP, CI)
+
+  @classmethod
+  def event_filter(cls, ctx, CS, names, names_sp):
+    from openpilot.cereal import log
+    return ([log.OnroadEvent.EventName.invalidLkasSetting] if ctx.params.get_bool(cls.ENABLE_PARAM) else []), []

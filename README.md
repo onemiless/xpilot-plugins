@@ -31,7 +31,8 @@ tools/build_index.py     builds dist/ and index.json; --check verifies they are 
    that reproduces them (see Native plugins). CAN senders declare `rules` (`template_clone.v1`) and
    `requires: {"rule_abi": 1}`; `can.tx` claims must equal the rules' TX address/bus pairs. The host validates
    and compiles these rules for the Panda runtime engine. Legacy `safety` manifests are rejected;
-   there is no translation layer.
+   there is no translation layer. Store plugins are pure plugin/API extensions: all rule data
+   stays in the plugin manifest; no plugin-specific C header, registry or build hook lives in the system.
 5. Run `python3 tools/build_index.py` and commit `dist/` and `index.json` with the source.
 6. Describe in the PR what the plugin changes on the road, which claims it takes, and how you tested it.
 
@@ -60,7 +61,9 @@ Moved from the xpilot repository (keep their original param keys):
   `clock_tile`, `ip_tile`, `blindspot_edges`.
 - `bms`: battery tile. `traffic_light`: traffic light stop/start. `external_compute`: external compute bridge.
 - Runtime Panda rules (need host/firmware ABI 1): `auto_speed` (0x3C2), `ambient_light` (0x679), both 1.1.0.
-  The old 1.0.x archives are withdrawn. Merge the X-33 host support before this plugin release.
+  The old 1.0.x archives are withdrawn. X-20261026-57 removes the legacy system headers and
+  differential oracle; these published runtime rules stay unchanged. Merge the companion system PR
+  first, then this documentation PR. No plugin archive rebuild or device flash is part of this change.
 
 `default` is store metadata, separate from the enable param. The builder copies it to `index.json`;
 the host chooses first-boot packages from that flag and keeps its one-time `.defaults_done` marker.

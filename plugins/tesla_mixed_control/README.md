@@ -24,9 +24,12 @@ to restore the native parameter's meaning. There are no tuning settings.
 ## Stock Autosteer setting (1.1.0)
 
 The shared `event_filter(ctx, CS, names, names_sp)` removes only the
-`invalidLkasSetting` event while `XpTeslaMixedControl` is on. CarState keeps
-the actual DAS_settings signal. With the switch off or the plugin absent,
-SP again blocks engagement when stock Autosteer is enabled in car settings.
+`invalidLkasSetting` event. The host selects active plugins once at startup;
+with `XpTeslaMixedControl` off the filter is not installed. The filter does
+not reread the switch each frame. CarState keeps the actual DAS_settings
+signal. With the switch off at startup or the plugin absent, SP again blocks
+engagement when stock Autosteer is enabled in car settings. Switch changes
+take effect after restarting the driving processes.
 This permits the setting; AP ownership and handoff remain unimplemented.
 
 Version 1.1.0 requires the host `event_filter` hook. System

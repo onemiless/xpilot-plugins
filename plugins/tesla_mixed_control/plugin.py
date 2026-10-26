@@ -1,4 +1,5 @@
 from opendbc.sunnypilot.car.tesla.values import TeslaFlagsSP
+from openpilot.cereal import log
 from openpilot.tesla.plugin import Plugin
 
 from .controller import MixedControl
@@ -20,5 +21,4 @@ class TeslaMixedControl(Plugin):
 
   @classmethod
   def event_filter(cls, ctx, CS, names, names_sp):
-    from openpilot.cereal import log
-    return ([log.OnroadEvent.EventName.invalidLkasSetting] if ctx.params.get_bool(cls.ENABLE_PARAM) else []), []
+    return [log.OnroadEvent.EventName.invalidLkasSetting], []

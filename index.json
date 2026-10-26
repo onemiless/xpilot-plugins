@@ -193,7 +193,7 @@
       "author": "xpilot; dzid26; Haibin Wen and sunnypilot contributors",
       "description": "Angle-based cooperative steering: light driver torque adjusts the SP steering target with speed-dependent effort. SP must own steering; stock Autosteer must not steer at the same time (AP ownership/handoff is not implemented). Enable while parked, then restart. Overrides native TeslaCoopSteering mode for this session without changing its saved setting. Host-tested only; vehicle validation is pending.",
       "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/tesla_mixed_control-1.1.0.tar.gz",
-      "sha256": "a45f0a01a3b8d49b95f9f5760dbf3e372bdaa7feaf6dabc0bc207b03d34eee3d",
+      "sha256": "635373b884116a2522bd6ce5fe668f8eefebdc1277c11db585873ec6f347baa0",
       "platform": null
     },
     {

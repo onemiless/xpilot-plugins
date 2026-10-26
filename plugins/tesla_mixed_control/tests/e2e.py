@@ -7,6 +7,7 @@ exception/non-finite output fallback; card phase/limiter-order mismatch.
 - M1 mixed switch off: stock Autosteer signal/event is hidden or SP engages.
 - M2 mixed switch on: real stock Autosteer setting is cleared, event remains, or SP cannot engage.
 - M3 no mixed plugin: stock Autosteer signal/event is hidden or SP engages.
+- M4 event filtering reads the enable switch again after the host freezes active plugins at startup.
 
 Runs real discovery, ParamsView, CarPlugins, lateral_controller guard,
 LatControlAngle and Tesla CarController/CAN encoding. No device or daemon I/O.
@@ -149,8 +150,10 @@ def run(output):
       selected = classes if present else tuple(c for c in classes if c.NAME != cls.NAME)
       with patch.object(plugins, "PLUGINS", selected):
         core_host.install(d)
-        d.update_events(cs)
-        engaged, active = d.state_machine.update(d.events)
+        with patch.object(params, "get_bool", wraps=params.get_bool) as reads:
+          d.update_events(cs)
+          engaged, active = d.state_machine.update(d.events)
+        assert reads.call_count == 0, f"M4: {reads.call_count} per-frame Params reads in {case}"
       event_present = d.events.has(log.OnroadEvent.EventName.invalidLkasSetting)
       event_cases.append(dict(case=case, stock_autosteer=1, invalid_lkas=cs.invalidLkasSetting,
                              plugin_present=present, switch=enabled, event_present=event_present, engaged=engaged,
@@ -159,7 +162,7 @@ def run(output):
     (output / "event-filter.json").write_text(json.dumps(event_cases, indent=2) + "\n")
     assert all(c["passed"] for c in event_cases), event_cases
     assert cls.CATEGORY == "controller" and cls.CLAIMS == ("role:lateral.controller", "event.filter")
-    checks.append("M1-M3: real DAS_settings CAN -> true CarState -> SP events -> shared filter -> SP engagement")
+    checks.append("M1-M4: zero per-frame Params reads; real DAS_settings CAN -> true CarState -> SP events -> shared filter -> SP engagement")
     params.put_bool("XpTeslaMixedControl", False)
 
     baseline = LatControlAngle(cp, sp_cp, ci, DT_CTRL)

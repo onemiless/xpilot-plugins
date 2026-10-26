@@ -10,8 +10,14 @@
 - E8 a client flooding faster than max_rate_hz gets every message through
 - E9 a client disconnecting mid-stream crashes the bridge
 - E10 is_fresh accepts an expired message, or rejects one with validForMs 0 (no expiry)
+- E11 TCP -> pluginMsg loses peer fields/TTL, publishes undeclared kinds, or echoes back to TCP
+- E12 pluginMsg -> TCP loses fields, forwards unrelated/expired data, or creates a second publisher
+- E13 source manifests and built index/archive disagree on the eight default tiles
 """
 import json
+from pathlib import Path
+import platform
+import shutil
 import socket
 import time
 
@@ -132,3 +138,104 @@ def test_is_fresh_e10():
   assert not is_fresh(now - 600_000_000, 500, now)
   assert is_fresh(now - 400_000_000, 500, now)
   assert is_fresh(0, 0, now)
+
+
+def test_pluginmsg_bridge_e11_e12(monkeypatch, tmp_path):
+  import threading
+  from openpilot.cereal import messaging
+  from openpilot.tesla import plugins
+  from .. import externald
+  from ..plugin import ExternalCompute
+
+  manifest = json.loads(Path(__file__).parents[1].joinpath("plugin.json").read_text())
+  monkeypatch.setattr(ExternalCompute, "NAME", manifest["id"])
+  monkeypatch.setattr(ExternalCompute, "CLAIMS", tuple(manifest["claims"]))
+  monkeypatch.setattr(plugins, "view", lambda params: params)
+  errors = []
+
+  class StopBridge(BaseException):
+    pass
+
+  for inbound in (True, False):
+    monkeypatch.setenv("OPENPILOT_PREFIX", f"{tmp_path.name}-{inbound}")
+    ipc = Path("/tmp" if platform.system() == "Darwin" else "/dev/shm") / f"msgq_{tmp_path.name}-{inbound}"
+    ipc.mkdir()
+    provider = TcpProvider(TOKEN, host="127.0.0.1", port=0)
+    monkeypatch.setattr(externald, "TcpProvider", lambda *a, **k: provider, raising=False)
+    class Params:
+      def get(self, key, **kwargs):
+        return TOKEN if key == "XpilotExternalToken" else provider.port
+    monkeypatch.setattr(externald, "Params", Params)
+    stop = threading.Event()
+    poll = provider.poll
+    def bounded_poll(timeout):
+      if stop.is_set():
+        raise StopBridge()
+      return poll(timeout)
+    monkeypatch.setattr(provider, "poll", bounded_poll)
+    def run():
+      try:
+        externald.main()
+      except StopBridge:
+        pass
+      except Exception as exc:
+        errors.append(repr(exc))
+    reader = plugins.PluginMsgs()
+    thread = threading.Thread(target=run, daemon=True)
+    thread.start()
+    peer = connect(provider.port)
+    try:
+      line(peer, {"hello": TOKEN, "name": "laptop"})
+      assert recv_lines(peer) == [{"ok": True}], errors
+      wire = {"source": "laptop", "kind": "llm.reply", "seq": 7,
+              "payload": json.dumps({"text": "hi"}), "validForMs": 1000}
+      if inbound:
+        end, got = time.monotonic() + 2, {}
+        while not got and time.monotonic() < end:
+          line(peer, {**wire, "payload": {"text": "hi"}})
+          time.sleep(0.05)
+          got = reader.fresh("external.in")
+        assert got == {"external_compute": wire}, errors
+        assert not reader.fresh("external.in", time.monotonic_ns() + 2_000_000_000)
+        assert recv_lines(peer) == [], "inbound message echoed"
+      else:
+        class Sender:
+          NAME, CLAIMS = "sender", ("msg:external.out", "msg:other")
+        pm = messaging.PubMaster(["pluginMsg"])
+        time.sleep(0.05)
+        assert plugins.send_msg(pm, Sender, "other", wire)
+        expired = messaging.new_message("pluginMsg", logMonoTime=time.monotonic_ns() - 2_000_000_000)
+        expired.pluginMsg = {"source": Sender.NAME, "kind": "external.out", "payload": json.dumps(wire), "validForMs": 1}
+        pm.send("pluginMsg", expired)
+        assert recv_lines(peer) == []
+        assert plugins.send_msg(pm, Sender, "external.out", wire, 1000)
+        assert recv_lines(peer) == [{**wire, "source": "sender"}], errors
+        del pm
+    finally:
+      peer.close()
+      stop.set()
+      thread.join(2)
+      provider.close()
+      shutil.rmtree(ipc)
+    assert not thread.is_alive() and errors == [], errors
+
+
+def test_default_catalog_e13():
+  import importlib.util
+  import io
+  import tarfile
+
+  root = Path(__file__).resolve().parents[3]
+  spec = importlib.util.spec_from_file_location("build_index", root / "tools/build_index.py")
+  builder = importlib.util.module_from_spec(spec)
+  spec.loader.exec_module(builder)
+  files = builder.build()
+  entries = json.loads(files[root / "index.json"])["plugins"]
+  expected = {"speed_card", "lead_card", "speed_limit_card", "car_tile", "map_tile", "clock_tile", "ip_tile", "blindspot_edges"}
+  assert {e["id"] for e in entries if e.get("default") is True} == expected
+  for entry in entries:
+    source = json.loads((root / "plugins" / entry["id"] / "plugin.json").read_text())
+    assert entry.get("default", False) is source.get("default", False)
+    data = files[root / "dist" / f"{entry['id']}-{entry['version']}.tar.gz"]
+    with tarfile.open(fileobj=io.BytesIO(data)) as archive:
+      assert json.load(archive.extractfile(f"{entry['id']}/plugin.json")) == source

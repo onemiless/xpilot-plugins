@@ -1,8 +1,7 @@
-"""External compute provider interface. A provider moves ExternalData dicts between the device and one kind of
-external compute; externald runs every provider in PROVIDERS and bridges them to cereal externalIn/externalOut.
+"""Plugin-local external compute transport; externald wraps wire dicts in pluginMsg.
 
-Message dict (same fields as cereal ExternalData): source, kind, seq, payload (JSON text), validForMs.
-Add a provider (e.g. an HTTP client for an LLM API): subclass Provider in its own module and list it in externald.
+Wire fields: source (peer name), kind, seq, payload (JSON text), validForMs.
+Add providers inside this plugin; no host hook is needed.
 """
 
 
@@ -14,12 +13,12 @@ class Provider:
     return []
 
   def send(self, msg: dict) -> None:
-    """Deliver one device message (from externalOut) to external compute, if this provider wants it."""
+    """Deliver one device message (from an external.out envelope) to external compute, if this provider wants it."""
 
   def close(self) -> None:
     pass
 
 
 def is_fresh(log_mono_ns: int, valid_for_ms: int, now_ns: int) -> bool:
-  """Consumers: True while an externalIn message is within its validForMs (0 = no expiry)."""
+  """Consumers: True while a pluginMsg envelope is within its validForMs (0 = no expiry)."""
   return valid_for_ms == 0 or 0 <= now_ns - log_mono_ns <= valid_for_ms * 1_000_000

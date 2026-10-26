@@ -1,7 +1,7 @@
 {
   "id": "blindspot_edges",
   "name": "Blind Spot Edges",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "api": 1,
   "use": "onroad",
   "category": "overlays",
@@ -16,5 +16,6 @@
       "type": "BOOL",
       "default": "1"
     }
-  }
+  },
+  "default": true
 }

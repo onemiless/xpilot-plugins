@@ -1,7 +1,7 @@
 {
   "id": "clock_tile",
   "name": "Clock Tile",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "api": 1,
   "use": "both",
   "category": "ui",
@@ -16,5 +16,6 @@
       "type": "BOOL",
       "default": "1"
     }
-  }
+  },
+  "default": true
 }

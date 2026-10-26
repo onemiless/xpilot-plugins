@@ -2,8 +2,8 @@
 and exchanges JSON lines.
 
   peer -> device  {"hello": "<XpilotExternalToken>", "name": "laptop"}      device replies {"ok": true}
-  peer -> device  {"kind": "vision.lanes", "payload": {...}, "validForMs": 200, "seq": 1}   -> externalIn
-  device -> peer  {"source": ..., "kind": ..., "seq": ..., "payload": "<json>", "validForMs": ...}  <- externalOut
+  peer -> device  {"kind": "vision.lanes", "payload": {...}, "validForMs": 200, "seq": 1}   -> pluginMsg external.in envelope
+  device -> peer  {"source": ..., "kind": ..., "seq": ..., "payload": "<json>", "validForMs": ...}  <- pluginMsg external.out envelope
 
 A connection is closed on a wrong or missing hello, a line over max_line bytes, no hello within HELLO_TIMEOUT_S,
 or a full send buffer. Lines over max_rate_hz are dropped. Plain TCP: use it on links you trust.

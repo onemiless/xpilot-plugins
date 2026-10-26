@@ -144,7 +144,7 @@ def run(output):
       d = NS(CP=event_cp, CP_SP=sp_cp, params=params, sm={"pandaStates": []}, events=Events(), events_sp=EventsSP(),
              state_machine=StateMachine(), mads=None)
       def update_events(CS):
-        for e in CarEvents(event_cp).update(CS, structs.CarState(), structs.CarControl()).names:
+        for e in CarEvents(event_cp).update(CS, structs.CarState(), structs.CarControl(), NS(longOwner="stock")).names:
           d.events.add(e)
       d.update_events = update_events
       selected = classes if present else tuple(c for c in classes if c.NAME != cls.NAME)

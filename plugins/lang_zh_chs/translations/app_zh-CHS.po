@@ -1,0 +1,1855 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: zh-CHS\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid " Steering torque response calibration is complete."
+msgstr " 转向扭矩响应校准完成。"
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid " Steering torque response calibration is {}% complete."
+msgstr " 转向扭矩响应校准已完成 {}%。"
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid " Your device is pointed {:.1f}° {} and {:.1f}° {}."
+msgstr " 您的设备朝向 {:.1f}° {} 与 {:.1f}° {}。"
+
+#: openpilot/selfdrive/ui/layouts/sidebar.py
+msgid "--"
+msgstr "--"
+
+#: openpilot/selfdrive/ui/widgets/prime.py
+msgid "1 year of drive storage"
+msgstr "1 年行驶数据存储"
+
+#: openpilot/selfdrive/ui/widgets/prime.py
+msgid "24/7 LTE connectivity"
+msgstr "全天候 LTE 连接"
+
+#: openpilot/selfdrive/ui/layouts/sidebar.py
+msgid "2G"
+msgstr "2G"
+
+#: openpilot/selfdrive/ui/layouts/sidebar.py
+msgid "3G"
+msgstr "3G"
+
+#: openpilot/selfdrive/ui/layouts/sidebar.py
+msgid "5G"
+msgstr "5G"
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid "<br><br>Steering lag calibration is complete."
+msgstr "<br><br>转向延迟校准完成。"
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid "<br><br>Steering lag calibration is {}% complete."
+msgstr "<br><br>转向延迟校准已完成 {}%。"
+
+#: openpilot/selfdrive/ui/widgets/ssh_key.py
+msgid "ADD"
+msgstr "添加"
+
+#: system/ui/widgets/network.py
+msgid "APN Setting"
+msgstr "APN 设置"
+
+#: openpilot/selfdrive/ui/widgets/offroad_alerts.py
+msgid "Acknowledge Excessive Actuation"
+msgstr "确认过度作动"
+
+#: system/ui/widgets/network.py
+msgid "Advanced"
+msgstr "高级"
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "Aggressive"
+msgstr "激进"
+
+#: openpilot/selfdrive/ui/layouts/onboarding.py
+msgid "Agree"
+msgstr "同意"
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "Always-On Driver Monitoring"
+msgstr "始终启用驾驶员监控"
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid "Are you sure you want to power off?"
+msgstr "确定要关机吗？"
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid "Are you sure you want to reboot?"
+msgstr "确定要重启吗？"
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid "Are you sure you want to reset calibration?"
+msgstr "确定要重置校准吗？"
+
+#: openpilot/selfdrive/ui/layouts/settings/software.py
+msgid "Are you sure you want to uninstall?"
+msgstr "确定要卸载吗？"
+
+#: openpilot/selfdrive/ui/layouts/onboarding.py system/ui/widgets/network.py
+msgid "Back"
+msgstr "返回"
+
+#: openpilot/selfdrive/ui/widgets/prime.py
+msgid "Become a comma prime member at connect.comma.ai"
+msgstr "前往 connect.comma.ai 成为 comma prime 会员"
+
+#: openpilot/selfdrive/ui/widgets/pairing_dialog.py
+msgid "Bookmark connect.comma.ai to your home screen to use it like an app"
+msgstr "将 connect.comma.ai 添加到主屏幕，像应用一样使用"
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid "CHANGE"
+msgstr "更改"
+
+#: openpilot/selfdrive/ui/layouts/settings/software.py
+msgid "CHECK"
+msgstr "检查"
+
+#: openpilot/selfdrive/ui/layouts/sidebar.py system/ui/widgets/network.py
+msgid "CONNECT"
+msgstr "连接"
+
+#: system/ui/widgets/network.py
+msgid "CONNECTING..."
+msgstr "连接中..."
+
+#: system/ui/widgets/confirm_dialog.py system/ui/widgets/keyboard.py
+#: system/ui/widgets/network.py system/ui/widgets/option_dialog.py
+msgid "Cancel"
+msgstr "取消"
+
+#: system/ui/widgets/network.py
+msgid "Cellular Metered"
+msgstr "蜂窝计量"
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid "Change Language"
+msgstr "更改语言"
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "Changing this setting will restart sunnypilot if the car is powered on."
+msgstr "若车辆通电，更改此设置将重启 sunnypilot。"
+
+#: system/ui/sunnypilot/widgets/sunnylink_pairing_dialog.py
+msgid "Choose your sponsorship tier and confirm your support"
+msgstr "选择您的赞助级别并确认您的支持"
+
+#: openpilot/selfdrive/ui/widgets/pairing_dialog.py
+msgid "Click \"add new device\" and scan the QR code on the right"
+msgstr "点击“添加新设备”，扫描右侧二维码"
+
+#: openpilot/selfdrive/ui/widgets/offroad_alerts.py
+msgid "Close"
+msgstr "关闭"
+
+#: openpilot/selfdrive/ui/layouts/settings/software.py
+msgid "Current Version"
+msgstr "当前版本"
+
+#: openpilot/selfdrive/ui/layouts/settings/software.py
+msgid "DOWNLOAD"
+msgstr "下载"
+
+#: openpilot/selfdrive/ui/layouts/onboarding.py
+msgid "Decline"
+msgstr "拒绝"
+
+#: openpilot/selfdrive/ui/layouts/onboarding.py
+msgid "Decline, uninstall sunnypilot"
+msgstr "拒绝并卸载 sunnypilot"
+
+#: openpilot/selfdrive/ui/layouts/settings/settings.py
+msgid "Developer"
+msgstr "开发者"
+
+#: openpilot/selfdrive/ui/layouts/settings/settings.py
+msgid "Device"
+msgstr "设备"
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "Disengage on Accelerator Pedal"
+msgstr "踩下加速踏板时脱离"
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid "Disengage to Power Off"
+msgstr "脱离以关机"
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid "Disengage to Reboot"
+msgstr "脱离以重启"
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid "Disengage to Reset Calibration"
+msgstr "脱离以重置校准"
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "Display speed in km/h instead of mph."
+msgstr "以 km/h 显示速度（非 mph）。"
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid "Dongle ID"
+msgstr "设备 ID"
+
+#: openpilot/selfdrive/ui/layouts/settings/software.py
+msgid "Download"
+msgstr "下载"
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid "Driver Camera"
+msgstr "车内摄像头"
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "Driving Personality"
+msgstr "驾驶风格"
+
+#: system/ui/widgets/network.py
+msgid "EDIT"
+msgstr "编辑"
+
+#: openpilot/selfdrive/ui/layouts/sidebar.py
+msgid "ERROR"
+msgstr "错误"
+
+#: openpilot/selfdrive/ui/layouts/sidebar.py
+msgid "ETH"
+msgstr "ETH"
+
+#: openpilot/selfdrive/ui/widgets/exp_mode_button.py
+msgid "EXPERIMENTAL MODE ON"
+msgstr "实验模式已开启"
+
+#: system/ui/sunnypilot/widgets/sunnylink_pairing_dialog.py
+msgid "Early Access: Become a sunnypilot Sponsor"
+msgstr "优先权限：成为sunnypilot赞助者"
+
+#: openpilot/selfdrive/ui/layouts/settings/developer.py
+msgid "Enable"
+msgstr "启用"
+
+#: openpilot/selfdrive/ui/layouts/settings/developer.py
+msgid "Enable ADB"
+msgstr "启用 ADB"
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "Enable Lane Departure Warnings"
+msgstr "启用车道偏离警示"
+
+#: system/ui/widgets/network.py
+msgid "Enable Roaming"
+msgstr "启用漫游"
+
+#: openpilot/selfdrive/ui/layouts/settings/developer.py
+msgid "Enable SSH"
+msgstr "启用 SSH"
+
+#: system/ui/widgets/network.py
+msgid "Enable Tethering"
+msgstr "启用网络共享"
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "Enable driver monitoring even when sunnypilot is not engaged."
+msgstr "即使未启用 sunnypilot 也启用驾驶员监控。"
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "Enable sunnypilot"
+msgstr "启用 sunnypilot"
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "Enable the sunnypilot longitudinal control (alpha) toggle to allow Experimental mode."
+msgstr "启用 sunnypilot 纵向控制（alpha）开关，以使用实验模式。"
+
+#: system/ui/widgets/network.py
+msgid "Enter APN"
+msgstr "输入 APN"
+
+#: system/ui/widgets/network.py
+msgid "Enter SSID"
+msgstr "输入 SSID"
+
+#: system/ui/widgets/network.py
+msgid "Enter new tethering password"
+msgstr "输入新的网络共享密码"
+
+#: system/ui/widgets/network.py
+msgid "Enter password"
+msgstr "输入密码"
+
+#: system/ui/sunnypilot/widgets/tree_dialog.py
+msgid "Enter search query"
+msgstr "输入搜索查询"
+
+#: openpilot/selfdrive/ui/widgets/ssh_key.py
+msgid "Enter your GitHub username"
+msgstr "输入您的 GitHub 用户名"
+
+#: system/ui/widgets/list_view.py
+msgid "Error"
+msgstr "错误"
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "Experimental Mode"
+msgstr "实验模式"
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "Experimental mode is currently unavailable on this car since the car's stock ACC is used for longitudinal control."
+msgstr "此车型当前无法使用实验模式，因为纵向控制使用的是原厂 ACC。"
+
+#: system/ui/widgets/network.py
+msgid "FORGETTING..."
+msgstr "正在遗忘..."
+
+#: openpilot/selfdrive/ui/widgets/setup.py
+msgid "Finish Setup"
+msgstr "完成设置"
+
+#: openpilot/selfdrive/ui/layouts/settings/settings.py
+msgid "Firehose"
+msgstr "数据洪流"
+
+#: openpilot/selfdrive/ui/layouts/settings/firehose.py
+msgid "Firehose Mode"
+msgstr "Firehose 模式"
+
+#: system/ui/sunnypilot/widgets/sunnylink_pairing_dialog.py
+msgid "Follow the prompts to complete the pairing process"
+msgstr "按照提示完成绑定"
+
+#: system/ui/widgets/network.py
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "Following Distance"
+msgstr "跟车距离"
+
+msgid "Forget"
+msgstr "忘记"
+
+#: system/ui/widgets/network.py
+msgid "Forget Wi-Fi Network \"{}\"?"
+msgstr "要忘记 Wi‑Fi 网络“{}”吗？"
+
+#: openpilot/selfdrive/ui/layouts/sidebar.py
+msgid "GOOD"
+msgstr "良好"
+
+#: openpilot/selfdrive/ui/widgets/pairing_dialog.py
+msgid "Go to https://connect.comma.ai on your phone"
+msgstr "在手机上前往 https://connect.comma.ai"
+
+#: openpilot/selfdrive/ui/layouts/sidebar.py
+msgid "HIGH"
+msgstr "高"
+
+#: system/ui/widgets/network.py
+msgid "Hidden Network"
+msgstr "隐藏网络"
+
+#: openpilot/selfdrive/ui/layouts/settings/software.py
+msgid "INSTALL"
+msgstr "安装"
+
+#: system/ui/widgets/network.py
+msgid "IP Address"
+msgstr "IP 地址"
+
+#: system/ui/sunnypilot/widgets/sunnylink_pairing_dialog.py
+msgid "If sponsorship status was not updated, please contact a moderator on the community forum at https://community.sunnypilot.ai"
+msgstr "如果赞助状态没有更新，请联系社区管理员，网址为 https://community.sunnypilot.ai"
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "Initial Max Speed"
+msgstr "初始最高速度"
+
+#: openpilot/selfdrive/ui/layouts/settings/software.py
+msgid "Install Update"
+msgstr "安装更新"
+
+#: system/ui/sunnypilot/widgets/sunnylink_pairing_dialog.py
+msgid "Join our Community Forum at https://community.sunnypilot.ai and reach out to a moderator if you have issues"
+msgstr "加入我们的社区 https://community.sunnypilot.ai  并联系管理员确认赞助者身份"
+
+#: openpilot/selfdrive/ui/layouts/settings/developer.py
+msgid "Joystick Debug Mode"
+msgstr "摇杆调试模式"
+
+#: openpilot/selfdrive/ui/widgets/ssh_key.py
+msgid "LOADING"
+msgstr "加载中"
+
+#: openpilot/selfdrive/ui/layouts/sidebar.py
+msgid "LTE"
+msgstr "LTE"
+
+#: openpilot/selfdrive/ui/layouts/settings/developer.py
+msgid "Lateral Maneuver Mode"
+msgstr "横向机动模式"
+
+#: openpilot/selfdrive/ui/layouts/settings/developer.py
+msgid "Longitudinal Maneuver Mode"
+msgstr "纵向操作模式"
+
+#: openpilot/selfdrive/ui/onroad/hud_renderer.py
+msgid "MAX"
+msgstr "最大"
+
+#: openpilot/selfdrive/ui/widgets/setup.py
+msgid "Maximize your training data uploads to improve openpilot's driving models."
+msgstr "最大化上传训练数据，以改进 openpilot 的驾驶模型。"
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid "N/A"
+msgstr "无"
+
+#: openpilot/selfdrive/ui/layouts/sidebar.py
+msgid "NO"
+msgstr "否"
+
+#: openpilot/selfdrive/ui/layouts/settings/settings.py
+msgid "Network"
+msgstr "网络"
+
+#: openpilot/selfdrive/ui/widgets/ssh_key.py
+msgid "No SSH keys found for user '{}'"
+msgstr "未找到用户“{}”的 SSH 密钥"
+
+#: openpilot/selfdrive/ui/widgets/offroad_alerts.py
+msgid "No release notes available."
+msgstr "暂无发行说明。"
+
+#: openpilot/selfdrive/ui/layouts/sidebar.py
+msgid "OFFLINE"
+msgstr "离线"
+
+#: openpilot/selfdrive/ui/layouts/sidebar.py
+#: system/ui/widgets/confirm_dialog.py system/ui/widgets/html_render.py
+msgid "OK"
+msgstr "确定"
+
+#: openpilot/selfdrive/ui/layouts/sidebar.py
+msgid "ONLINE"
+msgstr "在线"
+
+#: openpilot/selfdrive/ui/widgets/setup.py
+msgid "Open"
+msgstr "打开"
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid "PAIR"
+msgstr "配对"
+
+#: openpilot/selfdrive/ui/layouts/sidebar.py
+msgid "PANDA"
+msgstr "PANDA"
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid "PREVIEW"
+msgstr "预览"
+
+#: openpilot/selfdrive/ui/widgets/prime.py
+msgid "PRIME FEATURES:"
+msgstr "PRIME 功能："
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid "Pair Device"
+msgstr "配对设备"
+
+#: openpilot/selfdrive/ui/widgets/setup.py
+msgid "Pair device"
+msgstr "配对设备"
+
+#: system/ui/sunnypilot/widgets/sunnylink_pairing_dialog.py
+msgid "Pair your GitHub account"
+msgstr "绑定您的GitHub帐户"
+
+#: openpilot/selfdrive/ui/widgets/pairing_dialog.py
+msgid "Pair your device to your comma account"
+msgstr "将设备配对到您的 comma 账号"
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+#: openpilot/selfdrive/ui/widgets/setup.py
+msgid "Pair your device with comma connect (connect.comma.ai) and claim your comma prime offer."
+msgstr "将设备与 comma connect（connect.comma.ai）配对，领取您的 comma prime 优惠。"
+
+#: openpilot/selfdrive/ui/widgets/setup.py
+msgid "Please connect to Wi-Fi to complete initial pairing"
+msgstr "请连接 Wi‑Fi 以完成初始配对"
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid "Power Off"
+msgstr "关机"
+
+#: system/ui/widgets/network.py
+msgid "Prevent large data uploads when on a metered Wi-Fi connection"
+msgstr "在计量制 Wi‑Fi 连接时避免大量上传"
+
+#: system/ui/widgets/network.py
+msgid "Prevent large data uploads when on a metered cellular connection"
+msgstr "在计量制蜂窝网络时避免大量上传"
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid "Preview the driver facing camera to ensure that driver monitoring has good visibility. (vehicle must be off)"
+msgstr "预览车内摄像头以确保驾驶员监控视野良好。（车辆必须熄火）"
+
+#: openpilot/selfdrive/ui/widgets/pairing_dialog.py
+msgid "QR Code Error"
+msgstr "二维码错误"
+
+#: openpilot/selfdrive/ui/widgets/ssh_key.py
+msgid "REMOVE"
+msgstr "移除"
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid "RESET"
+msgstr "重置"
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid "REVIEW"
+msgstr "查看"
+
+#: system/ui/sunnypilot/widgets/sunnylink_pairing_dialog.py
+msgid "Re-enter the \"sunnylink\" panel to verify sponsorship status"
+msgstr "重新进入sunnylink面板确认赞助状态"
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid "Reboot"
+msgstr "重启"
+
+#: openpilot/selfdrive/ui/onroad/alert_renderer.py
+msgid "Reboot Device"
+msgstr "重启设备"
+
+#: openpilot/selfdrive/ui/widgets/offroad_alerts.py
+msgid "Reboot and Update"
+msgstr "重启并更新"
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "Record and Upload Driver Camera"
+msgstr "录制并上传车内摄像头"
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "Record and Upload Microphone Audio"
+msgstr "录制并上传麦克风音频"
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "Record and store microphone audio while driving. The audio will be included in the dashcam video in comma connect."
+msgstr "行驶时录制并保存麦克风音频。音频将包含在 comma connect 的行车记录视频中。"
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid "Regulatory"
+msgstr "法规"
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "Relaxed"
+msgstr "从容"
+
+#: openpilot/selfdrive/ui/widgets/prime.py
+msgid "Remote access"
+msgstr "远程访问"
+
+#: openpilot/selfdrive/ui/widgets/prime.py
+msgid "Remote snapshots"
+msgstr "远程快照"
+
+#: openpilot/selfdrive/ui/widgets/ssh_key.py
+msgid "Request timed out"
+msgstr "请求超时"
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid "Reset"
+msgstr "重置"
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid "Reset Calibration"
+msgstr "重置校准"
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid "Review Training Guide"
+msgstr "查看训练指南"
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid "Review the rules, features, and limitations of sunnypilot"
+msgstr "查看 sunnypilot 的使用规则，以及其功能和限制"
+
+#: openpilot/selfdrive/ui/layouts/settings/software.py
+msgid "SELECT"
+msgstr "选择"
+
+#: openpilot/selfdrive/ui/layouts/settings/developer.py
+msgid "SSH Keys"
+msgstr "SSH 密钥"
+
+#: system/ui/sunnypilot/widgets/sunnylink_pairing_dialog.py
+msgid "Scan the QR code to login to your GitHub account"
+msgstr "扫描二维码绑定GitHub账号"
+
+#: system/ui/sunnypilot/widgets/sunnylink_pairing_dialog.py
+msgid "Scan the QR code to visit sunnyhaibin's GitHub Sponsors page"
+msgstr "扫描二维码访问赞助者页面"
+
+#: system/ui/widgets/network.py
+msgid "Scanning Wi-Fi networks..."
+msgstr "正在扫描 Wi‑Fi 网络…"
+
+#: system/ui/sunnypilot/widgets/tree_dialog.py
+msgid "Search"
+msgstr "搜索"
+
+#: system/ui/widgets/option_dialog.py
+msgid "Select"
+msgstr "选择"
+
+#: openpilot/selfdrive/ui/layouts/settings/software.py
+msgid "Select a branch"
+msgstr "选择分支"
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid "Select a language"
+msgstr "选择语言"
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid "Serial"
+msgstr "序列号"
+
+#: openpilot/selfdrive/ui/widgets/offroad_alerts.py
+msgid "Snooze Update"
+msgstr "延后更新"
+
+#: openpilot/selfdrive/ui/layouts/settings/settings.py
+msgid "Software"
+msgstr "软件"
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "Standard"
+msgstr "标准"
+
+#: openpilot/selfdrive/ui/onroad/alert_renderer.py
+msgid "System Unresponsive"
+msgstr "系统无响应"
+
+#: openpilot/selfdrive/ui/onroad/alert_renderer.py
+msgid "TAKE CONTROL IMMEDIATELY"
+msgstr "请立即接管控制"
+
+#: openpilot/selfdrive/ui/layouts/sidebar.py
+msgid "TEMP"
+msgstr "温度"
+
+#: openpilot/selfdrive/ui/layouts/settings/software.py
+msgid "Target Branch"
+msgstr "目标分支"
+
+#: system/ui/widgets/network.py
+msgid "Tethering Password"
+msgstr "网络共享密码"
+
+#: openpilot/selfdrive/ui/layouts/settings/settings.py
+msgid "Toggles"
+msgstr "切换"
+
+#: openpilot/selfdrive/ui/layouts/settings/developer.py
+msgid "UI Debug Mode"
+msgstr "界面调试模式"
+
+#: openpilot/selfdrive/ui/layouts/settings/software.py
+msgid "UNINSTALL"
+msgstr "卸载"
+
+#: openpilot/selfdrive/ui/layouts/home.py
+msgid "UPDATE"
+msgstr "更新"
+
+#: openpilot/selfdrive/ui/layouts/settings/software.py
+msgid "Uninstall"
+msgstr "卸载"
+
+#: openpilot/selfdrive/ui/layouts/sidebar.py
+msgid "Unknown"
+msgstr "未知"
+
+#: openpilot/selfdrive/ui/layouts/settings/software.py
+msgid "Updates are only downloaded while the car is off."
+msgstr "仅在车辆熄火时下载更新。"
+
+#: openpilot/selfdrive/ui/widgets/prime.py
+msgid "Upgrade Now"
+msgstr "立即升级"
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "Upload data from the driver facing camera and help improve the driver monitoring algorithm."
+msgstr "上传车内摄像头数据，帮助改进驾驶员监控算法。"
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "Use Metric System"
+msgstr "使用公制"
+
+#: openpilot/selfdrive/ui/layouts/sidebar.py
+msgid "VEHICLE"
+msgstr "车辆"
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid "VIEW"
+msgstr "查看"
+
+#: openpilot/selfdrive/ui/onroad/alert_renderer.py
+msgid "Waiting to start"
+msgstr "等待开始"
+
+#: openpilot/selfdrive/ui/layouts/onboarding.py
+msgid "Welcome to sunnypilot"
+msgstr "欢迎使用 sunnypilot"
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "When enabled, pressing the accelerator pedal will disengage sunnypilot."
+msgstr "启用后，踩下加速踏板将会脱离 sunnypilot"
+
+#: openpilot/selfdrive/ui/layouts/sidebar.py
+msgid "Wi-Fi"
+msgstr "Wi‑Fi"
+
+#: system/ui/widgets/network.py
+msgid "Wi-Fi Network Metered"
+msgstr "Wi‑Fi 计量网络"
+
+#: system/ui/widgets/network.py
+msgid "Wrong password"
+msgstr "密码错误"
+
+#: openpilot/selfdrive/ui/layouts/onboarding.py
+msgid "You must accept the Terms of Service in order to use sunnypilot."
+msgstr "您需要接受服务条款才能使用sunnypilot功能。"
+
+#: openpilot/selfdrive/ui/layouts/onboarding.py
+msgid "You must accept the Terms of Service to use sunnypilot. Read the latest terms at https://sunnypilot.ai/terms before continuing."
+msgstr "您必须接受服务条款才能使用sunnypilot。使用前请在 https://sunnypilot.ai/terms 阅读最新条款。"
+
+#: openpilot/selfdrive/ui/onroad/driver_camera_dialog.py
+msgid "camera starting"
+msgstr "相机启动中"
+
+#: openpilot/selfdrive/ui/layouts/settings/software.py
+msgid "checking..."
+msgstr "检查中..."
+
+#: openpilot/selfdrive/ui/widgets/prime.py
+msgid "comma prime"
+msgstr "comma prime"
+
+#: system/ui/widgets/network.py
+msgid "default"
+msgstr "默认"
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid "down"
+msgstr "下"
+
+#: openpilot/selfdrive/ui/layouts/settings/software.py
+msgid "downloading..."
+msgstr "下载中..."
+
+#: openpilot/selfdrive/ui/layouts/settings/software.py
+msgid "failed to check for update"
+msgstr "检查更新失败"
+
+#: openpilot/selfdrive/ui/layouts/settings/software.py
+msgid "finalizing update..."
+msgstr "正在完成更新..."
+
+#: system/ui/widgets/network.py
+msgid "for \"{}\""
+msgstr "用于“{}”"
+
+#: openpilot/selfdrive/ui/layouts/settings/initial_cruise_speed.py
+#: openpilot/selfdrive/ui/onroad/hud_renderer.py
+msgid "km/h"
+msgstr "km/h"
+
+#: system/ui/widgets/network.py
+msgid "leave blank for automatic configuration"
+msgstr "留空以自动配置"
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid "left"
+msgstr "左"
+
+#: system/ui/widgets/network.py
+msgid "metered"
+msgstr "计量"
+
+#: openpilot/selfdrive/ui/layouts/settings/initial_cruise_speed.py
+#: openpilot/selfdrive/ui/onroad/hud_renderer.py
+msgid "mph"
+msgstr "mph"
+
+#: openpilot/selfdrive/ui/layouts/settings/software.py
+msgid "never"
+msgstr "从不"
+
+#: openpilot/selfdrive/ui/layouts/settings/software.py
+msgid "now"
+msgstr "现在"
+
+#: openpilot/selfdrive/ui/layouts/settings/developer.py
+msgid "openpilot Longitudinal Control (Alpha)"
+msgstr "openpilot 纵向控制（Alpha）"
+
+#: openpilot/selfdrive/ui/onroad/alert_renderer.py
+msgid "openpilot Unavailable"
+msgstr "openpilot 不可用"
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid "openpilot requires the device to be mounted within 4° left or right and within 5° up or 9° down."
+msgstr "openpilot 要求设备左右倾斜不超过 4°，向上不超过 5°、向下不超过 9°。"
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid "right"
+msgstr "右"
+
+#: openpilot/selfdrive/ui/layouts/settings/developer.py
+msgid "sunnypilot Longitudinal Control (Alpha)"
+msgstr "sunnypilot 纵向控制 (Alpha)"
+
+#: openpilot/selfdrive/ui/onroad/alert_renderer.py
+msgid "sunnypilot Unavailable"
+msgstr "无法使用 sunnypilot"
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "sunnypilot longitudinal control may come in a future update."
+msgstr "sunnypilot纵向控制可能会在未来的更新中提供。"
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid "sunnypilot requires the device to be mounted within 4° left or right and within 5° up or 9° down."
+msgstr "sunnypilot 要求设备安装在左右 4°、上 5° 或下 9° 以内。"
+
+#: system/ui/widgets/network.py
+msgid "unmetered"
+msgstr "不限流量"
+
+#: openpilot/selfdrive/ui/layouts/settings/device.py
+msgid "up"
+msgstr "上"
+
+#: openpilot/selfdrive/ui/layouts/settings/software.py
+msgid "up to date, last checked never"
+msgstr "已是最新，最后检查：从未"
+
+#: openpilot/selfdrive/ui/layouts/settings/software.py
+msgid "up to date, last checked {}"
+msgstr "已是最新，最后检查：{}"
+
+#: openpilot/selfdrive/ui/layouts/settings/software.py
+msgid "update available"
+msgstr "有可用更新"
+
+#: openpilot/selfdrive/ui/layouts/home.py
+msgid "{} ALERT"
+msgid_plural "{} ALERTS"
+msgstr[0] "{} 条警报"
+
+#: openpilot/selfdrive/ui/layouts/settings/software.py
+msgid "{} day ago"
+msgid_plural "{} days ago"
+msgstr[0] "{} 天前"
+
+#: openpilot/selfdrive/ui/layouts/settings/software.py
+msgid "{} hour ago"
+msgid_plural "{} hours ago"
+msgstr[0] "{} 小时前"
+
+#: openpilot/selfdrive/ui/layouts/settings/software.py
+msgid "{} minute ago"
+msgid_plural "{} minutes ago"
+msgstr[0] "{} 分钟前"
+
+#: openpilot/selfdrive/ui/layouts/settings/firehose.py
+msgid "{} segment of your driving is in the training dataset so far."
+msgid_plural "{} segments of your driving is in the training dataset so far."
+msgstr[0] "{} 段行驶数据目前已加入训练数据集。"
+
+#: openpilot/selfdrive/ui/widgets/prime.py
+msgid "✓ SUBSCRIBED"
+msgstr "✓ 已订阅"
+
+#: openpilot/selfdrive/ui/widgets/setup.py
+msgid "🔥 Firehose Mode 🔥"
+msgstr "🔥 全量上传模式 🔥"
+
+#: openpilot/tesla/ui/pages/terms.py:26
+msgid ""
+"\n"
+"\n"
+"You must accept the Terms of Service to use sunnypilot."
+msgstr "\n\n您必须接受服务条款才能使用 sunnypilot。"
+
+#: openpilot/tesla/ui/pages/models.py:61
+msgid " (active)"
+msgstr " （生效中）"
+
+#: openpilot/tesla/ui/settings_meta.py:10
+msgid "3-Finger"
+msgstr "三指"
+
+#: openpilot/tesla/ui/settings_meta.py:10
+msgid "4-Finger"
+msgstr "四指"
+
+#: openpilot/tesla/ui/settings_meta.py:10
+msgid "5-Finger"
+msgstr "五指"
+
+#: openpilot/tesla/ui/pages/training.py:55
+msgid "?"
+msgstr "？"
+
+#: openpilot/tesla/ui/pages/home.py:15
+msgid "ALERT"
+msgstr "警报"
+
+#: openpilot/tesla/ui/pages/developer.py:22
+msgid "Access the device remotely using your SSH keys."
+msgstr "使用 SSH 密钥远程访问设备。"
+
+#: openpilot/tesla/ui/offroad.py:64
+msgid "Actuation & Car Messages"
+msgstr "执行器与车辆消息"
+
+#: openpilot/tesla/ui/offroad.py:67 openpilot/tesla/ui/pages/home.py:46
+msgid "Alerts"
+msgstr "警报"
+
+#: openpilot/tesla/ui/pages/developer.py:32
+msgid "Alpha longitudinal"
+msgstr "Alpha 纵向控制"
+
+#: openpilot/tesla/ui/pages/toggles.py:30
+msgid "Always-on driver monitor"
+msgstr "驾驶员监控常开"
+
+#: openpilot/tesla/ui/pages/plugins.py:85
+msgid "Author"
+msgstr "作者"
+
+#: openpilot/tesla/ui/pages/tesla.py:16 openpilot/tesla/ui/pages/tesla.py:24
+msgid "Auto"
+msgstr "自动"
+
+#: openpilot/tesla/ui/pages/tesla.py:12
+msgid "Auto identifies the car when it starts. Pick a model only if it is not recognized. Applies on the next start."
+msgstr "启动时自动识别车辆。仅在无法识别时手动选择车型，下次启动生效。"
+
+#: openpilot/tesla/ui/pages/models.py:20
+msgid "Big models"
+msgstr "大模型"
+
+#: openpilot/tesla/ui/tiles.py:23
+msgid "Black"
+msgstr "黑色"
+
+#: openpilot/tesla/ui/screen.py:481
+msgid "Blind spot indicators"
+msgstr "盲区指示"
+
+#: openpilot/tesla/ui/offroad.py:68
+msgid "Body & Comfort"
+msgstr "车身与舒适"
+
+#: openpilot/tesla/ui/pages/home.py:45 openpilot/tesla/ui/pages/software.py:112
+msgid "Branch"
+msgstr "分支"
+
+#: openpilot/tesla/ui/pages/models.py:110
+msgid "CANCEL"
+msgstr "取消"
+
+#: openpilot/tesla/ui/pages/models.py:120
+msgid "CLEAR"
+msgstr "清除"
+
+#: openpilot/tesla/ui/pages/models.py:75 openpilot/tesla/ui/pages/models.py:80
+#: openpilot/tesla/ui/pages/software.py:88
+msgid "CURRENT"
+msgstr "当前"
+
+#: openpilot/tesla/ui/offroad.py:56
+msgid "Calibration & Vehicle Params"
+msgstr "校准与车辆参数"
+
+#: openpilot/tesla/ui/pages/models.py:110
+msgid "Cancel download"
+msgstr "取消下载"
+
+#: openpilot/tesla/ui/pages/models.py:110
+msgid "Cancel verification"
+msgstr "取消验证"
+
+#: openpilot/tesla/ui/pages/home.py:46
+msgid "Car"
+msgstr "车辆"
+
+#: openpilot/tesla/ui/pages/tesla.py:43
+msgid "Car model"
+msgstr "车型"
+
+#: openpilot/tesla/ui/pages/plugins.py:86
+msgid "Category"
+msgstr "类别"
+
+#: openpilot/tesla/ui/pages/software.py:102
+msgid "Check for update"
+msgstr "检查更新"
+
+#: openpilot/tesla/ui/pages/plugins.py:88
+msgid "Claims"
+msgstr "资源声明"
+
+#: openpilot/tesla/ui/pages/models.py:120
+msgid "Clear model cache"
+msgstr "清除模型缓存"
+
+#: openpilot/tesla/ui/pages/models.py:121
+msgid "Clear the model cache? Selected models download again."
+msgstr "清除模型缓存？已选模型将重新下载。"
+
+#: openpilot/tesla/ui/tiles.py:21
+msgid "Cobalt"
+msgstr "钴蓝"
+
+#: openpilot/tesla/ui/pages/toggles.py:40
+msgid "Color of every tile on the home screen."
+msgstr "主屏幕上所有磁贴的颜色。"
+
+#: openpilot/tesla/ui/pages/home.py:45
+msgid "Commit"
+msgstr "提交"
+
+#: openpilot/tesla/ui/pages/developer.py:24
+msgid "Control the car with a joystick for debugging."
+msgstr "使用摇杆控制车辆以进行调试。"
+
+#: openpilot/tesla/ui/offroad.py:63
+msgid "Controllers"
+msgstr "控制器"
+
+#: openpilot/tesla/ui/settings_meta.py:8
+msgid "Cooperative Steering"
+msgstr "协同转向"
+
+#: openpilot/tesla/ui/tiles.py:22
+msgid "Crimson"
+msgstr "绯红"
+
+#: openpilot/tesla/ui/pages/toggles.py:22
+msgid "Cruise speed set when cruise is engaged."
+msgstr "巡航启用时设定的巡航速度。"
+
+#: openpilot/tesla/ui/offroad.py:66
+msgid "Data Sources & External Compute"
+msgstr "数据源与外部计算"
+
+#: openpilot/tesla/ui/pages/base.py:76
+msgid "Disengage to {}"
+msgstr "取消接管并切换至 {}"
+
+#: openpilot/tesla/ui/screen.py:515
+msgid "Done"
+msgstr "完成"
+
+#: openpilot/tesla/ui/store_page.py:21
+msgid "Download the plugin list from github.com/onemiless/xpilot-plugins."
+msgstr "从 github.com/onemiless/xpilot-plugins 下载插件列表。"
+
+#: openpilot/tesla/ui/screen.py:515
+msgid "Drive"
+msgstr "行驶"
+
+#: openpilot/tesla/ui/offroad.py:58 openpilot/tesla/ui/pages/tesla.py:45
+#: openpilot/tesla/ui/settings_page.py:88
+msgid "Driver Monitoring"
+msgstr "驾驶员监控"
+
+#: openpilot/tesla/ui/pages/device.py:34
+msgid "Driver camera preview"
+msgstr "驾驶员摄像头预览"
+
+#: openpilot/tesla/ui/offroad.py:70
+msgid "Driving Overlays"
+msgstr "行驶叠加层"
+
+#: openpilot/tesla/ui/screen.py:467
+msgid "Driving view"
+msgstr "行驶界面"
+
+#: openpilot/tesla/ui/pages/base.py:128
+msgid "Edit"
+msgstr "编辑"
+
+#: openpilot/tesla/ui/tiles.py:21
+msgid "Emerald"
+msgstr "翡翠绿"
+
+#: openpilot/tesla/ui/pages/toggles.py:36
+msgid "Enable to use sunnypilot driver assistance. Disable to use your car's stock driver assistance."
+msgstr "启用后使用 sunnypilot 驾驶辅助；关闭后使用原车驾驶辅助。"
+
+#: openpilot/tesla/ui/offroad.py:57
+msgid "Engagement"
+msgstr "接管"
+
+#: openpilot/tesla/ui/screen.py:80
+msgid "Every tile is on the screen."
+msgstr "所有磁贴都已在屏幕上。"
+
+#: openpilot/tesla/ui/pages/plugins.py:129
+msgid "Failed"
+msgstr "失败"
+
+#: openpilot/tesla/ui/pages/software.py:124
+msgid "Failed to get available branches. Ensure you're connected to the internet and try again."
+msgstr "获取可用分支失败。请确认已连接网络后重试。"
+
+#: openpilot/tesla/ui/plugins_page.py:63
+msgid "Failed: {}"
+msgstr "失败：{}"
+
+#: openpilot/tesla/ui/pages/toggles.py:19
+msgid "Following distance"
+msgstr "跟车距离"
+
+#: openpilot/tesla/ui/pages/developer.py:23
+msgid "Grant SSH access to all public keys in your GitHub settings. Only enter your own username."
+msgstr "允许 GitHub 设置中的所有公钥通过 SSH 访问。请只输入您自己的用户名。"
+
+#: openpilot/tesla/ui/tiles.py:22
+msgid "Graphite"
+msgstr "石墨灰"
+
+#: openpilot/tesla/ui/screen.py:487
+msgid "Hidden"
+msgstr "隐藏"
+
+#: openpilot/tesla/ui/screen.py:489
+msgid "Hide"
+msgstr "隐藏"
+
+#: openpilot/tesla/ui/offroad.py:294
+msgid "INSTALL & ENABLE"
+msgstr "安装并启用"
+
+#: openpilot/tesla/ui/pages/toggles.py:22
+msgid "Initial cruise speed"
+msgstr "初始巡航速度"
+
+#: openpilot/tesla/ui/pages/plugins.py:141 openpilot/tesla/ui/store_page.py:35
+msgid "Install & enable restarts while parked."
+msgstr "安装并启用会在停车时重启。"
+
+#: openpilot/tesla/ui/plugins_page.py:59
+msgid "Install third-party plugins (reviewed, not signed). Restart to apply."
+msgstr "安装经审查但未签名的第三方插件。重启后生效。"
+
+#: openpilot/tesla/ui/pages/software.py:104
+msgid "Install {}"
+msgstr "安装 {}"
+
+#: openpilot/tesla/ui/pages/developer.py:24
+msgid "Joystick debug mode"
+msgstr "摇杆调试模式"
+
+#: openpilot/tesla/ui/offroad.py:61
+msgid "Lane Change"
+msgstr "变道"
+
+#: openpilot/tesla/ui/pages/toggles.py:28
+msgid "Lane departure warnings"
+msgstr "车道偏离警告"
+
+#: openpilot/tesla/ui/pages/tesla.py:53 openpilot/tesla/ui/settings_page.py:98
+msgid "Language"
+msgstr "语言"
+
+#: openpilot/tesla/ui/pages/tesla.py:53 openpilot/tesla/ui/settings_page.py:98
+msgid "Language changes apply after the UI restarts."
+msgstr "语言更改将在 UI 重启后生效。"
+
+#: openpilot/tesla/ui/offroad.py:59
+msgid "Lateral Planning"
+msgstr "横向规划"
+
+#: openpilot/tesla/ui/pages/developer.py:29
+msgid "Lateral maneuver mode"
+msgstr "横向操作模式"
+
+#: openpilot/tesla/ui/offroad.py:55
+msgid "Lead & Object Fusion"
+msgstr "前车与目标融合"
+
+#: openpilot/tesla/ui/slots/long_owner.py:16
+msgid "Long owner"
+msgstr "纵向控制方"
+
+#: openpilot/tesla/ui/offroad.py:60
+msgid "Longitudinal Planning"
+msgstr "纵向规划"
+
+#: openpilot/tesla/ui/pages/developer.py:26
+msgid "Longitudinal maneuver mode"
+msgstr "纵向操作模式"
+
+#: openpilot/tesla/ui/settings_meta.py:9
+msgid "MADS Screen Activation"
+msgstr "MADS 屏幕触控"
+
+#: openpilot/tesla/ui/settings_meta.py:7
+msgid "Manual Long Owner (wiper first detent)"
+msgstr "手动纵向控制方（雨刷第一挡）"
+
+#: openpilot/tesla/ui/screen.py:483
+msgid "Model source"
+msgstr "模型来源"
+
+#: openpilot/tesla/ui/slots/models.py:9
+msgid "Models"
+msgstr "模型"
+
+#: openpilot/tesla/ui/pages/toggles.py:30
+msgid "Monitor the driver even when sunnypilot is not engaged."
+msgstr "即使 sunnypilot 未接管，也监控驾驶员。"
+
+#: openpilot/tesla/ui/screen.py:487
+msgid "Move only"
+msgstr "仅移动"
+
+#: openpilot/tesla/ui/pages/home.py:15
+msgid "NOTICE"
+msgstr "注意"
+
+#: openpilot/tesla/ui/offroad.py:62
+msgid "Navigate on xpilot"
+msgstr "使用 xpilot 导航"
+
+#: openpilot/tesla/ui/pages/developer.py:36
+msgid "Navigation (alpha)"
+msgstr "导航（Alpha）"
+
+#: openpilot/tesla/ui/pages/home.py:47 openpilot/tesla/ui/slots/settings.py:50
+msgid "No alerts"
+msgstr "无警报"
+
+#: openpilot/tesla/ui/pages/models.py:136
+msgid "No models are available for this hardware yet. Connect to the internet and refresh the model list."
+msgstr "此硬件暂无可用模型。请连接网络并刷新模型列表。"
+
+#: openpilot/tesla/ui/screen.py:80
+msgid "No tiles to add"
+msgstr "没有可添加的磁贴"
+
+#: openpilot/tesla/ui/offroad.py:103
+msgid "No {} plugin: driving assistance unavailable"
+msgstr "缺少 {} 插件：驾驶辅助不可用"
+
+#: openpilot/tesla/ui/settings_meta.py:17
+#: openpilot/tesla/ui/settings_meta.py:19
+msgid "Not set"
+msgstr "未设置"
+
+#: openpilot/tesla/ui/slots/long_owner.py:12
+msgid "ON"
+msgstr "开启"
+
+#: openpilot/tesla/ui/pages/tesla.py:48 openpilot/tesla/ui/settings_page.py:93
+msgid "OSM Map Data"
+msgstr "OSM 地图数据"
+
+#: openpilot/tesla/ui/settings_meta.py:10
+msgid "Off"
+msgstr "关闭"
+
+#: openpilot/tesla/ui/pages/device.py:31
+msgid "POWER OFF"
+msgstr "关机"
+
+#: openpilot/tesla/ui/screen.py:515
+msgid "Park"
+msgstr "停车"
+
+#: openpilot/tesla/ui/offroad.py:54
+msgid "Perception Models"
+msgstr "感知模型"
+
+#: openpilot/tesla/ui/pages/software.py:40
+msgid "Please connect to Wi-Fi to update."
+msgstr "请连接 Wi-Fi 后更新。"
+
+#: openpilot/tesla/ui/plugins_page.py:59
+msgid "Plugin Store"
+msgstr "插件商店"
+
+#: openpilot/tesla/ui/slots/settings.py:60
+msgid "Plugins"
+msgstr "插件"
+
+#: openpilot/tesla/ui/pages/device.py:31
+msgid "Power off"
+msgstr "关机"
+
+#: openpilot/tesla/ui/pages/device.py:35
+msgid "Preview the cabin camera to check driver monitoring visibility. The vehicle must be off."
+msgstr "预览舱内摄像头以检查驾驶员监控视野。车辆必须处于关闭状态。"
+
+#: openpilot/tesla/ui/pages/plugins.py:88
+msgid "Priority"
+msgstr "优先级"
+
+#: openpilot/tesla/ui/pages/models.py:80
+msgid "QUEUED"
+msgstr "已排队"
+
+#: openpilot/tesla/ui/pages/device.py:49
+msgid "REBOOT"
+msgstr "重启"
+
+#: openpilot/tesla/ui/pages/models.py:118
+msgid "REFRESH"
+msgstr "刷新"
+
+#: openpilot/tesla/ui/pages/toggles.py:31
+msgid "Record & upload cabin camera"
+msgstr "录制并上传舱内摄像头"
+
+#: openpilot/tesla/ui/pages/toggles.py:33
+msgid "Record & upload mic audio"
+msgstr "录制并上传麦克风音频"
+
+#: openpilot/tesla/ui/pages/toggles.py:33
+msgid "Record microphone audio while driving. Audio is included in dashcam videos."
+msgstr "行驶时录制麦克风音频，音频会包含在行车记录视频中。"
+
+#: openpilot/tesla/ui/store_page.py:21
+msgid "Refresh"
+msgstr "刷新"
+
+#: openpilot/tesla/ui/pages/plugins.py:116
+msgid "Refresh ({})"
+msgstr "刷新（{}）"
+
+#: openpilot/tesla/ui/pages/models.py:118
+msgid "Refresh model list"
+msgstr "刷新模型列表"
+
+#: openpilot/tesla/ui/pages/device.py:38
+msgid "Regulatory info"
+msgstr "法规信息"
+
+#: openpilot/tesla/ui/pages/device.py:47
+msgid "Reset calibration"
+msgstr "重置校准"
+
+#: openpilot/tesla/ui/pages/device.py:43
+msgid "Review training guide"
+msgstr "查看使用指南"
+
+#: openpilot/tesla/ui/pages/developer.py:29
+msgid "Run lateral maneuvers for testing steering control."
+msgstr "执行横向操作以测试转向控制。"
+
+#: openpilot/tesla/ui/pages/developer.py:26
+msgid "Run longitudinal maneuvers for testing gas and brake control."
+msgstr "执行纵向操作以测试油门和制动控制。"
+
+#: openpilot/tesla/ui/pages/tesla.py:24 openpilot/tesla/ui/pages/tesla.py:27
+#: openpilot/tesla/ui/pages/tesla.py:86
+msgid "SELECTED"
+msgstr "已选择"
+
+#: openpilot/tesla/ui/slots/long_owner.py:12
+msgid "SP"
+msgstr "SP"
+
+#: openpilot/tesla/ui/pages/developer.py:23
+msgid "SSH keys"
+msgstr "SSH 密钥"
+
+#: openpilot/tesla/ui/slots/long_owner.py:12
+msgid "STOCK"
+msgstr "原车"
+
+#: openpilot/tesla/ui/offroad.py:65
+msgid "Safety Fallback & Autopilot Handoff"
+msgstr "安全兜底与 Autopilot 交接"
+
+#: openpilot/tesla/ui/pages/terms.py:25
+msgid "Scan the QR code, or go to {}"
+msgstr "扫描二维码，或访问 {}"
+
+#: openpilot/tesla/ui/screen.py:482
+msgid "Set speed"
+msgstr "设定速度"
+
+#: openpilot/tesla/ui/screen.py:489
+msgid "Show"
+msgstr "显示"
+
+#: openpilot/tesla/ui/pages/developer.py:34
+msgid "Show touch locations and the UI frame rate."
+msgstr "显示触摸位置和 UI 帧率。"
+
+#: openpilot/tesla/ui/pages/models.py:20
+msgid "Small models"
+msgstr "小模型"
+
+#: openpilot/tesla/ui/pages/plugins.py:84
+msgid "Source"
+msgstr "来源"
+
+#: openpilot/tesla/ui/pages/toggles.py:11
+msgid "Standard is recommended. Aggressive follows closer with firmer gas and braking; relaxed leaves more space."
+msgstr "建议使用标准。激进模式跟车更近，加速和制动更强；舒适模式保留更多距离。"
+
+#: openpilot/tesla/ui/pages/home.py:45 openpilot/tesla/ui/slots/settings.py:40
+msgid "Status"
+msgstr "状态"
+
+#: openpilot/tesla/ui/screen.py:482
+msgid "Steering wheel"
+msgstr "方向盘"
+
+#: openpilot/tesla/ui/pages/plugins.py:91
+msgid "Store: {}"
+msgstr "商店：{}"
+
+#: openpilot/tesla/ui/offroad.py:105
+msgid "System update plugin incompatibility: {}: {}"
+msgstr "系统更新与插件不兼容：{}：{}"
+
+#: openpilot/tesla/ui/pages/plugins.py:136
+msgid "Tap for settings ({})"
+msgstr "点按设置（{}）"
+
+#: openpilot/tesla/ui/pages/software.py:107
+#: openpilot/tesla/ui/pages/software.py:126
+msgid "Target branch"
+msgstr "目标分支"
+
+#: openpilot/tesla/ui/tiles.py:21
+msgid "Teal"
+msgstr "青绿"
+
+#: openpilot/tesla/ui/pages/device.py:45
+msgid "Terms & conditions"
+msgstr "条款与条件"
+
+#: openpilot/tesla/ui/slots/settings.py:75
+msgid "Tesla"
+msgstr "Tesla"
+
+#: openpilot/tesla/ui/pages/toggles.py:40
+msgid "Tile color"
+msgstr "磁贴颜色"
+
+#: openpilot/tesla/ui/offroad.py:69
+msgid "Tiles"
+msgstr "磁贴"
+
+#: openpilot/tesla/ui/offroad.py:71
+msgid "Tools & Diagnostics"
+msgstr "工具与诊断"
+
+#: openpilot/tesla/ui/screen.py:481
+msgid "Torque bar"
+msgstr "扭矩条"
+
+#: openpilot/tesla/ui/pages/developer.py:37
+msgid "Turn-by-turn navigation with a route map. Set a destination from comma connect."
+msgstr "逐转导航并显示路线地图。请在 comma connect 中设置目的地。"
+
+#: openpilot/tesla/ui/pages/developer.py:34
+msgid "UI debug mode"
+msgstr "UI 调试模式"
+
+#: openpilot/tesla/ui/pages/software.py:114
+msgid "Uninstall sunnypilot"
+msgstr "卸载 sunnypilot"
+
+#: openpilot/tesla/ui/slots/settings.py:107
+#: openpilot/tesla/ui/slots/settings.py:50
+msgid "Update available"
+msgstr "有可用更新"
+
+#: openpilot/tesla/ui/pages/home.py:43
+msgid "Update available: install it from Software"
+msgstr "有可用更新：请在“软件”中安装"
+
+#: openpilot/tesla/ui/pages/software.py:102
+msgid "Update: {}"
+msgstr "更新：{}"
+
+#: openpilot/tesla/ui/pages/toggles.py:31
+msgid "Upload cabin camera data to help improve driver monitoring."
+msgstr "上传舱内摄像头数据，帮助改进驾驶员监控。"
+
+#: openpilot/tesla/ui/pages/plugins.py:87
+msgid "Use"
+msgstr "使用场景"
+
+#: openpilot/tesla/ui/pages/developer.py:21
+msgid "Use Android Debug Bridge (ADB) over USB or the network."
+msgstr "通过 USB 或网络使用 Android Debug Bridge (ADB)。"
+
+#: openpilot/tesla/ui/pages/developer.py:12
+msgid "Use alpha openpilot longitudinal control instead of stock ACC. This may disable Automatic Emergency Braking (AEB)."
+msgstr "使用 Alpha openpilot 纵向控制代替原车 ACC。这可能会禁用自动紧急制动 (AEB)。"
+
+#: openpilot/tesla/ui/pages/toggles.py:27
+msgid "Use metric units"
+msgstr "使用公制单位"
+
+#: openpilot/tesla/ui/pages/tesla.py:50
+msgid "Vehicle"
+msgstr "车辆型号"
+
+#: openpilot/tesla/ui/pages/home.py:45 openpilot/tesla/ui/pages/plugins.py:85
+#: openpilot/tesla/ui/pages/software.py:111
+msgid "Version"
+msgstr "版本"
+
+#: openpilot/tesla/ui/tiles.py:22
+msgid "Violet"
+msgstr "紫罗兰"
+
+#: openpilot/tesla/ui/pages/developer.py:64
+msgid "WARNING: alpha longitudinal control may disable Automatic Emergency Braking (AEB)"
+msgstr "警告：Alpha 纵向控制可能会禁用自动紧急制动 (AEB)"
+
+#: openpilot/tesla/ui/pages/toggles.py:29
+msgid "Warn when you drift across a detected lane line. Only above 31 mph (50 km/h), with no turn signal."
+msgstr "检测到无转向灯跨越车道线时发出警告。仅在车速高于 31 mph (50 km/h) 时生效。"
+
+#: openpilot/tesla/ui/pages/tesla.py:45 openpilot/tesla/ui/settings_page.py:90
+msgid "When off, the DM processes do not start. Change only while parked; applies on the next drive."
+msgstr "关闭后，DM 进程不会启动。仅在停车时更改，下次行驶生效。"
+
+#: openpilot/tesla/ui/pages/terms.py:31
+msgid "accept terms"
+msgstr "接受条款"
+
+#: openpilot/tesla/ui/pages/models.py:105 openpilot/tesla/ui/pages/models.py:37
+msgid "active model"
+msgstr "当前模型"
+
+#: openpilot/tesla/ui/screen.py:630
+msgid "add tiles"
+msgstr "添加磁贴"
+
+#: openpilot/tesla/ui/pages/training.py:59
+msgid "allow data uploading"
+msgstr "允许数据上传"
+
+#: openpilot/tesla/ui/pages/onboarding.py:46
+#: openpilot/tesla/ui/pages/training.py:62
+msgid "back"
+msgstr "返回"
+
+#: openpilot/tesla/ui/pages/plugins.py:84
+msgid "built-in (switch off only)"
+msgstr "内置（仅可关闭）"
+
+#: openpilot/tesla/ui/pages/models.py:54
+msgid "canceling..."
+msgstr "正在取消..."
+
+#: openpilot/tesla/ui/pages/tesla.py:44
+msgid "car model"
+msgstr "车型"
+
+#: openpilot/tesla/ui/plugins_page.py:20
+msgid "claims"
+msgstr "资源声明"
+
+#: openpilot/tesla/ui/pages/models.py:120
+msgid "clearing..."
+msgstr "正在清除..."
+
+#: openpilot/tesla/ui/offroad.py:119
+msgid "conflict"
+msgstr "冲突"
+
+#: openpilot/tesla/ui/pages/onboarding.py:47
+#: openpilot/tesla/ui/pages/terms.py:30
+msgid "decline & uninstall"
+msgstr "拒绝并卸载"
+
+#: openpilot/tesla/ui/pages/onboarding.py:102
+msgid "decline terms"
+msgstr "拒绝条款"
+
+#: openpilot/tesla/ui/pages/models.py:34
+msgid "download failed"
+msgstr "下载失败"
+
+#: openpilot/tesla/ui/pages/software.py:100
+#: openpilot/tesla/ui/pages/software.py:42
+#: openpilot/tesla/ui/pages/software.py:71
+msgid "download update"
+msgstr "下载更新"
+
+#: openpilot/tesla/ui/pages/models.py:36
+msgid "downloaded"
+msgstr "已下载"
+
+#: openpilot/tesla/ui/pages/models.py:54
+msgid "downloading"
+msgstr "正在下载"
+
+#: openpilot/tesla/ui/pages/device.py:36
+msgid "driver camera"
+msgstr "驾驶员摄像头"
+
+#: openpilot/tesla/ui/pages/training.py:56
+msgid "driver camera data"
+msgstr "驾驶员摄像头数据"
+
+#: openpilot/tesla/ui/pages/training.py:50
+msgid "driver monitoring check"
+msgstr "驾驶员监控检查"
+
+#: openpilot/tesla/ui/pages/training.py:54
+msgid ""
+"driver monitoring check\n"
+"\n"
+"Look straight ahead until the green bar is full."
+msgstr "驾驶员监控检查\n\n直视前方，直到绿色进度条填满。"
+
+#: openpilot/tesla/ui/offroad.py:279
+msgid "enabled {}: restarting"
+msgstr "已启用 {}：正在重启"
+
+#: openpilot/tesla/ui/pages/models.py:34
+msgid "error"
+msgstr "错误"
+
+#: openpilot/tesla/ui/offroad.py:247
+msgid "error: {}"
+msgstr "错误：{}"
+
+#: openpilot/tesla/ui/pages/plugins.py:116
+#: openpilot/tesla/ui/pages/plugins.py:128
+msgid "failed"
+msgstr "失败"
+
+#: openpilot/tesla/ui/pages/software.py:69
+msgid "failed to update"
+msgstr "更新失败"
+
+#: openpilot/tesla/ui/offroad.py:117
+msgid "fault"
+msgstr "故障"
+
+#: openpilot/tesla/ui/pages/models.py:118
+msgid "fetching..."
+msgstr "正在获取..."
+
+#: openpilot/tesla/ui/offroad.py:279
+msgid "installed {}: restart to apply"
+msgstr "已安装 {}：重启后生效"
+
+#: openpilot/tesla/ui/offroad.py:276
+msgid "installing {}..."
+msgstr "正在安装 {}..."
+
+#: openpilot/tesla/ui/pages/tesla.py:55
+msgid "language"
+msgstr "语言"
+
+#: openpilot/tesla/ui/offroad.py:254
+msgid "loading..."
+msgstr "正在加载..."
+
+#: openpilot/tesla/ui/pages/training.py:60
+msgid "looking for driver"
+msgstr "正在查找驾驶员"
+
+#: openpilot/tesla/ui/pages/models.py:78
+msgid "models"
+msgstr "模型"
+
+#: openpilot/tesla/ui/offroad.py:299
+msgid "needs api {}"
+msgstr "需要 API {}"
+
+#: openpilot/tesla/ui/pages/training.py:34
+#: openpilot/tesla/ui/pages/training.py:49
+#: openpilot/tesla/ui/pages/training.py:53
+msgid "next"
+msgstr "下一步"
+
+#: openpilot/tesla/ui/slots/long_owner.py:11
+msgid "no owner ABI"
+msgstr "无控制方 ABI"
+
+#: openpilot/tesla/ui/pages/training.py:58
+msgid "no, don't upload"
+msgstr "不，不上传"
+
+#: openpilot/tesla/ui/pages/plugins.py:88 openpilot/tesla/ui/plugins_page.py:19
+msgid "none"
+msgstr "无"
+
+#: openpilot/tesla/ui/pages/home.py:34
+msgid "not detected yet"
+msgstr "尚未检测到"
+
+#: openpilot/tesla/ui/pages/plugins.py:133
+#: openpilot/tesla/ui/pages/plugins.py:139
+#: openpilot/tesla/ui/pages/plugins.py:83
+msgid "offroad"
+msgstr "停车"
+
+#: openpilot/tesla/ui/pages/plugins.py:133
+#: openpilot/tesla/ui/pages/plugins.py:139
+#: openpilot/tesla/ui/pages/plugins.py:83
+msgid "onroad"
+msgstr "行驶"
+
+#: openpilot/tesla/ui/pages/plugins.py:133
+#: openpilot/tesla/ui/pages/plugins.py:139
+#: openpilot/tesla/ui/pages/plugins.py:83
+msgid "onroad + offroad"
+msgstr "行驶 + 停车"
+
+#: openpilot/tesla/ui/pages/device.py:15
+msgid "openpilot calibrates continuously; resetting is rarely needed. Mount within 4 degrees left/right and 5 up/9 down."
+msgstr "openpilot 会持续校准，通常无需重置。安装角度需在左右 4 度、向上 5 度、向下 9 度以内。"
+
+#: openpilot/tesla/ui/offroad.py:270 openpilot/tesla/ui/pages/plugins.py:62
+#: openpilot/tesla/ui/plugins_page.py:43
+msgid "park first"
+msgstr "请先停车"
+
+#: openpilot/tesla/ui/plugins_page.py:20
+msgid "priority"
+msgstr "优先级"
+
+#: openpilot/tesla/ui/pages/models.py:55
+msgid "progress"
+msgstr "进度"
+
+#: openpilot/tesla/ui/pages/device.py:38
+msgid "regulatory"
+msgstr "法规信息"
+
+#: openpilot/tesla/ui/offroad.py:274
+msgid "removed {}: restart to apply"
+msgstr "已移除 {}：重启后生效"
+
+#: openpilot/tesla/ui/offroad.py:166
+msgid "required role {}"
+msgstr "需要角色 {}"
+
+#: openpilot/tesla/ui/pages/plugins.py:84
+msgid "store (removable)"
+msgstr "商店（可移除）"
+
+#: openpilot/tesla/ui/offroad.py:176
+msgid "store busy"
+msgstr "商店忙碌"
+
+#: openpilot/tesla/ui/offroad.py:227
+msgid "tap Refresh"
+msgstr "点按“刷新”"
+
+#: openpilot/tesla/ui/pages/device.py:45
+msgid "terms"
+msgstr "条款"
+
+#: openpilot/tesla/ui/pages/terms.py:24
+msgid "terms of service"
+msgstr "服务条款"
+
+#: openpilot/tesla/ui/pages/device.py:43
+msgid "training guide"
+msgstr "使用指南"
+
+#: openpilot/tesla/ui/pages/home.py:30 openpilot/tesla/ui/pages/plugins.py:134
+#: openpilot/tesla/ui/pages/plugins.py:85 openpilot/tesla/ui/plugins_page.py:20
+msgid "unknown"
+msgstr "未知"
+
+#: openpilot/tesla/ui/pages/software.py:64
+#: openpilot/tesla/ui/pages/software.py:73
+msgid "up to date"
+msgstr "已是最新"
+
+#: openpilot/tesla/ui/pages/software.py:59
+msgid "updater failed to respond"
+msgstr "更新程序无响应"
+
+#: openpilot/tesla/ui/pages/plugins.py:139
+msgid "use not declared"
+msgstr "未声明使用场景"
+
+#: openpilot/tesla/ui/pages/models.py:54
+msgid "verifying"
+msgstr "正在验证"
+
+#: openpilot/tesla/ui/offroad.py:307
+msgid "v{}"
+msgstr "v{}"
+
+#: openpilot/tesla/ui/offroad.py:307
+msgid "v{} -> v{}"
+msgstr "v{} -> v{}"
+
+#: openpilot/tesla/ui/offroad.py:299
+msgid "v{} installed"
+msgstr "已安装 v{}"
+
+#: openpilot/tesla/ui/offroad.py:306
+msgid "v{} {}"
+msgstr "v{} {}"
+
+#: openpilot/tesla/ui/pages/training.py:45
+msgid "what is sunnypilot?"
+msgstr "什么是 sunnypilot？"
+
+#: openpilot/tesla/ui/pages/plugins.py:116
+#: openpilot/tesla/ui/pages/plugins.py:91 openpilot/tesla/ui/store_page.py:29
+msgid "working..."
+msgstr "正在处理..."
+
+#: openpilot/tesla/ui/plugins_page.py:37
+msgid "{} Settings"
+msgstr "{} 设置"
+
+#: openpilot/tesla/ui/slots/settings.py:50
+msgid "{} alert"
+msgid_plural "{} alerts"
+msgstr[0] "{} 个警报"
+
+#: openpilot/tesla/ui/slots/settings.py:70
+msgid "{} conflict"
+msgid_plural "{} conflicts"
+msgstr[0] "{} 个冲突"
+
+#: openpilot/tesla/ui/slots/settings.py:71
+msgid "{} failed"
+msgstr "{} 失败"
+
+#: openpilot/tesla/ui/slots/settings.py:70
+msgid "{} on"
+msgstr "已开启 {}"
+
+#: openpilot/tesla/ui/offroad.py:256
+msgid "{} plugins"
+msgstr "{} 个插件"
+
+#: openpilot/tesla/ui/pages/models.py:50
+msgid "{} queued"
+msgstr "{} 已排队"
+
+#: openpilot/tesla/ui/plugins_page.py:83
+msgid "{}/{} on"
+msgstr "已开启 {}/{}"

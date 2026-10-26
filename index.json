@@ -185,6 +185,18 @@
       "platform": null
     },
     {
+      "id": "tesla_dynamic_acc",
+      "name": "Tesla Dynamic ACC",
+      "version": "1.0.0",
+      "api": 1,
+      "category": "longitudinal_planning",
+      "author": "xpilot",
+      "description": "Speed-based longitudinal owner, like the old DynamicAutoStock: above High the stock ACC drives, below Low SP drives, in between the current owner stays. Switches while engaged; the host (1 s confirm, 2 s cooldown, gas/brake/AEB/lead/acceleration vetoes) and the panda (DRAIN handoff) decide whether a switch happens. Needs SP longitudinal and the G8 panda firmware. Enable while parked, then restart.",
+      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/tesla_dynamic_acc-1.0.0.tar.gz",
+      "sha256": "9443071afc99d6f082295638f363b6cc6d27c8f76549a90a0f5333fdbc4bc786",
+      "platform": null
+    },
+    {
       "id": "tesla_mixed_control",
       "name": "Tesla Mixed Control",
       "version": "1.1.0",

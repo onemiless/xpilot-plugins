@@ -3,11 +3,12 @@ from itertools import permutations
 from opendbc.can import CANPacker
 import pytest
 
-import openpilot.cereal.messaging as messaging
+import json
+from types import SimpleNamespace
 from ..tesla_observer import (
   TeslaTrafficControlObservation,
   TeslaTrafficControlObserver,
-  publish_tesla_traffic_control,
+  traffic_control_payload,
 )
 
 
@@ -43,7 +44,7 @@ def test_observer_accepts_party_traffic_light_and_rejects_veh_collision():
   assert observation.raw_payload == data
 
 
-def test_raw_frame_diagnostics_survive_car_state_sp_serialization():
+def test_raw_frame_diagnostics_survive_plugin_json_serialization():
   address, data, _ = _frame({
     "APP_tcControlType": 3,
     "APP_tcControlDistance": 42,
@@ -51,10 +52,8 @@ def test_raw_frame_diagnostics_survive_car_state_sp_serialization():
   })
   observer = TeslaTrafficControlObserver()
   observer.update([(1_234_567_890, [(address, data[:6], 2)])], 1_234_567_890)
-  message = messaging.new_message("carStateSP")
-  publish_tesla_traffic_control(message.carStateSP, observer.snapshot(1_234_567_890))
-  decoded = messaging.log_from_bytes(message.to_bytes()).carStateSP.teslaTrafficControl
-  restored = TeslaTrafficControlObservation.from_message(decoded)
+  payload = traffic_control_payload(observer.snapshot(1_234_567_890))
+  restored = TeslaTrafficControlObservation.from_message(SimpleNamespace(**json.loads(json.dumps(payload))))
   assert restored.raw_address == 0x25D
   assert restored.raw_payload == data[:6]
   assert restored.frame_mono_time == 1_234_567_890

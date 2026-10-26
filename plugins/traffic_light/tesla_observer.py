@@ -53,7 +53,7 @@ class TeslaTrafficControlObservation:
       vision_light=bool(msg.visionLight), vision_sign=bool(msg.visionSign),
       vision_road_marking=bool(msg.visionRoadMarking), vision_line=bool(msg.visionLine),
       frame_mono_time=int(msg.frameMonoTime), quality=int(msg.quality),
-      raw_address=int(getattr(msg, "rawAddress", 0)), raw_payload=bytes(getattr(msg, "rawPayload", b"")),
+      raw_address=int(msg.rawAddress), raw_payload=bytes.fromhex(msg.rawPayload),
     )
 
 
@@ -177,27 +177,28 @@ class TeslaTrafficControlObserver:
     return TeslaTrafficControlObservation()
 
 
-def publish_tesla_traffic_control(builder, observation: TeslaTrafficControlObservation) -> None:
-  target = builder.teslaTrafficControl
-  target.available = observation.available
-  target.validForControl = observation.valid_for_control
-  target.sourceBus = observation.source_bus
-  target.dlc = observation.dlc
-  target.featureState = observation.feature_state
-  target.stateMachine = observation.state_machine
-  target.controlSource = observation.control_source
-  target.controlType = observation.control_type
-  target.distance = observation.distance
-  target.lightState = observation.light_state
-  target.continuationReason = observation.continuation_reason
-  target.confirmationType = observation.confirmation_type
-  target.warningSuppressionReason = observation.warning_suppression_reason
-  target.unavailableReason = observation.unavailable_reason
-  target.visionLight = observation.vision_light
-  target.visionSign = observation.vision_sign
-  target.visionRoadMarking = observation.vision_road_marking
-  target.visionLine = observation.vision_line
-  target.frameMonoTime = observation.frame_mono_time
-  target.quality = observation.quality
-  target.rawAddress = observation.raw_address
-  target.rawPayload = observation.raw_payload
+def traffic_control_payload(observation: TeslaTrafficControlObservation) -> dict:
+  return {
+    "available": observation.available,
+    "validForControl": observation.valid_for_control,
+    "sourceBus": observation.source_bus,
+    "dlc": observation.dlc,
+    "featureState": observation.feature_state,
+    "stateMachine": observation.state_machine,
+    "controlSource": observation.control_source,
+    "controlType": observation.control_type,
+    "distance": observation.distance,
+    "lightState": observation.light_state,
+    "continuationReason": observation.continuation_reason,
+    "confirmationType": observation.confirmation_type,
+    "warningSuppressionReason": observation.warning_suppression_reason,
+    "unavailableReason": observation.unavailable_reason,
+    "visionLight": observation.vision_light,
+    "visionSign": observation.vision_sign,
+    "visionRoadMarking": observation.vision_road_marking,
+    "visionLine": observation.vision_line,
+    "frameMonoTime": observation.frame_mono_time,
+    "quality": observation.quality,
+    "rawAddress": observation.raw_address,
+    "rawPayload": observation.raw_payload.hex(),
+  }

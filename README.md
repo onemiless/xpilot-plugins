@@ -64,24 +64,32 @@ Moved from the xpilot repository (keep their original param keys):
   differential oracle; these published runtime rules stay unchanged. Merge the companion system PR
   first, then this documentation PR. No plugin archive rebuild or device flash is part of this change.
 
-### Pure plugin/API migration: X-20261026-58 (blocked, 2026-10-26)
+### Pure plugin/API migration: X-20261026-58
 
-所有商店插件都必须通过通用插件 API 传递自己的数据：声明 `msg:<kind>`，使用
-`plugins.send_msg` / `PluginMsgs`，不扩展系统 cereal。`traffic_light` 的控制继续只通过 `plan.filter`。
-当前 `traffic_light` 和 `bms` 1.0.2 仍访问历史专用字段，尚未完成迁移；本次没有版本升级或新包发布。
+`traffic_light` 和 `bms` **1.1.0** 使用 `plugins.send_msg` / `PluginMsgs`，不再读写历史
+`CarStateSP` / `LongitudinalPlanSP` 专用字段，也不再发布 `trafficRadarState` 服务。
+须先部署包含 `plugin_msgd` 的系统（`onemiless/xpilot@4d149dc0e52c3038204b5f5e573680c30b1499ed`
+或后续版本），再安装这两个插件；`requires.msg` 只检查消息 API，不能识别旧单发布端实现。
+系统侧专用字段仅保留 wire ordinal/type/node ID，改名 `deprecated*`。
 
-阻碍是 `pluginMsg` 只有一个实际发布端，迁移却至少需要 card 和 plannerd 两个进程。
-系统的 `tools/sp_tesla_e2e/plugin_msg_e2e.py` 用真实 IPC 在约一秒内成功送达单发布端的
-100 条观测、100 条 BMS、20 条计划诊断。默认值、8 字节 CAN 十六进制及采样序号的代表性
-wire 消息为 592/176/800 字节，名义合计 92,800 B/s；这是主机检查，不是实车带宽或容量上限。
-第二进程发送会替换原发布端，原端随后报 `Address already in use`。BMS 即使降为 2 Hz 也不能解决
-发布端冲突；card 当前也没有共享 publisher 参数。不能靠插件各自创建 `PubMaster` 完成迁移。
+| source | kind / claim | 发布进程 / 最高频率 | TTL | 接收方 |
+|---|---|---|---|---|
+| traffic_light | traffic.observation / msg:traffic.observation | card / 20 Hz | 750 ms | trafficcontrold |
+| traffic_light | traffic.target / msg:traffic.target | trafficcontrold / modelV2 20 Hz | 350 ms | plannerd plan.filter |
+| traffic_light | traffic.plan / msg:traffic.plan | plannerd / 20 Hz | 350 ms | Traffic Light 磁贴 |
+| bms | bms.state / msg:bms.state | card / 2 Hz | 最多 2000 ms，按最旧 CAN 帧剩余寿命缩短 | Battery 磁贴 |
 
-先补通用多来源发布能力、并发/故障/过期验证，再迁移并升级插件、重建 dist/index；不新增专用系统字段。
-复现时在 xpilot 的依赖环境运行 `python3 tools/sp_tesla_e2e/plugin_msg_e2e.py`，当前退出码为 **1**，
-JSON 中 `migration_ready` 为 `false`。系统 PR 先合、插件 PR 后合，均需人工审核。
-新插件只有完全不再访问旧字段、且旧系统支持所需消息 API 时才能先装到旧系统；现有 1.0.2 不满足。
-在迁移完成前不能先重命名系统字段；完成后保留 ordinal/类型，改名 `deprecated*` 并停止所有写入。
+同一个 traffic_light source 的三个进程共享 100 Hz / 256 KiB/s 预算，正常合计最多约 60 Hz。
+所有消费者用 `latest(kind, source)` 固定来源。观测保留原始帧时间、bus、DLC、地址和十六进制 payload，
+controller 仍检查原始 CAN 的 750 ms 时效；目标还检查模型发布时间的 350 ms 时效。
+过期观测不产生新证据，目标丢失走既有仲裁退化/低速保持规则；磁贴过期显示空状态。
+`traffic_light` 的控制只经 `plan.filter`，不新增 CAN、planner 或 controller ownership。
+详见 [traffic_light README](plugins/traffic_light/README.md) 和 [bms README](plugins/bms/README.md)。
+
+消息 E2E：`cd plugins && python3 -m pytest -q -s traffic_light/tests/test_plugin_messages.py`。
+实际执行 CAN 解码 → Unix datagram → broker → cereal → PluginMsgs → controller/filter/tiles，输出 JSON 结果。
+manager/Params 使用隔离夹具；跨进程认证、限流和重启由系统 `plugin_msg_e2e.py` 验证。
+这不证明设备 CAN、物理 UI 或道路控制，系统 PR 先合/部署，插件 PR 后合/安装，均需人工审核。
 
 Tests: `cd plugins && python3 -m pytest -q .` with an xpilot checkout on `PYTHONPATH` (see `.github/workflows/ci.yml`).
 Run `python3 tools/runtime_rules_check.py --output /tmp/runtime-rules` with that same `PYTHONPATH` to validate

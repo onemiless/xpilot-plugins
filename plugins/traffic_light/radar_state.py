@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from enum import IntEnum
+from types import SimpleNamespace
 
 import openpilot.cereal.messaging as messaging
 from .controller import (
@@ -64,12 +65,11 @@ class TrafficRadarSource:
     age_ns = now_ns - observation.frame_mono_time
     return observation if 0 <= age_ns <= TRAFFIC_CONTROL_STALE_NS else TeslaTrafficControlObservation()
 
-  def update(self, sm, now_ns: int):
-    car_state_sp_valid = bool(sm.seen['carStateSP'] and sm.alive['carStateSP'] and sm.valid['carStateSP'])
+  def update(self, sm, now_ns: int, observation_payload: dict | None):
     car_state_valid = bool(sm.seen['carState'] and sm.alive['carState'] and sm.valid['carState'])
     car_control_valid = bool(sm.seen['carControl'] and sm.alive['carControl'] and sm.valid['carControl'])
     vehicle_inputs_valid = car_state_valid and car_control_valid
-    raw_traffic = sm['carStateSP'].teslaTrafficControl if car_state_sp_valid else None
+    raw_traffic = SimpleNamespace(**observation_payload) if observation_payload is not None else None
     raw_frame_mono_time = int(raw_traffic.frameMonoTime) if raw_traffic is not None else 0
     raw_distance = float(raw_traffic.distance) if raw_traffic is not None else 255.0
     observation = (self._observation(raw_traffic, now_ns)
@@ -150,5 +150,5 @@ class TrafficRadarSource:
     target.observationAgeMs = float(
       max(0, now_ns - raw_frame_mono_time) / 1e6 if raw_frame_mono_time > 0 else 1.0e9
     )
-    msg.valid = bool(car_state_sp_valid and vehicle_inputs_valid)
+    msg.valid = bool(raw_traffic is not None and vehicle_inputs_valid)
     return msg

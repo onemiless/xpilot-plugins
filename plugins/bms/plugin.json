@@ -1,7 +1,7 @@
 {
   "id": "bms",
   "name": "Battery (BMS)",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "api": 1,
   "use": "both",
   "category": "data_source",
@@ -10,11 +10,18 @@
   "description": "Big-screen tile: battery charge, pack voltage, current and power from the BMS messages on the vehicle bus. Needs the vehicle-bus harness. Read only.",
   "priority": 100,
   "enable_param": "XpilotBms",
-  "claims": [],
+  "claims": [
+    "msg:bms.state"
+  ],
   "params": {
     "XpilotBms": {
       "type": "BOOL",
       "default": "0"
     }
+  },
+  "requires": {
+    "msg": [
+      "bms.state"
+    ]
   }
 }

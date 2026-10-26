@@ -46,13 +46,15 @@ sys.modules["openpilot.sunnypilot.hardware.profile"] = types.SimpleNamespace(
   HardwareProfile=types.SimpleNamespace(C3XL="c3xl"), get_hardware_profile=lambda: "pc")
 from openpilot.cereal import messaging
 
-message = messaging.new_message("longitudinalPlanSP")
+plan = types.SimpleNamespace()
+latest = {"plan": plan}
+plugins.PluginMsgs = lambda: types.SimpleNamespace(latest=lambda kind, source: vars(latest["plan"]) if latest["plan"] else None)
 sm = types.SimpleNamespace(alive={"longitudinalPlanSP": True}, valid={"longitudinalPlanSP": True},
                            updated={"longitudinalPlanSP": False})
 class SM(dict):
   alive, valid, updated = sm.alive, sm.valid, sm.updated
   def update(self, timeout): pass
-sm = SM(longitudinalPlanSP=message.longitudinalPlanSP)
+sm = SM()
 state = types.SimpleNamespace(started=True, engaged=False, status=0, sm=sm, params=params, is_metric=True,
                               add_offroad_transition_callback=lambda cb: None)
 sys.modules["openpilot.selfdrive.ui.ui_state"] = types.SimpleNamespace(
@@ -98,10 +100,9 @@ try:
     ("invalid", 1, phase.braking, True, False, False, 4, (), False, 0),
     ("mode-off", 1, phase.braking, True, False, True, 0, (), False, 0),
   ):
-    plan = sm["longitudinalPlanSP"].teslaTrafficControl
     plan.mode, plan.lightState, plan.phase = mode, light, int(control_phase)
     plan.rawDistance, plan.quality, plan.applied, plan.driverOverrideActive = 30.0, 0 if light == 4 else 2, applied, override
-    sm.valid["longitudinalPlanSP"] = healthy
+    latest["plan"] = plan if healthy else None
     gui_app._frame = frame
     entry.poll.next = float("-inf")
     driving = host.viewport()
@@ -127,7 +128,7 @@ try:
     rl.unload_image(image)
     cases.append({"name": name, "tile_rect": placed, "view": [driving.x, driving.y, driving.width, driving.height],
                   "screenshot": shot.name, "sha256": hashlib.sha256(shot.read_bytes()).hexdigest()})
-  sm.alive["longitudinalPlanSP"] = False
+  latest["plan"] = None
   assert not entry.tile.state(sm)[0].visible
   state.started = False
   assert "traffic_light" not in host._place("park")

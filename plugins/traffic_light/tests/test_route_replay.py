@@ -1,3 +1,4 @@
+from .test_radar_state import observation_payload
 import json
 from pathlib import Path
 from types import SimpleNamespace
@@ -16,7 +17,7 @@ def ns(**kwargs):
 
 
 class ReplaySubMaster:
-  SERVICES = ('carStateSP', 'carState', 'carControl', 'modelV2')
+  SERVICES = ('observation', 'carState', 'carControl', 'modelV2')
 
   def __init__(self) -> None:
     self.seen = dict.fromkeys(self.SERVICES, True)
@@ -41,7 +42,7 @@ class ReplaySubMaster:
       frameMonoTime=now_ns - frame['trafficAgeNs'], quality=quality,
     )
     self.messages = {
-      'carStateSP': ns(teslaTrafficControl=traffic),
+      'observation': traffic,
       # The retained routes were recorded while disengaged. Replay forces the
       # agreed closed-course control gates so it exercises detection only; all
       # Tesla CAN, ego motion, model and real-lead observations remain recorded.
@@ -53,7 +54,7 @@ class ReplaySubMaster:
         velocity=ns(x=[model_terminal_speed] * 33),
       ),
     }
-    self.valid['carStateSP'] = frame['carStateSPValid']
+    self.valid['observation'] = frame['carStateSPValid']
     self.valid['modelV2'] = model_valid
     return now_ns
 
@@ -80,7 +81,7 @@ def test_recorded_traffic_candidates_replay_deterministically(route_name, expect
   start_requests = 0
 
   for frame in routes[route_name]['frames']:
-    target = source.update(sm, sm.load(frame)).trafficRadarState
+    target = source.update(sm, sm.load(frame), observation_payload(sm)).trafficRadarState
     suppressed_frames += int(target.suppressedByPhysicalLead)
     start_requests += int(target.plannerStartRequested)
     if target.targetPresent and target.controlAllowed:

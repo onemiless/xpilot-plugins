@@ -7,7 +7,7 @@ import openpilot.cereal.messaging as messaging
 from openpilot.cereal import log
 from ..controller import TrafficControlPhase
 from ..final_plan_arbitrator import (
-  FinalPlanArbitrator,
+  FinalPlanArbitrator as RealFinalPlanArbitrator,
   MOVING_GREEN_SPEED,
   START_JERK_LIMIT,
   START_MAX_ACCEL,
@@ -19,6 +19,15 @@ from ..final_plan_arbitrator import (
   create_final_plan_arbitrator,
 )
 from ..stop_profile import StopProfileGenerator
+
+
+class FinalPlanArbitrator(RealFinalPlanArbitrator):
+  def apply(self, plan, sm, now_ns=None):
+    self.msgs = sm
+    return super().apply(plan, sm, now_ns)
+
+  def annotate_plan_sp(self, plan_sp):
+    plan_sp.aTarget = self.diagnostics.final_a_target
 
 
 NOW_NS = 1_000_000_000
@@ -94,6 +103,13 @@ class FakeSubMaster:
 
   def __getitem__(self, key):
     return self.values[key]
+
+  def latest(self, kind, source):
+    assert (kind, source) == ('traffic.target', 'traffic_light')
+    if not all(h['trafficRadarState'] for h in (self.seen, self.alive, self.valid)):
+      return None
+    target = self['trafficRadarState']
+    return {'valid': True, **(target.to_dict() if hasattr(target, 'to_dict') else vars(target))}
 
 
 def base_plan(*, a_target=0.4, should_stop=False, has_lead=False,
@@ -225,7 +241,7 @@ def test_future_stop_constraint_is_active_but_not_currently_applied_behind_a_lea
   assert not arbitrator.diagnostics.applied
   message = messaging.new_message("longitudinalPlanSP")
   arbitrator.annotate_plan_sp(message.longitudinalPlanSP)
-  target = message.longitudinalPlanSP.teslaTrafficControl
+  target = ns(**arbitrator.diagnostic_payload())
   assert target.active
   assert not target.applied
   assert target.action == int(TrafficPlanAction.stop)
@@ -2239,7 +2255,7 @@ def test_disabled_or_non_tesla_sessions_do_not_create_an_arbitrator():
   assert create_final_plan_arbitrator(ns(brand="toyota", longitudinalActuatorDelay=0.2), enabled) is None
   assert isinstance(
     create_final_plan_arbitrator(ns(brand="tesla", longitudinalActuatorDelay=0.2), enabled),
-    FinalPlanArbitrator,
+    RealFinalPlanArbitrator,
   )
 
 
@@ -2258,7 +2274,7 @@ def test_plan_sp_schema_records_base_final_and_start_diagnostics():
 
   arbitrator.annotate_plan_sp(message.longitudinalPlanSP)
 
-  diagnostics = message.longitudinalPlanSP.teslaTrafficControl
+  diagnostics = ns(**arbitrator.diagnostic_payload())
   assert diagnostics.applied
   assert diagnostics.action == int(TrafficPlanAction.stop)
   assert diagnostics.eventId == 21

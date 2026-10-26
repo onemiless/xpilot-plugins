@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from types import SimpleNamespace
+
+from openpilot.tesla import plugins
 
 import pyray as rl
 
@@ -67,47 +70,18 @@ class TrafficSignalDisplayState:
     )
 
 
-_latest_traffic_display_state = TrafficSignalDisplayState()
-_latest_traffic_display_frame = 0
-
-
-def write_traffic_ui_debug(target, sm) -> None:
-  plan_available = bool(
-    sm.seen["longitudinalPlanSP"]
-    and sm.alive["longitudinalPlanSP"]
-    and sm.valid["longitudinalPlanSP"]
-  )
-  target.trafficPlanAvailable = plan_available
-  if plan_available:
-    plan = sm["longitudinalPlanSP"].teslaTrafficControl
-    target.trafficPlanMonoTime = int(sm.logMonoTime["longitudinalPlanSP"])
-    target.trafficPlanLightState = int(plan.lightState)
-    target.trafficPlanPhase = int(plan.phase)
-  target.trafficDisplayFrame = _latest_traffic_display_frame
-  target.trafficDisplayedVisible = _latest_traffic_display_state.visible
-  target.trafficDisplayedHasSignal = _latest_traffic_display_state.has_signal
-  target.trafficDisplayedLightState = _latest_traffic_display_state.light_state
-  target.trafficDisplayedPhase = _latest_traffic_display_state.phase
-  target.trafficDisplayedControlActive = _latest_traffic_display_state.control_active
-
-
 class TrafficControlRenderer(Tile):
   """Icon-only traffic signal driven by the already-published final plan."""
 
-  SPEC = TileSpec("traffic_light", "Traffic Light", sizes=("small",), services=("longitudinalPlanSP",),
-                  show="onroad", hz=10, order=40)
+  SPEC = TileSpec("traffic_light", "Traffic Light", sizes=("small",), show="onroad", hz=10, order=40)
+
+  def __init__(self):
+    self.msgs = plugins.PluginMsgs()
 
   def state(self, sm):
-    global _latest_traffic_display_frame, _latest_traffic_display_state
-    # updated is a one-poll pulse, not an acknowledgement by this renderer.
-    # A skipped tile poll must not leave an older lamp/control outline cached
-    # after a newer healthy plan has already arrived.
-    state = TrafficSignalDisplayState.from_plan(
-      sm["longitudinalPlanSP"].teslaTrafficControl,
-      valid=bool(sm.alive["longitudinalPlanSP"] and sm.valid["longitudinalPlanSP"]),
-    )
-    _latest_traffic_display_state = state
-    _latest_traffic_display_frame = gui_app.frame
+    payload = self.msgs.latest("traffic.plan", "traffic_light")
+    state = (TrafficSignalDisplayState.from_plan(SimpleNamespace(**payload))
+             if payload is not None else TrafficSignalDisplayState())
     # Include the flash half-cycle in the cache key so an unchanged plan still animates.
     return state, state.flashing and int(gui_app.frame / max(1, gui_app.target_fps // 2)) % 2 == 0
 

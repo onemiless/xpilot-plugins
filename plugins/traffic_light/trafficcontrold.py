@@ -7,6 +7,7 @@ from openpilot.common.params import Params
 from openpilot.common.realtime import Priority, config_realtime_process
 from openpilot.tesla import plugins
 from . import TRAFFIC_SIGNAL_CONTROL_PARAM
+from .plugin import TrafficLight
 from .controller import TrafficControlConfig, TrafficControlMode
 from .radar_state import (
   TrafficRadarGoPolicy,
@@ -53,10 +54,8 @@ def main() -> None:
   params = plugins.view(Params())
   source = build_source(params)
   model_updates = 0
-  services = ['carControl', 'carState', 'modelV2', 'carStateSP']
-  sm = messaging.SubMaster(services, poll='modelV2', ignore_alive=['carStateSP'],
-                           ignore_avg_freq=['carStateSP'], ignore_valid=['carStateSP'])
-  pm = messaging.PubMaster(['trafficRadarState'])
+  sm = messaging.SubMaster(['carControl', 'carState', 'modelV2'], poll='modelV2')
+  msgs = plugins.PluginMsgs()
 
   while True:
     sm.update()
@@ -64,7 +63,8 @@ def main() -> None:
       model_updates += 1
       if model_updates % 20 == 0:
         refresh_source_config(source, params)
-      pm.send('trafficRadarState', source.update(sm, sm.logMonoTime['modelV2']))
+      target = source.update(sm, sm.logMonoTime['modelV2'], msgs.latest("traffic.observation", "traffic_light"))
+      plugins.send_msg(TrafficLight, "traffic.target", {"valid": target.valid, **target.trafficRadarState.to_dict()}, valid_for_ms=350)
 
 
 if __name__ == "__main__":

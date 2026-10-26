@@ -1,3 +1,4 @@
+from .test_radar_state import observation_payload
 """Flashing evidence crosses the real Traffic source and final-plan boundary."""
 
 from types import SimpleNamespace as ns
@@ -9,13 +10,13 @@ from ..controller import (
   TrafficControlConfig, TrafficControlMode, TrafficControlPhase,
 )
 from ..final_plan_arbitrator import (
-  FinalPlanArbitrator, TrafficPlanAction, TrafficStartBlockReason,
+  TrafficPlanAction, TrafficStartBlockReason,
 )
 from ..radar_state import (
   TrafficRadarGoPolicy, TrafficRadarSource,
 )
 from .test_final_plan_arbitrator import (
-  base_plan, fake_sm, plan_output,
+  FinalPlanArbitrator, base_plan, fake_sm, plan_output,
 )
 from .test_radar_state import red_light_sm
 
@@ -40,13 +41,13 @@ class FlashControlChain:
 
   def step(self, now_s, color):
     now_ns = round(now_s * 1e9)
-    raw = self.source_sm["carStateSP"].teslaTrafficControl
+    raw = self.source_sm["observation"]
     raw.lightState = color
     raw.validForControl = raw.lightState != 4
     raw.quality = 0 if raw.lightState == 4 else 2
     raw.frameMonoTime = now_ns
     raw.distance = self.initial_distance - self.source_sm["carState"].vEgo * (now_s - 1.0)
-    message = self.source.update(self.source_sm, now_ns)
+    message = self.source.update(self.source_sm, now_ns, observation_payload(self.source_sm))
     assert message.valid
     self.target = message.trafficRadarState
     self.plan_sm.values["trafficRadarState"] = self.target
@@ -55,7 +56,7 @@ class FlashControlChain:
     self.arbitrator.apply(self.plan, self.plan_sm, now_ns)
     companion = messaging.new_message("longitudinalPlanSP")
     self.arbitrator.annotate_plan_sp(companion.longitudinalPlanSP)
-    self.display = companion.longitudinalPlanSP.teslaTrafficControl
+    self.display = ns(**self.arbitrator.diagnostic_payload())
     assert self.display.finalATarget == pytest.approx(self.plan.aTarget)
     assert self.display.shouldStop == self.plan.shouldStop
     return self.target

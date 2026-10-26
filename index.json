@@ -40,13 +40,13 @@
     {
       "id": "bms",
       "name": "Battery (BMS)",
-      "version": "1.0.2",
+      "version": "1.1.0",
       "api": 1,
       "category": "data_source",
       "author": "xpilot",
       "description": "Big-screen tile: battery charge, pack voltage, current and power from the BMS messages on the vehicle bus. Needs the vehicle-bus harness. Read only.",
-      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/bms-1.0.2.tar.gz",
-      "sha256": "9fb383b13658203efdbe20498af5f9eaa99de73b41e0a7907cc3c1bbb0337ac7",
+      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/bms-1.1.0.tar.gz",
+      "sha256": "9fb625a22262b0646327aef2cd6186532f19fd5e943dd3706d482289425d2365",
       "platform": null
     },
     {
@@ -211,13 +211,13 @@
     {
       "id": "traffic_light",
       "name": "Traffic Light Control (Experimental)",
-      "version": "1.0.2",
+      "version": "1.1.0",
       "api": 1,
       "category": "longitudinal_planning",
       "author": "xpilot",
       "description": "Stops for red lights seen by the car's own traffic-control perception. Only ever slows down.",
-      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/traffic_light-1.0.2.tar.gz",
-      "sha256": "3e8ee71031db7e2dee6ad8c7bdfa6626b09d1fec26e591720f46cca64d85902a",
+      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/traffic_light-1.1.0.tar.gz",
+      "sha256": "d9f20c4051c6ecf374e8fcb8a8516853f7aa656fe9ded3763d67e0c425446a70",
       "platform": null
     }
   ]

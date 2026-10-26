@@ -10,6 +10,12 @@ from ..radar_state import (
 )
 
 
+def observation_payload(sm):
+  if not all(h['observation'] for h in (sm.seen, sm.alive, sm.valid)):
+    return None
+  return dict(rawAddress=0x25D, rawPayload='', **vars(sm['observation']))
+
+
 def test_traffic_radar_channel_does_not_mutate_radar_state():
   radar_msg = messaging.new_message("radarState")
   traffic_msg = messaging.new_message("trafficRadarState")
@@ -40,7 +46,7 @@ def red_light_sm():
     frameMonoTime=0, quality=2,
   )
   messages = {
-    "carStateSP": ns(teslaTrafficControl=traffic),
+    "observation": traffic,
     "carState": ns(vEgo=10.0, aEgo=0.0, gasPressed=False, brakePressed=False),
     "carControl": ns(enabled=True, longActive=True, leftBlinker=False, rightBlinker=False),
     "radarState": ns(leadOne=ns(present=False, dRel=0.0), leadTwo=ns(present=False, dRel=0.0)),
@@ -67,8 +73,8 @@ def test_confirmed_red_is_published_as_a_separate_radar_like_target():
 
   message = None
   for now_ns in range(0, 1_000_000_001, 100_000_000):
-    sm["carStateSP"].teslaTrafficControl.frameMonoTime = now_ns
-    message = source.update(sm, now_ns)
+    sm["observation"].frameMonoTime = now_ns
+    message = source.update(sm, now_ns, observation_payload(sm))
 
   target = message.trafficRadarState
   assert target.targetPresent
@@ -86,18 +92,18 @@ def test_persistent_off_release_publishes_a_known_transition_reason():
   source = TrafficRadarSource(TrafficControlConfig(mode=TrafficControlMode.stopGo))
 
   for now_ns, distance in ((100_000_000, 50.0), (600_000_000, 47.5)):
-    sm["carStateSP"].teslaTrafficControl.distance = distance
-    sm["carStateSP"].teslaTrafficControl.frameMonoTime = now_ns
-    source.update(sm, now_ns)
+    sm["observation"].distance = distance
+    sm["observation"].frameMonoTime = now_ns
+    source.update(sm, now_ns, observation_payload(sm))
 
-  sm["carStateSP"].teslaTrafficControl.lightState = 0
+  sm["observation"].lightState = 0
   target = None
   for now_ns, distance in ((1_100_000_000, 45.0), (1_600_000_000, 42.5),
                            (2_100_000_000, 40.0), (2_600_000_000, 37.5),
                            (3_100_000_000, 35.0)):
-    sm["carStateSP"].teslaTrafficControl.distance = distance
-    sm["carStateSP"].teslaTrafficControl.frameMonoTime = now_ns
-    target = source.update(sm, now_ns).trafficRadarState
+    sm["observation"].distance = distance
+    sm["observation"].frameMonoTime = now_ns
+    target = source.update(sm, now_ns, observation_payload(sm)).trafficRadarState
 
   assert target.phase == 6
   assert target.eventTransitionReason == 18
@@ -109,17 +115,17 @@ def test_long_dropout_reconfirmation_publishes_a_new_session_reason():
   source = TrafficRadarSource(TrafficControlConfig(mode=TrafficControlMode.stopGo))
 
   for now_ns, distance in ((100_000_000, 50.0), (600_000_000, 47.5)):
-    sm["carStateSP"].teslaTrafficControl.distance = distance
-    sm["carStateSP"].teslaTrafficControl.frameMonoTime = now_ns
-    target = source.update(sm, now_ns).trafficRadarState
+    sm["observation"].distance = distance
+    sm["observation"].frameMonoTime = now_ns
+    target = source.update(sm, now_ns, observation_payload(sm)).trafficRadarState
   session_id = target.stopSessionId
 
-  sm["carStateSP"].teslaTrafficControl.distance = 45.0
-  sm["carStateSP"].teslaTrafficControl.frameMonoTime = 3_100_000_000
-  first = source.update(sm, 3_100_000_000).trafficRadarState
-  sm["carStateSP"].teslaTrafficControl.distance = 42.5
-  sm["carStateSP"].teslaTrafficControl.frameMonoTime = 3_600_000_000
-  second = source.update(sm, 3_600_000_000).trafficRadarState
+  sm["observation"].distance = 45.0
+  sm["observation"].frameMonoTime = 3_100_000_000
+  first = source.update(sm, 3_100_000_000, observation_payload(sm)).trafficRadarState
+  sm["observation"].distance = 42.5
+  sm["observation"].frameMonoTime = 3_600_000_000
+  second = source.update(sm, 3_600_000_000, observation_payload(sm)).trafficRadarState
 
   assert first.stopSessionId == session_id
   assert second.stopSessionId == session_id + 1
@@ -132,27 +138,27 @@ def test_red_and_green_control_do_not_depend_on_radar_health():
     health.pop("radarState")
   sm.messages.pop("radarState")
   sm["carState"].vEgo = 0.0
-  sm["carStateSP"].teslaTrafficControl.distance = 12.0
+  sm["observation"].distance = 12.0
   source = TrafficRadarSource(
     TrafficControlConfig(mode=TrafficControlMode.stopGo),
     go_policy=TrafficRadarGoPolicy.active,
   )
 
   for now_ns in range(100_000_000, 1_100_000_001, 100_000_000):
-    sm["carStateSP"].teslaTrafficControl.frameMonoTime = now_ns
-    red = source.update(sm, now_ns).trafficRadarState
+    sm["observation"].frameMonoTime = now_ns
+    red = source.update(sm, now_ns, observation_payload(sm)).trafficRadarState
 
   assert red.targetPresent
-  assert source.update(sm, 1_100_000_000).valid
+  assert source.update(sm, 1_100_000_000, observation_payload(sm)).valid
   assert red.stopControlAllowed
   assert red.controlAllowed
   assert red.stopSessionId > 0
 
-  sm["carStateSP"].teslaTrafficControl.lightState = 2
-  sm["carStateSP"].teslaTrafficControl.frameMonoTime = 1_200_000_000
-  source.update(sm, 1_200_000_000)
-  sm["carStateSP"].teslaTrafficControl.frameMonoTime = 1_700_000_000
-  green = source.update(sm, 1_700_000_000).trafficRadarState
+  sm["observation"].lightState = 2
+  sm["observation"].frameMonoTime = 1_200_000_000
+  source.update(sm, 1_200_000_000, observation_payload(sm))
+  sm["observation"].frameMonoTime = 1_700_000_000
+  green = source.update(sm, 1_700_000_000, observation_payload(sm)).trafficRadarState
 
   assert green.releaseEligible
   assert green.plannerStartRequested
@@ -165,18 +171,18 @@ def test_message_valid_requires_vehicle_and_control_state_but_not_radar():
   for health in (no_radar.seen, no_radar.alive, no_radar.valid):
     health.pop("radarState")
   no_radar.messages.pop("radarState")
-  no_radar["carStateSP"].teslaTrafficControl.frameMonoTime = 100_000_000
-  assert source.update(no_radar, 100_000_000).valid
+  no_radar["observation"].frameMonoTime = 100_000_000
+  assert source.update(no_radar, 100_000_000, observation_payload(no_radar)).valid
 
   bad_car = red_light_sm()
   bad_car.valid["carState"] = False
-  bad_car["carStateSP"].teslaTrafficControl.frameMonoTime = 200_000_000
-  assert not source.update(bad_car, 200_000_000).valid
+  bad_car["observation"].frameMonoTime = 200_000_000
+  assert not source.update(bad_car, 200_000_000, observation_payload(bad_car)).valid
 
   bad_control = red_light_sm()
   bad_control.alive["carControl"] = False
-  bad_control["carStateSP"].teslaTrafficControl.frameMonoTime = 300_000_000
-  assert not source.update(bad_control, 300_000_000).valid
+  bad_control["observation"].frameMonoTime = 300_000_000
+  assert not source.update(bad_control, 300_000_000, observation_payload(bad_control)).valid
 
 
 def test_a_published_lead_never_changes_traffic_permissions():
@@ -188,10 +194,10 @@ def test_a_published_lead_never_changes_traffic_permissions():
   lead_source = TrafficRadarSource(TrafficControlConfig(mode=TrafficControlMode.stopGo))
 
   for now_ns in range(100_000_000, 1_100_000_001, 100_000_000):
-    clear["carStateSP"].teslaTrafficControl.frameMonoTime = now_ns
-    lead["carStateSP"].teslaTrafficControl.frameMonoTime = now_ns
-    clear_target = clear_source.update(clear, now_ns).trafficRadarState
-    lead_target = lead_source.update(lead, now_ns).trafficRadarState
+    clear["observation"].frameMonoTime = now_ns
+    lead["observation"].frameMonoTime = now_ns
+    clear_target = clear_source.update(clear, now_ns, observation_payload(clear)).trafficRadarState
+    lead_target = lead_source.update(lead, now_ns, observation_payload(lead)).trafficRadarState
 
   assert lead_target.targetPresent == clear_target.targetPresent
   assert lead_target.controlAllowed == clear_target.controlAllowed
@@ -204,8 +210,8 @@ def test_model_turn_direction_does_not_veto_current_lane_can():
   sm["modelDataV2SP"].laneTurnDirection = 1
   source = TrafficRadarSource(TrafficControlConfig(mode=TrafficControlMode.stopGo))
   for now_ns in range(0, 1_000_000_001, 100_000_000):
-    sm["carStateSP"].teslaTrafficControl.frameMonoTime = now_ns
-    target = source.update(sm, now_ns).trafficRadarState
+    sm["observation"].frameMonoTime = now_ns
+    target = source.update(sm, now_ns, observation_payload(sm)).trafficRadarState
   assert not target.directionUnknown
   assert target.targetPresent
   assert target.controlAllowed
@@ -214,32 +220,32 @@ def test_model_turn_direction_does_not_veto_current_lane_can():
 def test_vehicle_blinker_does_not_veto_current_lane_stop_or_release():
   sm = red_light_sm()
   sm["carState"].vEgo = 0.0
-  sm["carStateSP"].teslaTrafficControl.distance = 12.0
+  sm["observation"].distance = 12.0
   sm["carState"].leftBlinker = True
   source = TrafficRadarSource(
     TrafficControlConfig(mode=TrafficControlMode.stopGo),
     go_policy=TrafficRadarGoPolicy.active,
   )
   for now_ns in range(0, 1_000_000_001, 100_000_000):
-    sm["carStateSP"].teslaTrafficControl.frameMonoTime = now_ns
-    target = source.update(sm, now_ns).trafficRadarState
+    sm["observation"].frameMonoTime = now_ns
+    target = source.update(sm, now_ns, observation_payload(sm)).trafficRadarState
   assert not target.stopDirectionUnknown
   assert target.stopControlAllowed
   assert not target.directionUnknown
   assert target.controlAllowed
 
-  sm["carStateSP"].teslaTrafficControl.lightState = 2
-  sm["carStateSP"].teslaTrafficControl.frameMonoTime = 1_200_000_000
-  source.update(sm, 1_200_000_000)
-  sm["carStateSP"].teslaTrafficControl.frameMonoTime = 1_700_000_000
-  green_allowed = source.update(sm, 1_700_000_000).trafficRadarState
+  sm["observation"].lightState = 2
+  sm["observation"].frameMonoTime = 1_200_000_000
+  source.update(sm, 1_200_000_000, observation_payload(sm))
+  sm["observation"].frameMonoTime = 1_700_000_000
+  green_allowed = source.update(sm, 1_700_000_000, observation_payload(sm)).trafficRadarState
   assert green_allowed.phase == 6
   assert not green_allowed.directionUnknown
   assert green_allowed.plannerStartRequested
 
   sm["carState"].leftBlinker = False
-  sm["carStateSP"].teslaTrafficControl.frameMonoTime = 2_200_000_000
-  still_allowed = source.update(sm, 2_200_000_000).trafficRadarState
+  sm["observation"].frameMonoTime = 2_200_000_000
+  still_allowed = source.update(sm, 2_200_000_000, observation_payload(sm)).trafficRadarState
   assert not still_allowed.directionUnknown
   assert still_allowed.plannerStartRequested
 
@@ -247,9 +253,9 @@ def test_vehicle_blinker_does_not_veto_current_lane_stop_or_release():
 def test_stale_observation_keeps_raw_age_and_distance_only_for_diagnostics():
   sm = red_light_sm()
   source = TrafficRadarSource(TrafficControlConfig(mode=TrafficControlMode.stopGo))
-  sm["carStateSP"].teslaTrafficControl.frameMonoTime = 100_000_000
+  sm["observation"].frameMonoTime = 100_000_000
 
-  target = source.update(sm, 400_000_000).trafficRadarState
+  target = source.update(sm, 400_000_000, observation_payload(sm)).trafficRadarState
 
   assert not target.targetPresent
   assert not target.controlAllowed
@@ -259,10 +265,10 @@ def test_stale_observation_keeps_raw_age_and_distance_only_for_diagnostics():
 
 def test_missing_raw_frame_is_reported_as_expired_not_zero_age():
   sm = red_light_sm()
-  sm["carStateSP"].teslaTrafficControl.frameMonoTime = 0
+  sm["observation"].frameMonoTime = 0
   source = TrafficRadarSource(TrafficControlConfig(mode=TrafficControlMode.stopGo))
 
-  target = source.update(sm, 1_000_000_000).trafficRadarState
+  target = source.update(sm, 1_000_000_000, observation_payload(sm)).trafficRadarState
 
   assert not target.rawObservationFresh
   assert target.observationAgeMs > 2000.0
@@ -272,14 +278,14 @@ def test_a_published_lead_is_left_to_the_base_planner():
   sm = red_light_sm()
   source = TrafficRadarSource(TrafficControlConfig(mode=TrafficControlMode.stopGo))
   for now_ns in range(0, 1_000_000_001, 100_000_000):
-    sm["carStateSP"].teslaTrafficControl.frameMonoTime = now_ns
-    source.update(sm, now_ns)
+    sm["observation"].frameMonoTime = now_ns
+    source.update(sm, now_ns, observation_payload(sm))
 
   real_lead = sm["radarState"].leadOne
   real_lead.present = True
   real_lead.dRel = 18.0
-  sm["carStateSP"].teslaTrafficControl.frameMonoTime = 1_100_000_000
-  target = source.update(sm, 1_100_000_000).trafficRadarState
+  sm["observation"].frameMonoTime = 1_100_000_000
+  target = source.update(sm, 1_100_000_000, observation_payload(sm)).trafficRadarState
 
   assert target.controlAllowed
   assert target.stopControlAllowed
@@ -292,21 +298,21 @@ def test_lead_message_changes_do_not_change_the_red_event():
   sm = red_light_sm()
   source = TrafficRadarSource(TrafficControlConfig(mode=TrafficControlMode.stopGo))
   for now_ns in range(0, 1_000_000_001, 100_000_000):
-    sm["carStateSP"].teslaTrafficControl.frameMonoTime = now_ns
-    confirmed = source.update(sm, now_ns).trafficRadarState
+    sm["observation"].frameMonoTime = now_ns
+    confirmed = source.update(sm, now_ns, observation_payload(sm)).trafficRadarState
   event_id = confirmed.eventId
 
   sm["radarState"].leadOne.present = True
   sm["radarState"].leadOne.dRel = 18.0
-  sm["carStateSP"].teslaTrafficControl.frameMonoTime = 1_100_000_000
-  with_lead = source.update(sm, 1_100_000_000).trafficRadarState
+  sm["observation"].frameMonoTime = 1_100_000_000
+  with_lead = source.update(sm, 1_100_000_000, observation_payload(sm)).trafficRadarState
   assert not with_lead.suppressedByPhysicalLead
   assert with_lead.controlAllowed
   assert with_lead.eventId == event_id
 
   sm["radarState"].leadOne.present = False
-  sm["carStateSP"].teslaTrafficControl.frameMonoTime = 1_200_000_000
-  reacquired = source.update(sm, 1_200_000_000).trafficRadarState
+  sm["observation"].frameMonoTime = 1_200_000_000
+  reacquired = source.update(sm, 1_200_000_000, observation_payload(sm)).trafficRadarState
   assert reacquired.controlAllowed
   assert reacquired.eventId == event_id
 
@@ -314,25 +320,25 @@ def test_lead_message_changes_do_not_change_the_red_event():
 def released_green(go_policy: TrafficRadarGoPolicy, *, feature_zero_green: bool = False):
   sm = red_light_sm()
   sm["carState"].vEgo = 0.0
-  sm["carStateSP"].teslaTrafficControl.distance = 12.0
+  sm["observation"].distance = 12.0
   sm["modelV2"].position.x = [6.0] * 33
   source = TrafficRadarSource(
     TrafficControlConfig(mode=TrafficControlMode.stopGo), go_policy=go_policy,
   )
   for now_ns in range(0, 1_000_000_001, 100_000_000):
-    sm["carStateSP"].teslaTrafficControl.frameMonoTime = now_ns
-    source.update(sm, now_ns)
+    sm["observation"].frameMonoTime = now_ns
+    source.update(sm, now_ns, observation_payload(sm))
 
-  sm["carStateSP"].teslaTrafficControl.lightState = 2
+  sm["observation"].lightState = 2
   if feature_zero_green:
-    sm["carStateSP"].teslaTrafficControl.validForControl = True
-    sm["carStateSP"].teslaTrafficControl.featureState = 0
-    sm["carStateSP"].teslaTrafficControl.stateMachine = 6
-    sm["carStateSP"].teslaTrafficControl.unavailableReason = 1
+    sm["observation"].validForControl = True
+    sm["observation"].featureState = 0
+    sm["observation"].stateMachine = 6
+    sm["observation"].unavailableReason = 1
   message = None
   for now_ns in range(1_100_000_000, 1_900_000_001, 100_000_000):
-    sm["carStateSP"].teslaTrafficControl.frameMonoTime = now_ns
-    message = source.update(sm, now_ns)
+    sm["observation"].frameMonoTime = now_ns
+    message = source.update(sm, now_ns, observation_payload(sm))
   return message.trafficRadarState
 
 
@@ -352,26 +358,26 @@ def test_active_green_requests_longitudinal_start_without_creating_a_target():
 def test_stale_green_keeps_release_session_without_requesting_start():
   sm = red_light_sm()
   sm["carState"].vEgo = 0.0
-  sm["carStateSP"].teslaTrafficControl.distance = 12.0
+  sm["observation"].distance = 12.0
   source = TrafficRadarSource(
     TrafficControlConfig(mode=TrafficControlMode.stopGo, stationary_release_s=10.0),
     go_policy=TrafficRadarGoPolicy.active,
   )
   for now_ns in range(0, 1_000_000_001, 100_000_000):
-    sm["carStateSP"].teslaTrafficControl.frameMonoTime = now_ns
-    source.update(sm, now_ns)
+    sm["observation"].frameMonoTime = now_ns
+    source.update(sm, now_ns, observation_payload(sm))
 
-  traffic = sm["carStateSP"].teslaTrafficControl
+  traffic = sm["observation"]
   traffic.lightState = 2
   traffic.frameMonoTime = 1_100_000_000
-  source.update(sm, 1_100_000_000)
+  source.update(sm, 1_100_000_000, observation_payload(sm))
   traffic.frameMonoTime = 1_600_000_000
-  released = source.update(sm, 1_600_000_000).trafficRadarState
+  released = source.update(sm, 1_600_000_000, observation_payload(sm)).trafficRadarState
   assert released.phase == 6
   assert released.plannerStartRequested
 
   traffic.available = False
-  stale = source.update(sm, 4_000_000_000).trafficRadarState
+  stale = source.update(sm, 4_000_000_000, observation_payload(sm)).trafficRadarState
   assert stale.phase == 6
   assert not stale.rawObservationFresh
   assert not stale.rawGreenSeen
@@ -380,7 +386,7 @@ def test_stale_green_keeps_release_session_without_requesting_start():
 
   traffic.available = True
   traffic.frameMonoTime = 4_100_000_000
-  recovered = source.update(sm, 4_100_000_000).trafficRadarState
+  recovered = source.update(sm, 4_100_000_000, observation_payload(sm)).trafficRadarState
   assert recovered.phase == 0
   assert recovered.stopSessionId == 0
   assert not recovered.plannerStartRequested
@@ -389,28 +395,28 @@ def test_stale_green_keeps_release_session_without_requesting_start():
 def test_stationary_fresh_green_keeps_start_request_past_three_seconds():
   sm = red_light_sm()
   sm["carState"].vEgo = 0.0
-  sm["carStateSP"].teslaTrafficControl.distance = 12.0
+  sm["observation"].distance = 12.0
   source = TrafficRadarSource(
     TrafficControlConfig(mode=TrafficControlMode.stopGo, stationary_release_s=10.0),
     go_policy=TrafficRadarGoPolicy.active,
   )
   for now_ns in range(0, 1_000_000_001, 100_000_000):
-    sm["carStateSP"].teslaTrafficControl.frameMonoTime = now_ns
-    source.update(sm, now_ns)
+    sm["observation"].frameMonoTime = now_ns
+    source.update(sm, now_ns, observation_payload(sm))
 
-  traffic = sm["carStateSP"].teslaTrafficControl
+  traffic = sm["observation"]
   traffic.lightState = 2
   traffic.frameMonoTime = 1_100_000_000
-  source.update(sm, 1_100_000_000)
+  source.update(sm, 1_100_000_000, observation_payload(sm))
   traffic.frameMonoTime = 1_600_000_000
-  released = source.update(sm, 1_600_000_000).trafficRadarState
+  released = source.update(sm, 1_600_000_000, observation_payload(sm)).trafficRadarState
   session_id = released.stopSessionId
   assert released.plannerStartRequested
 
   still_released = released
   for now_ns in range(1_700_000_000, 5_000_000_001, 100_000_000):
     traffic.frameMonoTime = now_ns
-    still_released = source.update(sm, now_ns).trafficRadarState
+    still_released = source.update(sm, now_ns, observation_payload(sm)).trafficRadarState
   assert still_released.phase == 6
   assert still_released.stopSessionId == session_id
   assert still_released.plannerStartRequested
@@ -419,17 +425,17 @@ def test_stationary_fresh_green_keeps_start_request_past_three_seconds():
 def test_two_real_can_green_frames_request_cp_style_start():
   sm = red_light_sm()
   sm["carState"].vEgo = 0.0
-  sm["carStateSP"].teslaTrafficControl.distance = 12.0
+  sm["observation"].distance = 12.0
   sm["modelV2"].position.x = [6.0] * 33
   source = TrafficRadarSource(
     TrafficControlConfig(mode=TrafficControlMode.stopGo),
     go_policy=TrafficRadarGoPolicy.active,
   )
   for now_ns in range(0, 1_000_000_001, 100_000_000):
-    sm["carStateSP"].teslaTrafficControl.frameMonoTime = now_ns
-    source.update(sm, now_ns)
+    sm["observation"].frameMonoTime = now_ns
+    source.update(sm, now_ns, observation_payload(sm))
 
-  traffic = sm["carStateSP"].teslaTrafficControl
+  traffic = sm["observation"]
   traffic.validForControl = True
   traffic.featureState = 0
   traffic.stateMachine = 6
@@ -437,10 +443,10 @@ def test_two_real_can_green_frames_request_cp_style_start():
   traffic.lightState = 2
   traffic.frameMonoTime = 1_100_000_000
 
-  first = source.update(sm, 1_100_000_000).trafficRadarState
+  first = source.update(sm, 1_100_000_000, observation_payload(sm)).trafficRadarState
   assert first.phase != 6
   traffic.frameMonoTime = 1_600_000_000
-  target = source.update(sm, 1_600_000_000).trafficRadarState
+  target = source.update(sm, 1_600_000_000, observation_payload(sm)).trafficRadarState
 
   assert target.phase == 6
   assert target.releaseEligible
@@ -450,19 +456,19 @@ def test_two_real_can_green_frames_request_cp_style_start():
 def test_can_green_request_is_independent_of_a_published_lead():
   sm = red_light_sm()
   sm["carState"].vEgo = 0.0
-  sm["carStateSP"].teslaTrafficControl.distance = 12.0
+  sm["observation"].distance = 12.0
   sm["modelV2"].position.x = [6.0] * 33
   source = TrafficRadarSource(
     TrafficControlConfig(mode=TrafficControlMode.stopGo),
     go_policy=TrafficRadarGoPolicy.active,
   )
   for now_ns in range(0, 1_000_000_001, 100_000_000):
-    sm["carStateSP"].teslaTrafficControl.frameMonoTime = now_ns
-    source.update(sm, now_ns)
+    sm["observation"].frameMonoTime = now_ns
+    source.update(sm, now_ns, observation_payload(sm))
 
   sm["radarState"].leadOne.present = True
   sm["radarState"].leadOne.dRel = 8.0
-  traffic = sm["carStateSP"].teslaTrafficControl
+  traffic = sm["observation"]
   traffic.validForControl = True
   traffic.featureState = 0
   traffic.stateMachine = 6
@@ -470,10 +476,10 @@ def test_can_green_request_is_independent_of_a_published_lead():
   traffic.lightState = 2
   traffic.frameMonoTime = 1_100_000_000
 
-  first = source.update(sm, 1_100_000_000).trafficRadarState
+  first = source.update(sm, 1_100_000_000, observation_payload(sm)).trafficRadarState
   assert first.phase != 6
   traffic.frameMonoTime = 1_600_000_000
-  target = source.update(sm, 1_600_000_000).trafficRadarState
+  target = source.update(sm, 1_600_000_000, observation_payload(sm)).trafficRadarState
 
   assert target.phase == 6
   assert not target.suppressedByPhysicalLead
@@ -483,31 +489,31 @@ def test_can_green_request_is_independent_of_a_published_lead():
 def test_transient_lead_message_does_not_affect_same_event_green_start():
   sm = red_light_sm()
   sm["carState"].vEgo = 0.0
-  sm["carStateSP"].teslaTrafficControl.distance = 12.0
+  sm["observation"].distance = 12.0
   sm["modelV2"].position.x = [6.0] * 33
   source = TrafficRadarSource(
     TrafficControlConfig(mode=TrafficControlMode.stopGo),
     go_policy=TrafficRadarGoPolicy.active,
   )
   for now_ns in range(0, 1_000_000_001, 100_000_000):
-    sm["carStateSP"].teslaTrafficControl.frameMonoTime = now_ns
-    source.update(sm, now_ns)
+    sm["observation"].frameMonoTime = now_ns
+    source.update(sm, now_ns, observation_payload(sm))
 
   sm["radarState"].leadOne.present = True
   sm["radarState"].leadOne.dRel = 25.0
-  sm["carStateSP"].teslaTrafficControl.frameMonoTime = 1_050_000_000
-  unaffected = source.update(sm, 1_050_000_000).trafficRadarState
+  sm["observation"].frameMonoTime = 1_050_000_000
+  unaffected = source.update(sm, 1_050_000_000, observation_payload(sm)).trafficRadarState
   assert not unaffected.suppressedByPhysicalLead
   assert unaffected.controlAllowed
 
   sm["radarState"].leadOne.present = False
-  traffic = sm["carStateSP"].teslaTrafficControl
+  traffic = sm["observation"]
   traffic.lightState = 2
   traffic.frameMonoTime = 1_100_000_000
-  first = source.update(sm, 1_100_000_000).trafficRadarState
+  first = source.update(sm, 1_100_000_000, observation_payload(sm)).trafficRadarState
   assert first.phase != 6
   traffic.frameMonoTime = 1_600_000_000
-  released = source.update(sm, 1_600_000_000).trafficRadarState
+  released = source.update(sm, 1_600_000_000, observation_payload(sm)).trafficRadarState
 
   assert released.phase == 6
   assert not released.suppressedByPhysicalLead
@@ -528,7 +534,7 @@ def test_feature_zero_green_requests_start_only_after_the_same_event_holds():
 
 def test_feature_zero_green_without_a_held_red_event_never_requests_start():
   sm = red_light_sm()
-  traffic = sm["carStateSP"].teslaTrafficControl
+  traffic = sm["observation"]
   traffic.validForControl = False
   traffic.featureState = 0
   traffic.stateMachine = 6
@@ -544,7 +550,7 @@ def test_feature_zero_green_without_a_held_red_event_never_requests_start():
   target = None
   for now_ns in range(0, 1_000_000_001, 100_000_000):
     traffic.frameMonoTime = now_ns
-    target = source.update(sm, now_ns).trafficRadarState
+    target = source.update(sm, now_ns, observation_payload(sm)).trafficRadarState
 
   assert not target.targetPresent
   assert not target.plannerStartRequested

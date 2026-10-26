@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import math
 import time
+from types import SimpleNamespace
+
+from openpilot.tesla import plugins
 
 from . import TRAFFIC_SIGNAL_CONTROL_PARAM
 from .arbitrator_start import StartPlanMixin
@@ -51,6 +54,7 @@ class FinalPlanArbitrator(TrafficDiagnosticsMixin, StopPlanMixin, StartPlanMixin
   """Explicit post-planner Traffic constraint; never wraps or mutates a planner backend."""
 
   def __init__(self, CP) -> None:
+    self.msgs = plugins.PluginMsgs()
     self._actuator_delay = float(CP.longitudinalActuatorDelay)
     self._profile = StopProfileGenerator(
       actuator_delay=self._actuator_delay,
@@ -148,9 +152,10 @@ class FinalPlanArbitrator(TrafficDiagnosticsMixin, StopPlanMixin, StartPlanMixin
     return bool(sm.seen[service] and sm.alive[service] and sm.valid[service])
 
   def _traffic(self, sm, now_ns: int):
-    if not self._healthy(sm, "trafficRadarState"):
+    payload = self.msgs.latest("traffic.target", "traffic_light")
+    if payload is None or not payload["valid"]:
       return None
-    traffic = sm["trafficRadarState"]
+    traffic = SimpleNamespace(**payload)
     age_ns = now_ns - int(traffic.publishMonoTime)
     return traffic if 0 <= age_ns <= PLANNER_TRAFFIC_STALE_NS else None
 

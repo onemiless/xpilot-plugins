@@ -1,8 +1,9 @@
-"""Battery (BMS) plugin: decodes the BMS frames on the vehicle bus in card and publishes them as carStateSP.teslaBattery
+"""Battery (BMS) plugin: decodes the BMS frames on the vehicle bus in card and publishes them as pluginMsg bms.state
 for the tile in ui.py. Reads only; needs the vehicle-bus harness (nothing arrives without it)."""
 import time
 
 from opendbc.car.tesla.values import CANBUS
+from openpilot.tesla import plugins
 from openpilot.tesla.plugin import Plugin
 
 # Layouts match opendbc tesla_modely_hw4_perception.dbc (BO_ 306 BMS_hvBusStatus, BO_ 658 BMS_socStatus). packCurrent is
@@ -30,6 +31,7 @@ class Bms(Plugin):
   def __init__(self, CP, params):
     super().__init__(CP, params)
     self.frames: dict[int, tuple[int, bytes]] = {}
+    self.last_publish_ns = 0
 
   def observe_can(self, can_list, now_ns: int) -> list:
     for mono_time, frames in can_list:
@@ -39,8 +41,14 @@ class Bms(Plugin):
     return []
 
   def publish_state(self, CS_SP) -> None:
-    values = decode(self.frames, time.monotonic_ns())
-    out = CS_SP.teslaBattery
-    out.available = values is not None
+    now_ns = time.monotonic_ns()
+    if now_ns - self.last_publish_ns < 500_000_000:
+      return
+    self.last_publish_ns = now_ns
+    values = decode(self.frames, now_ns)
+    payload = {"available": values is not None}
+    ttl_ms = 2000
     if values is not None:
-      out.soc, out.voltage, out.current = values
+      payload.update(zip(("soc", "voltage", "current"), values, strict=True))
+      ttl_ms = max(1, (STALE_NS - (now_ns - min(t for t, _ in self.frames.values()))) // 1_000_000)
+    plugins.send_msg(self, "bms.state", payload, valid_for_ms=ttl_ms)

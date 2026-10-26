@@ -1,3 +1,4 @@
+from .test_radar_state import observation_payload
 import openpilot.cereal.messaging as messaging
 from types import SimpleNamespace
 
@@ -59,15 +60,15 @@ def test_disabled_source_does_not_compute_stop_candidates_but_keeps_raw_distance
   source = trafficcontrold.build_source(FakeParams(False))
   sm = red_light_sm()
   for now_ns in range(100_000_000, 1_100_000_000, 100_000_000):
-    sm["carStateSP"].teslaTrafficControl.frameMonoTime = now_ns
-    target = source.update(sm, now_ns).trafficRadarState
+    sm["observation"].frameMonoTime = now_ns
+    target = source.update(sm, now_ns, observation_payload(sm)).trafficRadarState
     assert target.mode == int(TrafficControlMode.off)
     assert target.phase == int(TrafficControlPhase.off)
     assert not target.targetPresent
     assert not target.controlAllowed
     assert not target.plannerStartRequested
     assert target.stopSessionId == 0
-    assert target.rawDistance == sm["carStateSP"].teslaTrafficControl.distance
+    assert target.rawDistance == sm["observation"].distance
 
 
 def test_disabling_clears_session_and_reenabling_requires_new_confirmation():
@@ -76,21 +77,21 @@ def test_disabling_clears_session_and_reenabling_requires_new_confirmation():
   source = trafficcontrold.build_source(params)
   sm = red_light_sm()
   for now_ns in range(100_000_000, 1_100_000_000, 100_000_000):
-    sm["carStateSP"].teslaTrafficControl.frameMonoTime = now_ns
-    target = source.update(sm, now_ns).trafficRadarState
+    sm["observation"].frameMonoTime = now_ns
+    target = source.update(sm, now_ns, observation_payload(sm)).trafficRadarState
   assert target.stopSessionId > 0 and target.controlAllowed
 
   params.enabled = False
   trafficcontrold.refresh_source_config(source, params)
   assert source.controller.stop_session_id == 0
-  sm["carStateSP"].teslaTrafficControl.frameMonoTime = 1_100_000_000
-  target = source.update(sm, 1_100_000_000).trafficRadarState
+  sm["observation"].frameMonoTime = 1_100_000_000
+  target = source.update(sm, 1_100_000_000, observation_payload(sm)).trafficRadarState
   assert target.mode == 0 and target.stopSessionId == 0 and not target.controlAllowed
 
   params.enabled = True
   trafficcontrold.refresh_source_config(source, params)
-  sm["carStateSP"].teslaTrafficControl.frameMonoTime = 1_200_000_000
-  target = source.update(sm, 1_200_000_000).trafficRadarState
+  sm["observation"].frameMonoTime = 1_200_000_000
+  target = source.update(sm, 1_200_000_000, observation_payload(sm)).trafficRadarState
   assert target.phase == int(TrafficControlPhase.redCandidate)
   assert not target.controlAllowed
 
@@ -132,7 +133,7 @@ def test_runtime_stop_reference_refresh_applies_when_idle_without_moving_an_acti
   assert source.controller.stop_reference == 4.0
 
 
-def test_trafficcontrold_publishes_only_the_independent_traffic_radar_service(monkeypatch):
+def test_trafficcontrold_publishes_only_through_plugin_messages(monkeypatch):
   published = {}
 
   class FakeSubMaster:
@@ -149,29 +150,21 @@ def test_trafficcontrold_publishes_only_the_independent_traffic_radar_service(mo
         raise StopIteration
       self.update_count += 1
 
-  class FakePubMaster:
-    def __init__(self, services):
-      published["services"] = tuple(services)
-
-    def send(self, service, message):
-      published["sent"] = (service, message)
-
-  message = object()
-  source = SimpleNamespace(update=lambda sm, now_ns: message)
+  message = SimpleNamespace(valid=True, trafficRadarState=SimpleNamespace(to_dict=lambda: {'phase': 0}))
+  source = SimpleNamespace(update=lambda sm, now_ns, observation: message)
+  monkeypatch.setattr(trafficcontrold.plugins, "PluginMsgs", lambda: SimpleNamespace(latest=lambda *a: None))
+  monkeypatch.setattr(trafficcontrold.plugins, "send_msg", lambda *a, **kw: published.update(sent=a, options=kw))
   monkeypatch.setattr(trafficcontrold, "config_realtime_process", lambda *args: None)
   monkeypatch.setattr(trafficcontrold, "Params", lambda: object())
   monkeypatch.setattr(trafficcontrold, "build_source", lambda params: source)
   monkeypatch.setattr(trafficcontrold.messaging, "SubMaster", FakeSubMaster)
-  monkeypatch.setattr(trafficcontrold.messaging, "PubMaster", FakePubMaster)
 
   with pytest.raises(StopIteration):
     trafficcontrold.main()
 
-  assert published["services"] == ("trafficRadarState",)
-  assert published["sent"] == ("trafficRadarState", message)
-  assert "modelV2" in published["subscriptions"]
-  assert "radarState" not in published["subscriptions"]
-  assert not ({"radarState", "modelV2", "can", "sendcan"} & set(published["services"]))
+  assert published['sent'] == (trafficcontrold.TrafficLight, 'traffic.target', {'valid': True, 'phase': 0})
+  assert published['options'] == {'valid_for_ms': 350}
+  assert published['subscriptions'] == ('carControl', 'carState', 'modelV2')
 
 
 def test_trafficcontrold_refreshes_runtime_settings_without_restarting(monkeypatch):
@@ -189,21 +182,15 @@ def test_trafficcontrold_refreshes_runtime_settings_without_restarting(monkeypat
         raise StopIteration
       self.update_count += 1
 
-  class FakePubMaster:
-    def __init__(self, _services):
-      pass
-
-    def send(self, _service, _message):
-      pass
-
   params = FakeParams(True)
-  source = SimpleNamespace(update=lambda _sm, _now_ns: object())
+  source = SimpleNamespace(update=lambda *a: SimpleNamespace(valid=True, trafficRadarState=SimpleNamespace(to_dict=lambda: {})))
+  monkeypatch.setattr(trafficcontrold.plugins, 'PluginMsgs', lambda: SimpleNamespace(latest=lambda *a: None))
+  monkeypatch.setattr(trafficcontrold.plugins, 'send_msg', lambda *a, **kw: True)
   monkeypatch.setattr(trafficcontrold, "config_realtime_process", lambda *args: None)
   monkeypatch.setattr(trafficcontrold, "Params", lambda: params)
   monkeypatch.setattr(trafficcontrold, "build_source", lambda _params: source)
   monkeypatch.setattr(trafficcontrold, "refresh_source_config", lambda _source, _params: refreshed.append(True))
   monkeypatch.setattr(trafficcontrold.messaging, "SubMaster", FakeSubMaster)
-  monkeypatch.setattr(trafficcontrold.messaging, "PubMaster", FakePubMaster)
 
   with pytest.raises(StopIteration):
     trafficcontrold.main()

@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from enum import IntEnum
 
 from .controller import TrafficControlPhase
+from openpilot.tesla import plugins
 
 # CP's low-speed cruise acceleration envelope. This applies only to a
 # same-event CAN-authoritative green start and remains time/speed bounded.
@@ -96,7 +97,7 @@ class TrafficPlanDiagnostics:
 
 
 class TrafficDiagnosticsMixin:
-  """Copy trafficRadarState into TrafficPlanDiagnostics and out to longitudinalPlanSP."""
+  """Copy the traffic target into final-plan diagnostics published through pluginMsg."""
 
   def _set_diagnostics_from_traffic(self, traffic) -> None:
     if traffic is None:
@@ -125,38 +126,42 @@ class TrafficDiagnosticsMixin:
 
 
   def annotate_plan_sp(self, plan_sp) -> None:
-    diagnostics = self.diagnostics
-    plan_sp.aTarget = diagnostics.final_a_target
-    target = plan_sp.teslaTrafficControl
-    target.mode = diagnostics.mode
-    target.phase = diagnostics.phase
-    target.active = diagnostics.action != TrafficPlanAction.none
-    target.shadow = False
-    target.applied = diagnostics.applied
-    target.shouldStop = diagnostics.should_stop
-    target.remainingDistance = diagnostics.remaining_distance
-    target.rawDistance = diagnostics.raw_distance
-    target.stopReference = diagnostics.stop_reference
-    target.lightState = diagnostics.light_state
-    target.sourceBus = diagnostics.source_bus
-    target.quality = diagnostics.quality
-    target.constraintAccel = diagnostics.traffic_a_target
-    target.action = int(diagnostics.action)
-    target.baseATarget = diagnostics.base_a_target
-    target.finalATarget = diagnostics.final_a_target
-    target.startRequested = diagnostics.start_requested
-    target.startApplied = diagnostics.start_applied
-    target.startBlockReason = int(diagnostics.start_block_reason)
-    target.eventId = diagnostics.event_id
-    target.terminalCatchActive = diagnostics.terminal_catch_active
-    target.stopSessionId = diagnostics.stop_session_id
-    target.directionUnknown = diagnostics.direction_unknown
-    target.driverOverrideActive = diagnostics.driver_override_active
-    target.canRemaining = diagnostics.can_remaining
-    target.stationInnovation = diagnostics.station_innovation
-    target.stopControlAllowed = diagnostics.stop_control_allowed
-    target.stopSafetyAllowed = diagnostics.stop_safety_allowed
-    target.rawObservationFresh = diagnostics.raw_observation_fresh
-    target.rawObservationAgeMs = diagnostics.raw_observation_age_ms
-    target.stopDirectionUnknown = diagnostics.stop_direction_unknown
+    from .plugin import TrafficLight
+    plan_sp.aTarget = self.diagnostics.final_a_target
+    plugins.send_msg(TrafficLight, "traffic.plan", self.diagnostic_payload(), valid_for_ms=350)
 
+  def diagnostic_payload(self) -> dict:
+    diagnostics = self.diagnostics
+    return {
+      "mode": diagnostics.mode,
+      "phase": diagnostics.phase,
+      "active": diagnostics.action != TrafficPlanAction.none,
+      "shadow": False,
+      "applied": diagnostics.applied,
+      "shouldStop": diagnostics.should_stop,
+      "remainingDistance": diagnostics.remaining_distance,
+      "rawDistance": diagnostics.raw_distance,
+      "stopReference": diagnostics.stop_reference,
+      "lightState": diagnostics.light_state,
+      "sourceBus": diagnostics.source_bus,
+      "quality": diagnostics.quality,
+      "constraintAccel": diagnostics.traffic_a_target,
+      "action": int(diagnostics.action),
+      "baseATarget": diagnostics.base_a_target,
+      "finalATarget": diagnostics.final_a_target,
+      "startRequested": diagnostics.start_requested,
+      "startApplied": diagnostics.start_applied,
+      "startBlockReason": int(diagnostics.start_block_reason),
+      "eventId": diagnostics.event_id,
+      "terminalCatchActive": diagnostics.terminal_catch_active,
+      "stopSessionId": diagnostics.stop_session_id,
+      "directionUnknown": diagnostics.direction_unknown,
+      "driverOverrideActive": diagnostics.driver_override_active,
+      "canRemaining": diagnostics.can_remaining,
+      "stationInnovation": diagnostics.station_innovation,
+      "stopControlAllowed": diagnostics.stop_control_allowed,
+      "stopSafetyAllowed": diagnostics.stop_safety_allowed,
+      "rawObservationFresh": diagnostics.raw_observation_fresh,
+      "rawObservationAgeMs": diagnostics.raw_observation_age_ms,
+      "stopDirectionUnknown": diagnostics.stop_direction_unknown,
+    }

@@ -27,7 +27,7 @@ jobs:
     - uses: actions/setup-python@v5
       with:
         python-version: '3.12'
-    - run: pip install pyzmq numpy pycapnp pytest zstandard setproctitle cython scons setuptools cffi tqdm jeepney av
+    - run: pip install pyzmq numpy pycapnp pytest zstandard setproctitle cython scons setuptools cffi tqdm jeepney av comma-deps-raylib
     - name: Build msgq
       working-directory: xpilot/msgq_repo
       run: scons -j4 msgq/ipc_pyx.so msgq/visionipc/visionipc_pyx.so

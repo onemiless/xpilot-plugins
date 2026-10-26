@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: onemiless/xpilot
-          ref: 17227fd31e6d9b0c73a09d2d1b82fd84c4911df8  # packet callback does not claim an encoderd publisher
+          ref: 1b52d017f4e6605cf6751963c92dbd899d38891c  # xpilot PR #15: packet callback does not claim an encoderd publisher
           path: system
           lfs: false
       - name: Matching system dependencies

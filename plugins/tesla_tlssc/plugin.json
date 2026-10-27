@@ -1,0 +1,51 @@
+{
+  "id": "tesla_tlssc",
+  "name": "Tesla Traffic Light Stop",
+  "version": "1.0.0",
+  "api": 1,
+  "use": "onroad",
+  "category": "longitudinal_planning",
+  "entry": "plugin:TeslaTlssc",
+  "author": "xpilot",
+  "description": "Turns on the car's own Traffic Light and Stop Sign Control (TLSSC) between two speeds you set, like t2can: it re-sends the car's UI_autopilotControl (0x3FD mux 0) with bits 38/39 set while cruise is on. The car stops only while the stock ACC drives; Tesla Dynamic ACC 1.1+ hands longitudinal to the stock ACC when the car shows a red/yellow light or a stop line. Needs the vehicle-bus harness. Unverified on this car: whether TLSSC acts while SP steers.",
+  "priority": 100,
+  "enable_param": "XpTeslaTlssc",
+  "claims": ["can.tx:0x3FD:1", "msg:tlssc.state"],
+  "settings": [
+    {"key": "XpTeslaTlsscMin", "label": "Active from", "range": [0, 150, 5, "km/h", 1]},
+    {"key": "XpTeslaTlsscMax", "label": "Active up to", "range": [0, 150, 5, "km/h", 1]}
+  ],
+  "params": {
+    "XpTeslaTlssc": {"type": "BOOL", "default": "0"},
+    "XpTeslaTlsscMin": {"type": "INT", "default": "0", "note": "km/h; TLSSC on at or above this speed"},
+    "XpTeslaTlsscMax": {"type": "INT", "default": "90", "note": "km/h; TLSSC off above this speed"}
+  },
+  "requires": {"rule_abi": 1},
+  "rules": [
+    {
+      "type": "template_clone.v1",
+      "tx_bus": 1,
+      "rx_bus": 1,
+      "template_ttl_us": 300000,
+      "min_interval_us": 40000,
+      "session": 2,
+      "max_count": 30,
+      "idle_reset_us": 0,
+      "window_us": 1000000,
+      "counter": {"kind": 0, "bit_offset": 0, "width": 0},
+      "tx_checksum": {"kind": 0, "checksum_byte": 0},
+      "rx_checksum": {"kind": 0, "checksum_byte": 0},
+      "predicate_mask": [7, 0, 0, 0, 0, 0, 0, 0],
+      "predicate_value": [0, 0, 0, 0, 0, 0, 0, 0],
+      "constant_mask": [0, 0, 0, 0, 192, 0, 0, 0],
+      "constant_value": [0, 0, 0, 0, 192, 0, 0, 0],
+      "tx_address": 1021,
+      "rx_address": 1021,
+      "tx_length": 8,
+      "rx_length": 8,
+      "copy_mask": [255, 255, 255, 255, 63, 255, 255, 255],
+      "fields": [],
+      "legal_tuples": []
+    }
+  ]
+}

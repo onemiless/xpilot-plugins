@@ -9,9 +9,11 @@ class _Policy:
     # read once per drive, like every plugin setting
     self.high = float(params.get("XpTeslaDynamicAccHigh", return_default=True) or 80)
     self.low = float(params.get("XpTeslaDynamicAccLow", return_default=True) or 70)
+    from openpilot.tesla import plugins
+    self.msgs = plugins.PluginMsgs()
 
   def desired(self, ctx, CS):
-    return desired_owner(CS.vEgo, self.high, self.low)
+    return desired_owner(CS.vEgo, self.high, self.low, self.msgs.latest("tlssc.state", "tesla_tlssc"))
 
 
 class TeslaDynamicAcc(Plugin):

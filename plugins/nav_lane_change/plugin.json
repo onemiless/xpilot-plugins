@@ -35,7 +35,7 @@
       "session": 2,
       "max_count": 30,
       "idle_reset_us": 0,
-      "max_span_us": 10000000,
+      "window_us": 10000000,
       "counter": {"kind": 1, "bit_offset": 8, "width": 4},
       "tx_checksum": {"kind": 0, "checksum_byte": 0},
       "rx_checksum": {"kind": 0, "checksum_byte": 0},

@@ -138,9 +138,9 @@
       "api": 1,
       "category": "perception_model",
       "author": "xpilot",
-      "description": "BGM1 v4 Walnut V3 phone inference with a calibrated control envelope and local fallback. Uses the system engaged bounded-wait contract.",
+      "description": "BGM1 v4 Walnut V3 phone inference with physical sanity checks and local fallback. Uses the system engaged bounded-wait contract.",
       "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/lean_mici-0.7.1.tar.gz",
-      "sha256": "c0ba73367c945d5cff405a97bbdbfab6eef2e72923830b922c7bc74cf605723c",
+      "sha256": "4490e83b99e4d3ca2a22e289c5178a18ddcd1e8b54cb4f04ec837772ad1db4c1",
       "platform": {
         "machine": "aarch64",
         "python": "cpython-312"

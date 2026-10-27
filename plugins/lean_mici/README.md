@@ -40,45 +40,21 @@ The accepted baseline substitute was the exact BGM1 v4/S1 wire audit plus **596/
 not a claim of same-model numerical equivalence. Models stay outside the package
 and repository.
 
-**A2: runtime control envelope.** Stock and Walnut may make different predictions.
-Only control-relevant divergence is compared; shapes/finite/IDs/EOF/epoch and
-hard protocol fault latches stay in S1. The plan window uses system T_IDXS <=2s.
+**A2: physical sanity checks.** Since 0.7.0, the owner has removed the
+local-versus-phone divergence envelope, matching upstream lean-release. Physical
+bounds remain: speed (<=80m/s, forward >=-2m/s), first-point position within 5m,
+longitudinal acceleration [-8,5]m/s², lateral acceleration <=6m/s², action,
+pose, and confident lead distance [0,300]m. The physical lateral action limit
+is min(6, MAX_CURVATURE*max(v,1)^2), using the local first-plan speed proxy.
 
-| Metric | Calibration reference | Runtime bound |
-|---|---:|---:|
-| curvature difference times max predicted speed squared | 0.8142 m/s² | 1.5 m/s² |
-| longitudinal acceleration difference | 1.5061 m/s² | 2.5 m/s² |
-| lead probability difference (calibration p99) | 0.7129 | 0.80 |
-| first lead distance difference, either probability >0.5 (p99) | 32.2000 m | 35 m |
-
-These leave 84% and 66% margin above plan calibration p99.5, and 12% and 9% above lead calibration p99 respectively.
-Curvature is speed-normalised because raw yaw-rate/speed is ill-conditioned near
-standstill. At 20m/s the bound is 0.00375m^-1; it is not an unbounded low-speed
-steering target. System MAX_CURVATURE still caps absolute curvature.
-
-Physical checks cover speed (<=80m/s, forward >=-2m/s), first-point position
-within 5m, longitudinal acceleration [-8,5]m/s², lateral acceleration <=6m/s²,
-physical action/pose and confident lead distance [0,300]m. Irrelevant far-plan
-position and ordinary pose differences are not equality failures.
-
-An envelope outlier resets warm-up and requires five fresh accepted replies before
-phone selection resumes; it does not permanently latch the source.
-Structural faults still latch. The system owns selection: cold/absent sources
-never wait; recently valid sources may wait for the current frame only until
-EOF+45ms. Its three-frame liveness window, warm-up and exact frame/epoch checks
-come directly from ModelSource. The plugin adds no wait or sequence override.
+Shapes, finite values, IDs, EOF, epoch and protocol fault latches remain in S1.
+Physical rejection resets warm-up; sequence resets still require five fresh
+accepted replies before selection. Structural faults still latch. The system
+owns selection: cold/absent sources never wait; recently valid sources may wait
+for the current frame only until EOF+60ms. Its three-frame liveness window,
+warm-up and exact frame/epoch checks come directly from ModelSource.
 
 ## Action, lifecycle and peer fixes
-
-Admission compares the actual action means against local action, or derives a
-reference from the local first plan point when stock has no action head. Action
-lateral-demand/acceleration differences use the same 1.5/2.5 m/s² bounds. Their
-calibration p99.5 errors are 0.9945/1.1624 m/s². The physical lateral action limit
-is min(6, MAX_CURVATURE*max(v,1)^2). S1 passes only heads to admit, so v is the
-local first-plan speed proxy. Every action comparison remains a pure bounded
-calculation. On the same calibration/independent routes, acceptance changes from
-100%/99.33% to **99.33%/99.17%**; independent rejects are four curvature and one
-lead-probability outlier. One-sided lead detection uses the same distance bound.
 
 Bad discovery, wire, calibration, struct and codec input drops the connection;
 new Camera/encoders and dual IDR are required on reconnect. Linux child startup

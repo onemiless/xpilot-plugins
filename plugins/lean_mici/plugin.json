@@ -7,7 +7,7 @@
   "category": "perception_model",
   "entry": "plugin:LeanMici",
   "author": "xpilot",
-  "description": "BGM1 v4 Walnut V3 phone inference with a calibrated control envelope and local fallback. Uses the system engaged bounded-wait contract.",
+  "description": "BGM1 v4 Walnut V3 phone inference with physical sanity checks and local fallback. Uses the system engaged bounded-wait contract.",
   "priority": 100,
   "enable_param": "ExtLeanMici",
   "claims": [

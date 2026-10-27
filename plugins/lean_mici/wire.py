@@ -1,6 +1,7 @@
 """Bounded BGM1 v4 client; explicit serialization into the unchanged S1 v2 ABI."""
 import struct
 import time
+import math
 import numpy as np
 
 HEADER = struct.Struct('<4sBBHII')
@@ -49,13 +50,51 @@ def reply(data):
   return frame, struct.unpack_from('<Q', data, 16)[0], flags
 
 
-def frame(meta, road, wide, flags, frame_idx):
+def vehicle(rpy, velocity, angular_velocity, event_ok, sensors_ok, inputs_ok, posenet_ok, calib_ok, timestamp, eof):
+  if not timestamp or eof > timestamp + 100_000_000 or not all(math.isfinite(x) for x in rpy):
+    return 0, -32768, 0
+  roll, pitch, yaw = rpy
+  cr, sr, cp, sp, cy, sy = math.cos(roll), math.sin(roll), math.cos(pitch), math.sin(pitch), math.cos(yaw), math.sin(yaw)
+  rot = np.array([[cy * cp, cy * sp * sr - sy * cr, cy * sp * cr + sy * sr],
+                  [sy * cp, sy * sp * sr + cy * cr, sy * sp * cr - cy * sr],
+                  [-sp, cp * sr, cp * cr]])
+  v = rot.T @ velocity
+  w = rot.T @ angular_velocity
+  speed, rate, flags = 0, -32768, 0
+  if event_ok and sensors_ok and inputs_ok and posenet_ok and calib_ok and math.isfinite(v[0]):
+    speed = min(65535, math.floor(abs(v[0]) * 100 + .5))
+    flags |= 8 | (2 if v[0] < -.3 else 0) | (4 if math.hypot(v[0], v[1]) < .1 else 0)
+  if event_ok and sensors_ok and calib_ok and math.isfinite(w[2]):
+    value = max(-32767, min(32767, w[2] * 18000 / math.pi))
+    rate = math.floor(value + .5) if value >= 0 else math.ceil(value - .5)
+    flags |= 1
+  return speed, rate, flags
+
+
+def nav_ext(data):
+  if len(data) != 8480:
+    return None
+  magic, version, kind, flags, _, size = HEADER.unpack_from(data)
+  if (magic, version, kind, size) != (b'BGM1', 4, 0x11, 8440) or flags & ~3:
+    return None
+  present, health = struct.unpack_from('<BB', data, 8304)
+  if not present or present & 0xf0 or health & 0xf0:
+    return None
+  state = struct.unpack_from('<BBBBIIIHBBH', data, 8308) if present & 1 else None
+  curve = struct.unpack_from('<BBHHBB', data, 8348) if present & 4 else None
+  if curve and curve[0] > 8:
+    curve = None
+  points = [struct.unpack_from('<iiHBB', data, 8356 + 12 * i) for i in range(curve[0])] if curve else []
+  return {'health': health, 'state': state, 'curve': curve, 'points': points}
+
+
+def frame(meta, road, wide, flags, frame_idx, motion=(0, -32768, 0)):
   if not 0 < len(road) <= MAX_SEGMENT or not 0 < len(wide) <= MAX_SEGMENT or flags & ~3:
     raise ValueError('bad FRAME segment/flags')
   # META: magic/version/session/road ID/wide ID/road EOF/wide EOF/warp[18]/desire[8]/traffic[2]/action_t[2].
   values = meta[7:]
   header = HEADER.pack(b'BGM1', 4, 0x10, flags, frame_idx, len(road))
-  header += struct.pack('<Q30f', meta[5], *values[18:26], *values[26:30], *values[:18]) + struct.pack('<HhB3x', 0, -32768, 0)
+  header += struct.pack('<Q30f', meta[5], *values[18:26], *values[26:30], *values[:18]) + struct.pack('<HhB3x', *motion)
   return header + road, struct.pack('<I', len(wide)) + wide + bytes(16)
 
 

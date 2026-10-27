@@ -1,4 +1,9 @@
-# lean_mici 0.5.1
+# lean_mici 0.6.0
+
+## Navigation
+
+The phone receives calibrated vehicle motion and returns navigation for the tile.
+Navigation is display only; turn-speed control is not included.
 
 Default off; model role plus `lean_modeld` only, `rules: []`, no CAN sends.
 No model or compiled model container is packaged or committed. The aarch64 native camera bridge is shipped with reproducible build_native.py.

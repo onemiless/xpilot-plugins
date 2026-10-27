@@ -5,6 +5,7 @@ from pathlib import Path
 import signal
 import threading
 import time
+from queue import Empty
 
 from openpilot.selfdrive.modeld.modeld import run_with_model_source
 from .source import PhoneSource
@@ -17,26 +18,35 @@ def data_dir():
   return path
 
 
-def status(directory, source, stop):
+def status(directory, source, stop, navigation):
+  from openpilot.tesla import plugins
+  from .plugin import LeanMici
   while not stop.is_set():
+    try:
+      timestamp, nav = navigation.get_nowait()
+      if time.monotonic() - timestamp < 1:
+        plugins.send_msg(LeanMici, 'lean_mici.navigation', nav, valid_for_ms=1500)
+    except Empty:
+      pass
     if not source.sent:
       stop.wait(.05)
       continue
     state = ('Phone active' if source.selected else 'Phone warming' if source.reason in ('warmup','warmup_flags','need_dual_idr') else
              'Local fallback' if source.epoch or source.locked else 'Local ready')
     path = directory / 'status.tmp'
-    path.write_text(json.dumps({'state': state, 'version': '0.5.1', 'updated_at': time.time()}))
+    path.write_text(json.dumps({'state': state, 'version': '0.6.0', 'updated_at': time.time()}))
     os.replace(path, directory / 'status.json')
-    stop.wait(1)
+    stop.wait(.5)
 
 
 def main():
   from .worker import main as child
   directory = data_dir()
   source = PhoneSource(directory)
-  process = multiprocessing.Process(target=child, args=(source.path, os.getpid()), daemon=True)
+  navigation = multiprocessing.Queue(maxsize=2)
+  process = multiprocessing.Process(target=child, args=(source.path, os.getpid(), navigation), daemon=True)
   stop = threading.Event()
-  reporter = threading.Thread(target=status, args=(directory, source, stop), daemon=True)
+  reporter = threading.Thread(target=status, args=(directory, source, stop, navigation), daemon=True)
   def terminate(signum, frame):
     raise SystemExit(0)
   old_handler = signal.signal(signal.SIGTERM, terminate)

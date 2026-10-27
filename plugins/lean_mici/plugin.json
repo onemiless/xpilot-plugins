@@ -1,7 +1,7 @@
 {
   "id": "lean_mici",
   "name": "lean mici phone inference",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "api": 1,
   "use": "both",
   "category": "perception_model",
@@ -12,9 +12,11 @@
   "enable_param": "ExtLeanMici",
   "claims": [
     "role:perception.model",
-    "process:lean_modeld"
+    "process:lean_modeld",
+    "msg:lean_mici.navigation"
   ],
   "rules": [],
+  "requires": {"msg": ["lean_mici.navigation"]},
   "params": {
     "ExtLeanMici": {
       "type": "BOOL",

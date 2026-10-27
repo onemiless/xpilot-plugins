@@ -11,7 +11,7 @@ import time
 from openpilot.tesla.plugin_params import ParamsView
 
 from .network import Beacon, discover, scope
-from .wire import frame, hello, reply, receive, to_mailbox, receive_reply
+from .wire import frame, hello, reply, receive, to_mailbox, receive_reply, vehicle, nav_ext
 
 META = struct.Struct('<4sIQIIQQ30f')
 ENVELOPE = struct.Struct('<QQQII')
@@ -49,7 +49,7 @@ def metadata(fd):
   return data if data[:2] == (b'XMS1', 1) else None
 
 
-def main(path, parent):
+def main(path, parent, navigation=None):
   if sys.platform == 'linux':
     libc = ctypes.CDLL(None, use_errno=True)
     if libc.prctl(1, signal.SIGKILL, 0, 0, 0):
@@ -57,6 +57,9 @@ def main(path, parent):
   if os.getppid() != parent:
     return
   from .camera import Camera
+  from openpilot.cereal import messaging
+  from queue import Full
+  sm = messaging.SubMaster(['deviceMotion', 'extrinsicsCalibration'])
   # A stuck encoder/network stack stays optional. The parent kills this whole child offroad.
   signal.signal(signal.SIGTERM, signal.SIG_DFL)
   resource.setrlimit(resource.RLIMIT_AS, (1024 * 1024 * 1024, 1024 * 1024 * 1024))
@@ -99,6 +102,7 @@ def main(path, parent):
                 last = None
                 paired = 0
                 reset = True
+                last_nav = 0
                 while os.getppid() == parent:
                   # These unlocked words are hints only; the full metadata is still validated under its lock.
                   if os.pread(fd,4,0)!=b'XMS1' or last is not None and int.from_bytes(os.pread(fd,4,16),'little')==last:
@@ -127,7 +131,15 @@ def main(path, parent):
                   if first_eof is None:
                     first_eof = meta[5]
                   frame_idx = (meta[5] - first_eof + 25_000_000) // 50_000_000
-                  first, second = frame(meta, road, wide, flags, frame_idx)
+                  sm.update(0)
+                  motion, calib = sm['deviceMotion'], sm['extrinsicsCalibration']
+                  v, w = motion.velocityDevice, motion.angularVelocityDevice
+                  rpy = calib.rpyCalib if len(calib.rpyCalib) == 3 else (float('nan'),) * 3
+                  tail = vehicle(rpy, (v.x, v.y, v.z), (w.x, w.y, w.z), sm.valid['deviceMotion'],
+                                 motion.sensorsOK, motion.inputsOK, motion.posenetOK,
+                                 sm.valid['extrinsicsCalibration'] and calib.calStatus != 'invalid',
+                                 sm.logMonoTime['deviceMotion'], meta[5])
+                  first, second = frame(meta, road, wide, flags, frame_idx, tail)
                   conn.sendall(first)
                   conn.sendall(second)
                   data = receive_reply(conn)
@@ -138,6 +150,12 @@ def main(path, parent):
                   if reply_flags & 1 and flags != 3:
                     raise ValueError('phone sequence reset requires fresh dual IDR')
                   publish(fd, meta[2], epoch, arrival, paired, to_mailbox(data, meta[3]))
+                  if navigation is not None and time.monotonic() - last_nav >= .5:
+                    last_nav = time.monotonic()
+                    try:
+                      navigation.put_nowait((last_nav, nav_ext(data)))
+                    except Full:
+                      pass
             except Exception:
               time.sleep(.1)
             finally:

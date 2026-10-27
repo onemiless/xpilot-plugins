@@ -22,8 +22,6 @@ def decode(raw):
   return heads
 
 
-# Calibration segment 1, frames 0..599; lead bounds use p99 plus margin, not evaluation frames.
-DIVERGENCE = {'curvature': 1.5, 'acceleration': 2.5, 'lead_probability': .8, 'lead_distance': 35.}
 NEAR = np.array(ModelConstants.T_IDXS) <= 2.
 
 
@@ -56,18 +54,6 @@ def reject_reason(local, remote):
     return 'physical_lead_probability'
   if r['lead_probability'][0] > .5 and not 0 <= r['lead_distance'] <= 300:
     return 'physical_lead_distance'
-  # Curvature error is bounded in lateral-acceleration units; raw curvature is ill-conditioned near standstill.
-  if np.max(np.abs(r['curvature']-l['curvature']) * np.maximum(np.maximum(r['speed'],l['speed'])**2,1.)) > DIVERGENCE['curvature']:
-    return 'curvature_divergence'
-  if abs(r['action'][0] - l['action'][0]) > DIVERGENCE['curvature']:
-    return 'action_curvature_divergence'
-  if abs(r['action'][1] - l['action'][1]) > DIVERGENCE['acceleration']:
-    return 'action_acceleration_divergence'
-  for key in ('acceleration', 'lead_probability'):
-    if np.max(np.abs(r[key] - l[key])) > DIVERGENCE[key]:
-      return key + '_divergence'
-  if max(r['lead_probability'][0], l['lead_probability'][0]) > .5 and abs(r['lead_distance'] - l['lead_distance']) > DIVERGENCE['lead_distance']:
-    return 'lead_distance_divergence'
   return ''
 
 

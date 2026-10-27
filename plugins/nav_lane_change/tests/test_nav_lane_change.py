@@ -2,11 +2,16 @@ from .. import stalk
 from ..logic import LEFT, RIGHT, SPACING_NS, Decider
 
 S = 1_000_000_000
-ROUTE = {'health': 7, 'state': [2, 15, 0, 0, 3000, 5000, 300, 10]}  # a left turn 3 km ahead
 
 
-def desire(lc_left=0., lc_right=0., turn_left=0., turn_right=0.):
-  return [0., turn_left, turn_right, lc_left, lc_right, 0., 0., 0.] * 4
+def nav(left=(0., 0.), right=(0., 0.), health=7, flags=2, road=None):
+  state = [2, 15, 10, 0, 3000, 5000, 300, 10, flags, 255, 0xFFFF]  # a left turn 3 km ahead, navigation fed to the model
+  return {'health': health, 'state': state, 'road': road,
+          'blinker': {'left': list(left) + [0.] * 4, 'right': list(right) + [0.] * 4}}
+
+
+def road(**kw):
+  return {'lane_count': 3, 'roundabout': False, 'ramp': False, 'tunnel': False} | kw
 
 
 def run(d, t0, t1, *args):
@@ -23,33 +28,31 @@ def test_stalk_frame_matches_car():
   assert not stalk.is_idle_template(bytes.fromhex('87000200'))  # never clone an active stalk frame
 
 
-def test_model_intent_decides_direction_and_timing():
+def test_model_blinker_decides_direction_and_timing():
   d = Decider(threshold=.6)
-  assert run(d, 0, .9, ROUTE, desire(lc_right=.8), True, True, False, False) == []      # must hold 1 s
-  assert run(d, .9, 1.2, ROUTE, desire(lc_right=.8), True, True, False, False) == [RIGHT]  # direction from the model, not the left turn
-  assert run(d, 1.2, 8.5, ROUTE, desire(lc_right=.8), True, True, False, False) == []    # spacing
-  d = Decider(threshold=.6)
-  assert run(d, 0, 2, ROUTE, desire(lc_left=.7, lc_right=.65), True, True, False, False) == [LEFT]
-
-
-def test_navigation_turn_alone_never_taps():
-  d = Decider(threshold=.6)
-  assert run(d, 0, 5, ROUTE, desire(turn_left=.9, lc_left=.5), True, True, False, False) == []
+  assert run(d, 0, .9, nav(right=(.1, .8)), True, True, False, False) == []         # must hold 1 s
+  assert run(d, .9, 1.2, nav(right=(.1, .8)), True, True, False, False) == [RIGHT]  # model direction, not the left turn
+  assert run(d, 1.2, 8.5, nav(right=(.1, .8)), True, True, False, False) == []     # spacing
+  assert run(Decider(threshold=.6), 0, 2, nav(left=(.7, .1), right=(.65, 0)), True, True, False, False) == [LEFT]
+  assert run(Decider(threshold=.6), 0, 3, nav(left=(0, 0)), True, True, False, False) == []  # turn alone never taps
 
 
 def test_gates():
-  for args in ((None, desire(lc_left=.9), True, True, False, False),            # no navigation
-               ({'health': 15}, desire(lc_left=.9), True, True, False, False),  # rerouting
-               (ROUTE, desire(lc_left=.9), False, True, False, False),          # local model, not the phone
-               (ROUTE, desire(lc_left=.9), True, False, False, False),          # not ready (driver input, speed...)
-               (ROUTE, desire(lc_left=.9), True, True, True, False)):           # car in the left blind spot
+  for args in ((None, True, True, False, False),                                  # no navigation
+               (nav(left=(.9, .9), health=15), True, True, False, False),         # rerouting
+               (nav(left=(.9, .9), flags=0), True, True, False, False),           # navigation not fed to the model
+               (nav(left=(.9, .9), road=road(lane_count=1)), True, True, False, False),
+               (nav(left=(.9, .9), road=road(roundabout=True)), True, True, False, False),
+               (nav(left=(.9, .9), road=road(ramp=True)), True, True, False, False),
+               (nav(left=(.9, .9), road=road(tunnel=True)), True, True, False, False),
+               (nav(left=(.9, .9)), False, True, False, False),                   # local model, not the phone
+               (nav(left=(.9, .9)), True, False, False, False),                   # not ready (driver input, speed...)
+               (nav(left=(.9, .9)), True, True, True, False)):                    # car in the left blind spot
     assert run(Decider(threshold=.6), 0, 3, *args) == []
+  assert run(Decider(threshold=.6), 0, 2, nav(left=(.9, .9), road=road(lane_count=0)), True, True, False, False) == [LEFT]
 
 
 def test_flicker_restarts_hold():
   d = Decider(threshold=.6)
-  taps = []
-  for t in range(60):  # 3 s, intent drops every 0.75 s
-    taps += [r for r in [d.update(t * S // 20, ROUTE, desire(lc_left=.9 if t % 15 else .1), True, True, False, False)] if r]
-  assert taps == []
-  assert SPACING_NS == 8 * S
+  taps = [r for t in range(60) if (r := d.update(t * S // 20, nav(left=(.9 if t % 15 else .1, 0)), True, True, False, False))]
+  assert taps == [] and SPACING_NS == 8 * S

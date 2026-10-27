@@ -1,24 +1,24 @@
 {
   "id": "nav_lane_change",
   "name": "Navigation Lane Change",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "api": 1,
   "use": "onroad",
   "category": "lateral_planning",
   "entry": "plugin:NavLaneChange",
   "author": "xpilot",
-  "description": "Taps the turn stalk when the phone big model (lean_mici, navigation route active) holds a lane-change intent for 1 s, in the direction the model predicts; SP's auto lane change does the rest. Navigation turns alone never trigger. 8 s apart, never with a car in that blind spot, while you steer, accelerate or brake, or below 30 km/h. Needs lean_mici, SP auto lane change and the vehicle-bus harness.",
+  "description": "Taps the turn stalk when the phone big model (lean_mici) predicts the driver's blinker (now or within 2 s) for 1 s, in that direction; SP's auto lane change does the rest. Only with an active route that the phone feeds to the model, never on single-lane roads, roundabouts, ramps or in tunnels (phone road data). 8 s apart, never with a car in that blind spot, while you steer, accelerate or brake, or below 30 km/h. Needs lean_mici 0.8+, SP auto lane change and the vehicle-bus harness.",
   "priority": 100,
   "enable_param": "XpNavLaneChange",
   "claims": [
     "can.tx:0x249:1"
   ],
   "settings": [
-    {"key": "XpNavLaneChangeIntent", "label": "Model intent threshold", "range": [30, 95, 5, "%", 1]}
+    {"key": "XpNavLaneChangeIntent", "label": "Model blinker threshold", "range": [30, 95, 5, "%", 1]}
   ],
   "params": {
     "XpNavLaneChange": {"type": "BOOL", "default": "0"},
-    "XpNavLaneChangeIntent": {"type": "INT", "default": "60", "note": "% phone-model lane-change probability held 1 s"}
+    "XpNavLaneChangeIntent": {"type": "INT", "default": "60", "note": "% phone-model blinker probability held 1 s"}
   },
   "requires": {
     "rule_abi": 1

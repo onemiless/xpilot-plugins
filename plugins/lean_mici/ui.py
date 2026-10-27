@@ -29,6 +29,10 @@ class NavigationTile(Tile):
              17: 'Ramp straight', 18: 'Ramp right', 19: 'Ramp left', 20: 'Exit right', 21: 'Exit left',
              22: 'Keep straight', 23: 'Keep right', 24: 'Keep left', 25: 'Merge', 26: 'Roundabout', 27: 'Exit roundabout'}
     instruction = names.get(state[1], '-' if state[1] == 255 else f'Maneuver {state[1]}')
+    if state[3] and state[1] in (26, 27):
+      instruction += f' (exit {state[3]})'
+    if state[2] in names:
+      instruction += f', then {names[state[2]].lower()}'
     distance = '-' if state[4] == 0xffffffff else (f'{round(state[4] / 10) * 10} m' if state[4] < 1000 else f'{state[4] / 1000:.1f} km')
     eta = '' if state[6] == 0xffffffff else f' · {(state[6] + 59) // 60} min remaining'
     return (state[1], distance, instruction + eta)

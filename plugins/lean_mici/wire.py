@@ -85,7 +85,18 @@ def nav_ext(data):
   if curve and curve[0] > 8:
     curve = None
   points = [struct.unpack_from('<iiHBB', data, 8356 + 12 * i) for i in range(curve[0])] if curve else []
-  nav = {'health': health, 'state': state, 'curve': curve, 'points': points}
+  nav = {'health': health, 'state': state, 'curve': curve, 'points': points, 'road': None}
+  if present & 2:  # ROAD_ATTR
+    limit, source, ahead, road_class, ahead_m, age, edge, lanes, _, match_dm, _ = struct.unpack_from('<BBBBHHBBHHH', data, 8332)
+    nav['road'] = {'speed_limit_kph': limit, 'speed_limit_source': source, 'speed_limit_ahead_kph': ahead,
+                   'speed_limit_ahead_m': ahead_m, 'road_class': road_class, 'age_ms': age, 'lane_count': lanes,
+                   'ramp': bool(edge & 1), 'tunnel': bool(edge & 2), 'bridge': bool(edge & 4), 'roundabout': bool(edge & 8),
+                   'toll': bool(edge & 16), 'oneway': bool(edge & 32), 'matched': bool(edge & 128)}
+  # Model blinker predictions (meta heads 33/34 + 4k: driver blinker at 0,2,4,6,8,10 s), logits -> probability.
+  meta = np.frombuffer(data, '<f4', 55, 24 + 800 * 4).astype(np.float64)
+  if np.isfinite(meta).all():
+    nav['blinker'] = {side: [round(float(p), 3) for p in 1 / (1 + np.exp(-np.clip(meta[i:55:4], -30, 30)))]
+                      for side, i in (('left', 33), ('right', 34))}
   eof = struct.unpack_from('<Q', data, 16)[0]
   if state and curve and state[7] != 65535 and curve[3] != 65535 and eof > max(state[7], curve[3]) * 1_000_000:
     nav['frame_eof_ns'] = eof

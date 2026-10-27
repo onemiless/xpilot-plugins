@@ -1,27 +1,34 @@
-"""Pure decision logic (no openpilot imports): tap the turn stalk when the phone (big) model wants a lane change.
-Direction and timing come only from the model's lane-change intent; navigation only tells that a route is active."""
+"""Pure decision logic (no openpilot imports): tap the turn stalk when the phone (big) model predicts the driver's blinker.
+Direction and timing come only from the model (lean_mici 'blinker': driver blinker probability at 0,2,4,6,8,10 s).
+Navigation gates: route active, navigation fed to the model, and no lane change on single-lane roads, roundabouts,
+ramps or in tunnels."""
 LEFT, RIGHT = -1, 1
-# modelV2.meta.desirePrediction: 4 steps x 8 desires (log.Desire order)
-LC_LEFT, LC_RIGHT = 3, 4
-DESIRES = 8
+HORIZON = 2  # use the predictions for now and +2 s
 
-INTENT_HOLD_NS = 1_000_000_000  # the intent must hold this long (normal driving reaches ~0.5 for single frames)
+INTENT_HOLD_NS = 1_000_000_000
 SPACING_NS = 8_000_000_000
 MIN_SPEED = 30 / 3.6
+NAV_FED = 0x02  # NAV_STATE nav_input_flags bit1: navigation fed to the model
 
 
-def route_active(nav):
-  """lean_mici.navigation payload: phone location ok, route ok, not rerouting."""
+def gate(nav):
+  """True when the phone navigation context allows a lane change."""
   try:
-    return nav['health'] & 11 == 3
-  except (KeyError, TypeError):
+    if nav['health'] & 11 != 3 or not nav['state'] or not nav['state'][8] & NAV_FED:
+      return False
+    road = nav.get('road')
+    return not (road and (road['lane_count'] == 1 or road['roundabout'] or road['ramp'] or road['tunnel']))
+  except (KeyError, TypeError, IndexError):
     return False
 
 
-def intent(desire_prediction, index):
-  """Max probability of one desire over the prediction steps."""
-  p = list(desire_prediction)
-  return max(p[index::DESIRES], default=0.) if len(p) % DESIRES == 0 else 0.
+def intent(nav, side):
+  """Max predicted driver-blinker probability over the next HORIZON steps."""
+  try:
+    p = nav['blinker'][side][:HORIZON]
+    return max(float(x) for x in p) if p else 0.
+  except (KeyError, TypeError, ValueError):
+    return 0.
 
 
 class Decider:
@@ -31,13 +38,14 @@ class Decider:
     self.since = 0
     self.last_tap = -SPACING_NS
 
-  def update(self, now_ns, nav, desire_prediction, big, ready, blindspot_left, blindspot_right):
+  def update(self, now_ns, nav, big, ready, blindspot_left, blindspot_right):
     """Direction to tap now (LEFT/RIGHT) or 0. big: this frame came from the phone model.
     ready: engaged lateral, speed, no driver input, no blinker, no lane change running."""
-    left, right = intent(desire_prediction, LC_LEFT), intent(desire_prediction, LC_RIGHT)
+    ok = big and gate(nav)
+    left, right = (intent(nav, 'left'), intent(nav, 'right')) if ok else (0., 0.)
     want = LEFT if left > self.threshold and left >= right else RIGHT if right > self.threshold else 0
-    if not (big and route_active(nav)) or want != self.direction:
-      self.direction, self.since = (want if big and route_active(nav) else 0), now_ns
+    if want != self.direction:
+      self.direction, self.since = want, now_ns
     if (not self.direction or now_ns - self.since < INTENT_HOLD_NS or not ready or now_ns - self.last_tap < SPACING_NS or
         (blindspot_left if self.direction == LEFT else blindspot_right)):
       return 0

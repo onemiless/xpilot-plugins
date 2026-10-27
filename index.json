@@ -134,13 +134,13 @@
     {
       "id": "lean_mici",
       "name": "lean mici phone inference",
-      "version": "0.7.1",
+      "version": "0.8.0",
       "api": 1,
       "category": "perception_model",
       "author": "xpilot",
       "description": "BGM1 v4 Walnut V3 phone inference with physical sanity checks and local fallback. Uses the system engaged bounded-wait contract.",
-      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/lean_mici-0.7.1.tar.gz",
-      "sha256": "4490e83b99e4d3ca2a22e289c5178a18ddcd1e8b54cb4f04ec837772ad1db4c1",
+      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/lean_mici-0.8.0.tar.gz",
+      "sha256": "9f51af3bd730de812da753752d036da85899981982385e808bea18475de37a2a",
       "platform": {
         "machine": "aarch64",
         "python": "cpython-312"
@@ -163,13 +163,13 @@
     {
       "id": "nav_lane_change",
       "name": "Navigation Lane Change",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "api": 1,
       "category": "lateral_planning",
       "author": "xpilot",
-      "description": "Taps the turn stalk when the phone big model (lean_mici, navigation route active) holds a lane-change intent for 1 s, in the direction the model predicts; SP's auto lane change does the rest. Navigation turns alone never trigger. 8 s apart, never with a car in that blind spot, while you steer, accelerate or brake, or below 30 km/h. Needs lean_mici, SP auto lane change and the vehicle-bus harness.",
-      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/nav_lane_change-0.2.0.tar.gz",
-      "sha256": "1a4243ff6d048d051c53eb5420c4edfdd14f550f1c44406f5f0a1d4ba5012218",
+      "description": "Taps the turn stalk when the phone big model (lean_mici) predicts the driver's blinker (now or within 2 s) for 1 s, in that direction; SP's auto lane change does the rest. Only with an active route that the phone feeds to the model, never on single-lane roads, roundabouts, ramps or in tunnels (phone road data). 8 s apart, never with a car in that blind spot, while you steer, accelerate or brake, or below 30 km/h. Needs lean_mici 0.8+, SP auto lane change and the vehicle-bus harness.",
+      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/nav_lane_change-0.3.0.tar.gz",
+      "sha256": "768946fd65ddfc9146219ae3e943359604715d1f6ce27a620d93e99b1ec3ef62",
       "platform": null,
       "default": false
     },

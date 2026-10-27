@@ -1,5 +1,5 @@
-"""Navigation lane change: taps the turn stalk (0x249) when the phone model (lean_mici, route active) holds a lane-change
-intent. SP's own lane change (blinker -> auto lane change) does the rest; blind spot, road edge and speed checks stay SP's.
+"""Navigation lane change: taps the turn stalk (0x249) when the phone model (lean_mici, route active) predicts the driver's
+blinker for 1 s. SP's own lane change (blinker -> auto lane change) does the rest; blind spot, road edge and speed checks stay SP's.
 Panda permissions: plugin.json runtime rule (cloned idle frame, turn value RIGHT/LEFT only, engaged only, budgeted)."""
 from opendbc.car.can_definitions import CanData
 from opendbc.car.tesla.values import CANBUS
@@ -37,8 +37,8 @@ class NavLaneChange(Plugin):
     meta = model.meta
     ready = (CC.latActive and CS.vEgo >= MIN_SPEED and not (CS.steeringPressed or CS.gasPressed or CS.brakePressed) and
              not (CS.leftBlinker or CS.rightBlinker) and str(meta.laneChangeState) == 'off' and not self.pulse_turn)
-    direction = self.decider.update(now_ns, self.msgs.latest('lean_mici.navigation', 'lean_mici'), meta.desirePrediction,
-                                    model.big, ready, CS.leftBlindspot, CS.rightBlindspot)
+    direction = self.decider.update(now_ns, self.msgs.latest('lean_mici.navigation', 'lean_mici'), model.big, ready,
+                                    CS.leftBlindspot, CS.rightBlindspot)
     if direction:
       self.pulse_turn, self.pulse_until = (stalk.LEFT if direction == LEFT else stalk.RIGHT), now_ns + PULSE_NS
     if self.pulse_turn and (now_ns > self.pulse_until or not CC.latActive or CS.steeringPressed):

@@ -16,6 +16,10 @@ class ModelSource:
     self.reason = ''
   def pick(self, outcome):
     self.selected, self.reason = outcome
+    if not self.selected and self.reason != 'warmup':
+      self._reject(self.reason)
+      if self.reason == 'late':
+        self._reject('late')
     return outcome
   def _reject(self, reason, lock=False):
     self.reason = reason
@@ -34,11 +38,11 @@ a.output.mkdir(parents=True, exist_ok=False)
 s = PhoneSource(None)
 for decision in [(True, ''), (False, 'late'), (False, 'warmup'), (False, 'envelope:curvature_divergence')]:
   assert s.pick(decision) == decision
-assert s.take_counts() == {'adopted': 1, 'late': 1, 'warmup': 1, 'envelope:curvature_divergence': 1}
+assert s.take_counts() == {'adopted': 1, 'late': 2, 'warmup': 1, 'envelope:curvature_divergence': 1}
 assert s.take_counts() == {}
 threads = [threading.Thread(target=lambda: [s.pick((False, 'late')) for _ in range(1000)]) for _ in range(4)]
 for t in threads: t.start()
 for t in threads: t.join()
-assert s.take_counts() == {'late': 4000}
+assert s.take_counts() == {'late': 8000}
 (a.output / 'result.json').write_text(json.dumps({'pass': True, 'concurrent_decisions': 4000}, indent=2) + '\n')
 (a.output / 'SHA256SUMS').write_text(hashlib.sha256((a.output / 'result.json').read_bytes()).hexdigest() + '  result.json\n')

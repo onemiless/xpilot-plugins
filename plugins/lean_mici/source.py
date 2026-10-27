@@ -15,8 +15,9 @@ class PhoneSource(ModelSource):
 
   def pick(self, local):
     result = super().pick(local)
-    with self.counts_lock:
-      self.counts['adopted' if self.selected else self.reason] += 1
+    if self.selected or self.reason == 'warmup':
+      with self.counts_lock:
+        self.counts['adopted' if self.selected else 'warmup'] += 1
     return result
 
   def take_counts(self):
@@ -34,4 +35,7 @@ class PhoneSource(ModelSource):
       # A control outlier is recoverable; structural/protocol failures still latch in S1.
       self.fresh = 0
       reason, lock = 'envelope:' + self.envelope_reason, False
-    return super()._reject(reason, lock)
+    result = super()._reject(reason, lock)
+    with self.counts_lock:
+      self.counts[self.reason] += 1
+    return result

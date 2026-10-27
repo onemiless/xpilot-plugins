@@ -134,13 +134,13 @@
     {
       "id": "lean_mici",
       "name": "lean mici phone inference",
-      "version": "0.8.0",
+      "version": "0.8.1",
       "api": 1,
       "category": "perception_model",
       "author": "xpilot",
       "description": "BGM1 v4 Walnut V3 phone inference with physical sanity checks and local fallback. Uses the system engaged bounded-wait contract.",
-      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/lean_mici-0.8.0.tar.gz",
-      "sha256": "9f51af3bd730de812da753752d036da85899981982385e808bea18475de37a2a",
+      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/lean_mici-0.8.1.tar.gz",
+      "sha256": "8dcbd2d7b6fde97ebf80e301b3b4bacc0de5c8c2a141a97096658c1c61f32b53",
       "platform": {
         "machine": "aarch64",
         "python": "cpython-312"

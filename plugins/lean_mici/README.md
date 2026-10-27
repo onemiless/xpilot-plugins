@@ -1,4 +1,4 @@
-# lean_mici 0.8.0
+# lean_mici 0.8.1
 
 ## Navigation
 

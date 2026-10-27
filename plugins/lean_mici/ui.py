@@ -1,11 +1,11 @@
 """Phone navigation, displayed only while fresh."""
 import pyray as rl
 
-from openpilot.system.ui.lib.application import FontWeight, TextAlignmentVertical
-from openpilot.system.ui.widgets.label import gui_label
 from openpilot.tesla import plugins
-from openpilot.tesla.ui.tile import Tile
-from openpilot.tesla.ui.tiles import TileSpec
+from openpilot.tesla.ui.tile import PAD, Tile
+from openpilot.tesla.ui.tiles import TileSpec, scale
+
+VALUE, VALUE_TOP = 96, 36  # tesla.ui.tile shared type scale (small tile px)
 
 
 class NavigationTile(Tile):
@@ -34,24 +34,26 @@ class NavigationTile(Tile):
     if state[2] in names:
       instruction += f', then {names[state[2]].lower()}'
     distance = '-' if state[4] == 0xffffffff else (f'{round(state[4] / 10) * 10} m' if state[4] < 1000 else f'{state[4] / 1000:.1f} km')
-    eta = '' if state[6] == 0xffffffff else f' · {(state[6] + 59) // 60} min remaining'
+    eta = '' if state[6] == 0xffffffff else f', {(state[6] + 59) // 60} min remaining'
     return (state[1], distance, instruction + eta)
 
   def draw(self, rect, size, state):
-    if len(state) == 1:
-      self.draw_lines(rect, list(state), size=36)
+    if len(state) == 1 or not hasattr(self, 'value_row'):  # value_row: shared tile type scale (xpilot UI, 2026-10-27)
+      self.draw_lines(rect, [state[0]] if len(state) == 1 else list(state[1:]))
       return
     maneuver, distance, detail = state
+    self.face(rect)
+    k = 2 * scale(rect.width, rect.height)  # arrow grid: 2 px per unit on a small tile, like the shared type scale
     left = maneuver in (3, 6, 13, 14, 15, 16, 19, 21, 24)
     right = maneuver in (2, 5, 9, 10, 11, 12, 18, 20, 23)
     flip = -1 if left else 1
     shape = [(-flip*9, 14), (-flip*9, -4), (-flip*2, -9), (flip*9, -9), (flip*3, -15), (flip*9, -9), (flip*3, -3)] if left or right else [(0, 14), (0, -12), (-6, -5), (0, -12), (6, -5)]
-    points = [rl.Vector2(rect.x + 31 + px, rect.y + rect.height / 2 + py) for px, py in shape]
+    cx, cy = rect.x + PAD + 10 * k, rect.y + (VALUE_TOP + VALUE / 2) * k / 2
+    points = [rl.Vector2(cx + k * px, cy + k * py) for px, py in shape]
     for a, b in zip(points[:-1], points[1:], strict=True):
-      rl.draw_line_ex(a, b, 5, rl.WHITE)
+      rl.draw_line_ex(a, b, 3 * k, rl.WHITE)
     for point in points:
-      rl.draw_circle_v(point, 2.5, rl.WHITE)
-    gui_label(rl.Rectangle(rect.x + 60, rect.y, rect.width - 60, rect.height / 2), distance, 36, rl.WHITE, FontWeight.BOLD,
-              alignment_vertical=TextAlignmentVertical.TOP)
-    gui_label(rl.Rectangle(rect.x + 60, rect.y + rect.height / 2, rect.width - 60, rect.height / 2), detail, 22, rl.WHITE, FontWeight.MEDIUM,
-              alignment_vertical=TextAlignmentVertical.TOP)
+      rl.draw_circle_v(point, 1.5 * k, rl.WHITE)
+    x = rect.x + PAD + 24 * k
+    bottom = self.value_row(rect, distance, x, rect.x + rect.width - PAD - x)
+    self.sub_line(rect, detail, rect.x + PAD, bottom, rect.width - 2 * PAD)

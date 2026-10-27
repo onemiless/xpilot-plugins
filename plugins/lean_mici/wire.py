@@ -85,7 +85,16 @@ def nav_ext(data):
   if curve and curve[0] > 8:
     curve = None
   points = [struct.unpack_from('<iiHBB', data, 8356 + 12 * i) for i in range(curve[0])] if curve else []
-  return {'health': health, 'state': state, 'curve': curve, 'points': points}
+  nav = {'health': health, 'state': state, 'curve': curve, 'points': points}
+  eof = struct.unpack_from('<Q', data, 16)[0]
+  if state and curve and state[7] != 65535 and curve[3] != 65535 and eof > max(state[7], curve[3]) * 1_000_000:
+    nav['frame_eof_ns'] = eof
+    nav['sample_time_ns'] = eof - curve[3] * 1_000_000
+    nav['valid_until_ns'] = min(nav['sample_time_ns'], eof - state[7] * 1_000_000) + 2_000_000_000
+    nav['target_points'] = [{'distance_m': p[2], 'velocity': p[3] / 3.6} for p in points
+                            if p[3] and p[2] <= 600 and -900000000 <= p[0] <= 900000000
+                            and -1800000000 <= p[1] <= 1800000000 and (p[0] or p[1])]
+  return nav
 
 
 def frame(meta, road, wide, flags, frame_idx, motion=(0, -32768, 0)):
@@ -100,7 +109,7 @@ def frame(meta, road, wide, flags, frame_idx, motion=(0, -32768, 0)):
 
 def to_mailbox(data, host_frame_id):
   frame_id, eof, flags = reply(data)
-  # v4 adds 160B NavExt after unchanged outputs/telemetry. Navigation is not consumed.
+  # v4 adds 160B NavExt after unchanged outputs/telemetry; the mailbox ABI excludes it.
   return HEADER.pack(b'BGM1', 2, 0x11, flags, host_frame_id, 8280) + struct.pack('<Q', eof) + data[24:8304] + data[8464:8480]
 
 

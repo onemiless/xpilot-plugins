@@ -1,7 +1,7 @@
 {
   "id": "lean_mici",
   "name": "lean mici phone inference",
-  "version": "0.6.2",
+  "version": "0.7.1",
   "api": 1,
   "use": "both",
   "category": "perception_model",
@@ -13,7 +13,8 @@
   "claims": [
     "role:perception.model",
     "process:lean_modeld",
-    "msg:lean_mici.navigation"
+    "msg:lean_mici.navigation",
+    "long.target"
   ],
   "rules": [],
   "requires": {"msg": ["lean_mici.navigation"]},

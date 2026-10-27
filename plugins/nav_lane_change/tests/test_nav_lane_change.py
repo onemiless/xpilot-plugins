@@ -1,5 +1,5 @@
-from plugins.nav_lane_change import stalk
-from plugins.nav_lane_change.logic import LEFT, RIGHT, SPACING_NS, Decider
+from .. import stalk
+from ..logic import LEFT, RIGHT, SPACING_NS, Decider
 
 S = 1_000_000_000
 

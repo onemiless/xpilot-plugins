@@ -1,8 +1,9 @@
-# lean_mici 0.6.1
+# lean_mici 0.6.2
 
 ## Navigation
 
 The phone receives calibrated vehicle motion and returns navigation for the tile.
+The navigation tile shows a maneuver arrow, distance, instruction, and remaining time.
 Navigation is display only; turn-speed control is not included.
 
 Default off; model role plus `lean_modeld` only, `rules: []`, no CAN sends.

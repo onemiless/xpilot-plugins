@@ -1,0 +1,61 @@
+{
+  "id": "nav_lane_change",
+  "name": "Navigation Lane Change",
+  "version": "0.1.0",
+  "api": 1,
+  "use": "onroad",
+  "category": "lateral_planning",
+  "entry": "plugin:NavLaneChange",
+  "author": "xpilot",
+  "description": "Taps the turn stalk toward the next phone navigation turn (lean_mici) so SP's auto lane change moves into the turning lane. Starts at the trigger distance, or earlier when the model predicts that lane change; stops once the model predicts the turn itself. Max 3 changes per turn, 8 s apart, never with a car in the blind spot, while you steer, accelerate or brake. Needs lean_mici, SP auto lane change and the vehicle-bus harness.",
+  "priority": 100,
+  "enable_param": "XpNavLaneChange",
+  "claims": [
+    "can.tx:0x249:1"
+  ],
+  "settings": [
+    {"key": "XpNavLaneChangeDistance", "label": "Trigger distance", "range": [150, 1000, 50, "m", 1]},
+    {"key": "XpNavLaneChangeIntent", "label": "Model intent threshold", "range": [10, 90, 5, "%", 1]}
+  ],
+  "params": {
+    "XpNavLaneChange": {"type": "BOOL", "default": "0"},
+    "XpNavLaneChangeDistance": {"type": "INT", "default": "400", "note": "m before the turn"},
+    "XpNavLaneChangeIntent": {"type": "INT", "default": "30", "note": "% lane-change probability for an early change"}
+  },
+  "requires": {
+    "rule_abi": 1
+  },
+  "rules": [
+    {
+      "type": "template_clone.v1",
+      "tx_bus": 1,
+      "rx_bus": 1,
+      "template_ttl_us": 300000,
+      "min_interval_us": 50000,
+      "session": 2,
+      "max_count": 30,
+      "idle_reset_us": 0,
+      "max_span_us": 10000000,
+      "counter": {"kind": 1, "bit_offset": 8, "width": 4},
+      "tx_checksum": {"kind": 0, "checksum_byte": 0},
+      "rx_checksum": {"kind": 0, "checksum_byte": 0},
+      "predicate_mask": [0, 0, 7, 0, 0, 0, 0, 0],
+      "predicate_value": [0, 0, 0, 0, 0, 0, 0, 0],
+      "constant_mask": [0, 0, 0, 0, 0, 0, 0, 0],
+      "constant_value": [0, 0, 0, 0, 0, 0, 0, 0],
+      "tx_address": 585,
+      "rx_address": 585,
+      "tx_length": 4,
+      "rx_length": 4,
+      "copy_mask": [0, 240, 248, 255, 0, 0, 0, 0],
+      "fields": [
+        {"bit_offset": 0, "width": 8, "min": 0, "max": 255, "exempt_values": []},
+        {"bit_offset": 16, "width": 3, "min": 2, "max": 6, "exempt_values": []}
+      ],
+      "legal_tuples": [
+        {"field_mask": 2, "values": [0, 2]},
+        {"field_mask": 2, "values": [0, 6]}
+      ]
+    }
+  ]
+}

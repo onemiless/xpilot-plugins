@@ -1,26 +1,24 @@
 {
   "id": "nav_lane_change",
   "name": "Navigation Lane Change",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "api": 1,
   "use": "onroad",
   "category": "lateral_planning",
   "entry": "plugin:NavLaneChange",
   "author": "xpilot",
-  "description": "Taps the turn stalk toward the next phone navigation turn (lean_mici) so SP's auto lane change moves into the turning lane. Starts at the trigger distance, or earlier when the model predicts that lane change; stops once the model predicts the turn itself. Max 3 changes per turn, 8 s apart, never with a car in the blind spot, while you steer, accelerate or brake. Needs lean_mici, SP auto lane change and the vehicle-bus harness.",
+  "description": "Taps the turn stalk when the phone big model (lean_mici, navigation route active) holds a lane-change intent for 1 s, in the direction the model predicts; SP's auto lane change does the rest. Navigation turns alone never trigger. 8 s apart, never with a car in that blind spot, while you steer, accelerate or brake, or below 30 km/h. Needs lean_mici, SP auto lane change and the vehicle-bus harness.",
   "priority": 100,
   "enable_param": "XpNavLaneChange",
   "claims": [
     "can.tx:0x249:1"
   ],
   "settings": [
-    {"key": "XpNavLaneChangeDistance", "label": "Trigger distance", "range": [150, 1000, 50, "m", 1]},
-    {"key": "XpNavLaneChangeIntent", "label": "Model intent threshold", "range": [10, 90, 5, "%", 1]}
+    {"key": "XpNavLaneChangeIntent", "label": "Model intent threshold", "range": [30, 95, 5, "%", 1]}
   ],
   "params": {
     "XpNavLaneChange": {"type": "BOOL", "default": "0"},
-    "XpNavLaneChangeDistance": {"type": "INT", "default": "400", "note": "m before the turn"},
-    "XpNavLaneChangeIntent": {"type": "INT", "default": "30", "note": "% lane-change probability for an early change"}
+    "XpNavLaneChangeIntent": {"type": "INT", "default": "60", "note": "% phone-model lane-change probability held 1 s"}
   },
   "requires": {
     "rule_abi": 1

@@ -2,53 +2,54 @@ from .. import stalk
 from ..logic import LEFT, RIGHT, SPACING_NS, Decider
 
 S = 1_000_000_000
+ROUTE = {'health': 7, 'state': [2, 15, 0, 0, 3000, 5000, 300, 10]}  # a left turn 3 km ahead
 
 
-def nav(maneuver=15, distance=300, health=7):
-  return {'health': health, 'state': [2, maneuver, 0, 0, distance, 5000, 300, 10]}
-
-
-def desire(turn_left=0., turn_right=0., lc_left=0., lc_right=0.):
+def desire(lc_left=0., lc_right=0., turn_left=0., turn_right=0.):
   return [0., turn_left, turn_right, lc_left, lc_right, 0., 0., 0.] * 4
 
 
-def test_stalk_frame_matches_dev_sp():
-  # dev-sp create_sccm_left_stalk(turn, counter) on an all-zero frame; counter = template counter + 1
-  for turn in (stalk.LEFT, stalk.RIGHT):
-    for counter in range(16):
-      template = bytes((0, (counter - 1) & 0x0F, 0, 0))
-      want = bytearray((0, counter, turn, 0))
-      want[0] = stalk.crc8_opensafety(bytes((0, turn, 0, 0))) ^ stalk.MAGIC[counter]
-      assert stalk.stalk_frame(template, turn) == bytes(want)
-  assert not stalk.is_idle_template(bytes((0, 0, 2, 0)))  # never clone an active stalk frame
+def run(d, t0, t1, *args):
+  """Call update every 50 ms from t0 to t1 (seconds); return the taps."""
+  return [r for t in range(int(t0 * 20), int(t1 * 20)) if (r := d.update(t * S // 20, *args))]
 
 
-def test_triggers_at_distance_and_respects_gates():
-  d = Decider(trigger_distance_m=400)
-  assert d.update(1 * S, nav(15, 600), desire(), True, False, False) == 0   # too far, no model intent
-  assert d.update(2 * S, nav(15, 390), desire(), True, True, False) == 0    # car in the left blind spot
-  assert d.update(3 * S, nav(15, 380), desire(), False, False, False) == 0  # not ready (driver input, speed...)
-  assert d.update(4 * S, nav(15, 370), desire(), True, False, False) == LEFT
-  assert d.update(5 * S, nav(15, 360), desire(), True, False, False) == 0   # spacing
-  assert d.update(5 * S + SPACING_NS, nav(10, 200), desire(), True, False, False) == RIGHT
+def test_stalk_frame_matches_car():
+  # right-stalk frames the owner's car sent (route 00000015--2981e48722); counter = template counter + 1
+  for real in ('87000200', 'f4010200', '36020200', 'cf030200', 'cf040200', '0f0d0200', 'b30e0200', 'd20f0200'):
+    frame = bytes.fromhex(real)
+    template = bytes((0, (frame[1] - 1) & 0x0F, 0, 0))
+    assert stalk.stalk_frame(template, stalk.RIGHT) == frame
+  assert not stalk.is_idle_template(bytes.fromhex('87000200'))  # never clone an active stalk frame
 
 
-def test_model_intents():
-  d = Decider(trigger_distance_m=200, lc_intent=.3)
-  assert d.update(1 * S, nav(10, 900), desire(lc_right=.5), True, False, False) == 0  # intent must hold 0.5 s
-  assert d.update(int(1.6 * S), nav(10, 880), desire(lc_right=.5), True, False, False) == RIGHT
-  d = Decider(trigger_distance_m=400)
-  assert d.update(1 * S, nav(15, 300), desire(turn_left=.6), True, False, False) == 0  # already in the turning lane
+def test_model_intent_decides_direction_and_timing():
+  d = Decider(threshold=.6)
+  assert run(d, 0, .9, ROUTE, desire(lc_right=.8), True, True, False, False) == []      # must hold 1 s
+  assert run(d, .9, 1.2, ROUTE, desire(lc_right=.8), True, True, False, False) == [RIGHT]  # direction from the model, not the left turn
+  assert run(d, 1.2, 8.5, ROUTE, desire(lc_right=.8), True, True, False, False) == []    # spacing
+  d = Decider(threshold=.6)
+  assert run(d, 0, 2, ROUTE, desire(lc_left=.7, lc_right=.65), True, True, False, False) == [LEFT]
 
 
-def test_bad_navigation_never_taps():
-  d = Decider()
-  for bad in (None, {}, nav(health=5), nav(health=15), nav(distance=0xFFFFFFFF), nav(maneuver=8), nav(maneuver=4)):
-    assert d.update(1 * S, bad, desire(lc_left=1.), True, False, False) == 0
+def test_navigation_turn_alone_never_taps():
+  d = Decider(threshold=.6)
+  assert run(d, 0, 5, ROUTE, desire(turn_left=.9, lc_left=.5), True, True, False, False) == []
 
 
-def test_max_changes_per_maneuver():
-  d = Decider(trigger_distance_m=400)
-  taps = [d.update(i * SPACING_NS, nav(15, 350 - i), desire(), True, False, False) for i in range(1, 6)]
-  assert taps.count(LEFT) == 3
-  assert d.update(7 * SPACING_NS, nav(15, 399), desire(), True, False, False) == LEFT  # new maneuver (distance jumped)
+def test_gates():
+  for args in ((None, desire(lc_left=.9), True, True, False, False),            # no navigation
+               ({'health': 15}, desire(lc_left=.9), True, True, False, False),  # rerouting
+               (ROUTE, desire(lc_left=.9), False, True, False, False),          # local model, not the phone
+               (ROUTE, desire(lc_left=.9), True, False, False, False),          # not ready (driver input, speed...)
+               (ROUTE, desire(lc_left=.9), True, True, True, False)):           # car in the left blind spot
+    assert run(Decider(threshold=.6), 0, 3, *args) == []
+
+
+def test_flicker_restarts_hold():
+  d = Decider(threshold=.6)
+  taps = []
+  for t in range(60):  # 3 s, intent drops every 0.75 s
+    taps += [r for r in [d.update(t * S // 20, ROUTE, desire(lc_left=.9 if t % 15 else .1), True, True, False, False)] if r]
+  assert taps == []
+  assert SPACING_NS == 8 * S

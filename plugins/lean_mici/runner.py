@@ -8,6 +8,7 @@ import time
 from queue import Empty
 
 from openpilot.selfdrive.modeld.modeld import run_with_model_source
+from openpilot.common.swaglog import cloudlog
 from .source import PhoneSource
 from openpilot.tesla.manifest import INSTALL_DIR
 
@@ -21,20 +22,26 @@ def data_dir():
 def status(directory, source, stop, navigation):
   from openpilot.tesla import plugins
   from .plugin import LeanMici
+  last_report, nav_route = time.monotonic(), False
   while not stop.is_set():
     try:
       timestamp, nav = navigation.get_nowait()
       if time.monotonic() - timestamp < 1:
+        nav_route = bool(nav and nav['health'] & 2)
         plugins.send_msg(LeanMici, 'lean_mici.navigation', nav, valid_for_ms=1500)
     except Empty:
       pass
+    now = time.monotonic()
+    if now - last_report >= 1:
+      cloudlog.event('lean_mici.adoption', counts=source.take_counts(), nav_route=nav_route)
+      last_report = now
     if not source.sent:
       stop.wait(.05)
       continue
     state = ('Phone active' if source.selected else 'Phone warming' if source.reason in ('warmup','warmup_flags','need_dual_idr') else
              'Local fallback' if source.epoch or source.locked else 'Local ready')
     path = directory / 'status.tmp'
-    path.write_text(json.dumps({'state': state, 'version': '0.6.0', 'updated_at': time.time()}))
+    path.write_text(json.dumps({'state': state, 'version': '0.6.1', 'updated_at': time.time()}))
     os.replace(path, directory / 'status.json')
     stop.wait(.5)
 

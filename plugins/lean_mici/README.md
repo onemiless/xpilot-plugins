@@ -1,4 +1,9 @@
-# lean_mici 0.8.1
+# lean_mici 0.8.2
+
+0.8.2 (2026-10-28): the navigation tile has a tall layout (big arrow, distance and instruction lines) that the big
+screen uses in the column beside the drive view. A dropped phone link is logged (`lean_mici.link_lost` /
+`lean_mici.beacon_lost` with the exception) so reconnect gaps can be traced. Use with xpilot that judges `late` by reply
+arrival only (a reply in before EOF+60ms is no longer rejected because the host ran past the deadline).
 
 ## Navigation
 

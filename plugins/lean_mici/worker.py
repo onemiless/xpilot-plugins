@@ -8,6 +8,7 @@ import socket
 import struct
 import sys
 import time
+from openpilot.common.swaglog import cloudlog
 from openpilot.tesla.plugin_params import ParamsView
 
 from .network import Beacon, discover, scope
@@ -157,11 +158,13 @@ def main(path, parent, navigation=None):
                     except Full:
                       pass
             except Exception:
+              cloudlog.exception('lean_mici.link_lost')  # why the phone link dropped (each drop costs a reconnect and warm-up)
               time.sleep(.1)
             finally:
               if camera is not None:
                 camera.close()
       except Exception:
+        cloudlog.exception('lean_mici.beacon_lost')
         time.sleep(1)
   finally:
     os.close(fd)

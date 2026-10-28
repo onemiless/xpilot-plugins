@@ -2,7 +2,8 @@
 import pyray as rl
 
 from openpilot.tesla import plugins
-from openpilot.tesla.ui.tile import PAD, Tile
+from openpilot.system.ui.lib.application import FontWeight
+from openpilot.tesla.ui.tile import PAD, Tile, fit, lines_in, text
 from openpilot.tesla.ui.tiles import TileSpec, scale
 
 VALUE, VALUE_TOP = 96, 36  # tesla.ui.tile shared type scale (small tile px)
@@ -43,17 +44,31 @@ class NavigationTile(Tile):
       return
     maneuver, distance, detail = state
     self.face(rect)
-    k = 2 * scale(rect.width, rect.height)  # arrow grid: 2 px per unit on a small tile, like the shared type scale
+    column = rect.height > 1.5 * rect.width  # the host's onroad navigation column beside the drive view
+    room = rect.width - 2 * PAD
+    # arrow grid: 2 px per unit on a small tile (shared type scale); in the column as wide as it fits
+    k = min(room / 24, rect.height / 80) if column else 2 * scale(rect.width, rect.height)
     left = maneuver in (3, 6, 13, 14, 15, 16, 19, 21, 24)
     right = maneuver in (2, 5, 9, 10, 11, 12, 18, 20, 23)
     flip = -1 if left else 1
     shape = [(-flip*9, 14), (-flip*9, -4), (-flip*2, -9), (flip*9, -9), (flip*3, -15), (flip*9, -9), (flip*3, -3)] if left or right else [(0, 14), (0, -12), (-6, -5), (0, -12), (6, -5)]
-    cx, cy = rect.x + PAD + 10 * k, rect.y + (VALUE_TOP + VALUE / 2) * k / 2
+    if column:
+      cx, cy = rect.x + rect.width / 2, rect.y + PAD + 16 * k
+    else:
+      cx, cy = rect.x + PAD + 10 * k, rect.y + (VALUE_TOP + VALUE / 2) * k / 2
     points = [rl.Vector2(cx + k * px, cy + k * py) for px, py in shape]
     for a, b in zip(points[:-1], points[1:], strict=True):
       rl.draw_line_ex(a, b, 3 * k, rl.WHITE)
     for point in points:
       rl.draw_circle_v(point, 1.5 * k, rl.WHITE)
+    if column:
+      y = cy + 16 * k + PAD
+      size = fit(FontWeight.BOLD, distance, 2 * VALUE, room)
+      text(FontWeight.BOLD, distance, rect.x + PAD, y, size)
+      y += size + PAD
+      bottom = rect.y + rect.height - self.title_size(rect) - 14
+      lines_in(rl.Rectangle(rect.x + PAD, y, room, bottom - y), detail.split(', '), 1.5 * 36)
+      return
     x = rect.x + PAD + 24 * k
     bottom = self.value_row(rect, distance, x, rect.x + rect.width - PAD - x)
     self.sub_line(rect, detail, rect.x + PAD, bottom, rect.width - 2 * PAD)

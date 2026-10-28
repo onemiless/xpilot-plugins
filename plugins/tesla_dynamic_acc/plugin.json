@@ -1,24 +1,70 @@
 {
   "id": "tesla_dynamic_acc",
   "name": "Tesla Dynamic ACC",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "api": 1,
   "use": "onroad",
   "category": "longitudinal_planning",
   "entry": "plugin:TeslaDynamicAcc",
   "author": "xpilot",
-  "description": "Speed-based longitudinal owner, like the old DynamicAutoStock: above High the stock ACC drives, below Low SP drives, in between the current owner stays. With Tesla Traffic Light Stop (tesla_tlssc) on, the stock ACC is proposed whenever the car shows a red/yellow light or a stop line, so the car can stop for it. Switches while engaged; the host (1 s confirm, 2 s cooldown, gas/brake/AEB/lead/acceleration vetoes) and the panda (DRAIN handoff) decide whether a switch happens. Needs SP longitudinal and the G8 panda firmware. Enable while parked, then restart.",
+  "description": "Speed-based longitudinal owner, like the old DynamicAutoStock: above High the stock ACC drives, below Low SP drives, in between the current owner stays. With Tesla Traffic Light Stop (tesla_tlssc) on, the stock ACC is proposed whenever the car shows a red/yellow light or a stop line, so the car can stop for it. Optional four-finger touch on the car screen switches to the other owner and keeps that choice until the next touch or until SP disengages (set MADS to 3 or 5 fingers if both are used). Switches while engaged; the host (1 s confirm, 2 s cooldown, gas/brake/AEB/lead/acceleration vetoes) and the panda (DRAIN handoff) decide whether a switch happens. Needs SP longitudinal and the G8 panda firmware. Enable while parked, then restart.",
   "priority": 100,
   "enable_param": "XpTeslaDynamicAcc",
-  "claims": ["role:long.owner"],
-  "requires": {"hooks": ["long_owner"]},
+  "claims": [
+    "role:long.owner"
+  ],
+  "requires": {
+    "hooks": [
+      "long_owner"
+    ]
+  },
   "settings": [
-    {"key": "XpTeslaDynamicAccHigh", "label": "Stock ACC above", "range": [30, 150, 5, "km/h", 1]},
-    {"key": "XpTeslaDynamicAccLow", "label": "SP below", "range": [20, 140, 5, "km/h", 1]}
+    {
+      "key": "XpTeslaDynamicAccHigh",
+      "label": "Stock ACC above",
+      "range": [
+        30,
+        150,
+        5,
+        "km/h",
+        1
+      ]
+    },
+    {
+      "key": "XpTeslaDynamicAccLow",
+      "label": "SP below",
+      "range": [
+        20,
+        140,
+        5,
+        "km/h",
+        1
+      ]
+    },
+    {
+      "key": "XpTeslaDynamicAccTouch",
+      "label": "Four-finger owner toggle"
+    }
   ],
   "params": {
-    "XpTeslaDynamicAcc": {"type": "BOOL", "default": "0"},
-    "XpTeslaDynamicAccHigh": {"type": "INT", "default": "80", "note": "km/h; stock ACC takes over above this"},
-    "XpTeslaDynamicAccLow": {"type": "INT", "default": "70", "note": "km/h; SP takes over below this; must be lower than High"}
+    "XpTeslaDynamicAcc": {
+      "type": "BOOL",
+      "default": "0"
+    },
+    "XpTeslaDynamicAccHigh": {
+      "type": "INT",
+      "default": "80",
+      "note": "km/h; stock ACC takes over above this"
+    },
+    "XpTeslaDynamicAccLow": {
+      "type": "INT",
+      "default": "70",
+      "note": "km/h; SP takes over below this; must be lower than High"
+    },
+    "XpTeslaDynamicAccTouch": {
+      "type": "BOOL",
+      "default": "0",
+      "note": "four-finger touch switches stock/SP; held until next touch or disengage"
+    }
   }
 }

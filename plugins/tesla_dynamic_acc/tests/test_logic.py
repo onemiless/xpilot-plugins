@@ -4,8 +4,10 @@
 - D3 Low >= High (bad settings) still proposes switches
 - D4 a TLSSC stop (red/yellow or a near stop line, TLSSC active) at any speed does not propose stock,
      or an inactive/missing/green-without-stop-line tlssc.state changes the speed rule
+- D5 four-finger toggle: a hold at start or a continued hold fires, 3/5 fingers fire, a press while disengaged or
+     without the owner ABI fires, the choice is lost before the next press, or survives disengage
 """
-from ..logic import KPH, desired_owner
+from ..logic import KPH, TouchToggle, desired_owner
 
 
 def test_thresholds():
@@ -32,3 +34,20 @@ def test_tlssc_stop_hands_to_stock():
   for state in (None, {}, {"active": False, "color": 1}, {"active": True, "color": 2, "stop_m": 0}, {"active": True, "stop_m": 150}):
     assert desired_owner(30 / KPH, 80, 70, state) == "sp"
     assert desired_owner(75 / KPH, 80, 70, state) is None
+
+
+def test_touch_toggle():
+  t = TouchToggle()
+  assert t.update(4, 'stock', True, True) is None  # already held at start
+  assert t.update(4, 'stock', True, True) is None
+  assert t.update(0, 'stock', True, True) is None
+  for fingers in (3, 5, 0):
+    assert t.update(fingers, 'stock', True, True) is None
+  assert t.update(4, 'stock', True, True) == 'sp'
+  assert t.update(4, 'stock', True, True) == 'sp' and t.update(None, 'sp', True, True) == 'sp'  # held, kept after ack
+  t.update(0, 'sp', True, True)
+  assert t.update(4, 'sp', True, True) == 'stock'
+  assert t.update(None, 'stock', False, True) is None  # disengage clears
+  t.update(0, 'stock', False, True)
+  assert t.update(4, 'stock', False, True) is None and t.update(0, 'stock', True, False) is None
+  assert t.update(4, 'stock', True, False) is None

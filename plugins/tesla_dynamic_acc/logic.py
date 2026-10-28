@@ -23,3 +23,22 @@ def desired_owner(v_ego: float, high_kph: float, low_kph: float, tlssc=None) -> 
   if v < low_kph:
     return "sp"
   return None
+
+
+class TouchToggle:
+  """Four-finger touch on the car screen (UI_status2.UI_activeTouchPoints == 4, rising edge) asks for the other owner.
+  The choice is kept (the speed rule is ignored) until the next press or until SP disengages. A hold that is already
+  down when the drive starts, or that continues, never fires; other finger counts are ignored."""
+
+  def __init__(self):
+    self.down, self.target = True, None
+
+  def update(self, fingers, owner, enabled, available):
+    if not (enabled and available):
+      self.target = None
+    if fingers is not None:
+      down = fingers == 4
+      if down and not self.down and enabled and available:
+        self.target = 'sp' if owner == 'stock' else 'stock'
+      self.down = down
+    return self.target

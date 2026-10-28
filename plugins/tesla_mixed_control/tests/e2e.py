@@ -164,7 +164,7 @@ def run(output):
                                          and not d.events_sp.has(custom.OnroadEventSP.EventName.xpilotPluginFault))))
     (output / "event-filter.json").write_text(json.dumps(event_cases, indent=2) + "\n")
     assert all(c["passed"] for c in event_cases), event_cases
-    assert cls.CATEGORY == "controller" and cls.CLAIMS == ("role:lateral.controller", "event.filter")
+    assert cls.CLAIMS == ("role:lateral.controller", "event.filter")
     checks.append("M1-M4: zero per-frame Params reads; real DAS_settings CAN -> true CarState -> SP events -> shared filter -> SP engagement")
     params.put_bool("XpTeslaMixedControl", False)
 

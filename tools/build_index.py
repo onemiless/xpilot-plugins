@@ -62,7 +62,8 @@ def build() -> dict[Path, bytes]:
     files[ROOT / name] = data
     entries.append({"id": m["id"], "name": m["name"], "version": m["version"], "api": m["api"], "category": m["category"],
                     "author": m.get("author", ""), "description": m.get("description", ""), "url": f"{RAW}/{name}",
-                    "sha256": hashlib.sha256(data).hexdigest(), "platform": m.get("platform"), "default": m.get("default", False)})
+                    "sha256": hashlib.sha256(data).hexdigest(), "platform": m.get("platform"), "default": m.get("default", False),
+                    "claims": m.get("claims", [])})  # host derives the store category from claims (manifest.category_of)
   files[ROOT / "index.json"] = (json.dumps({"api": API, "plugins": entries}, indent=2) + "\n").encode()
   return files
 

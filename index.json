@@ -12,7 +12,10 @@
       "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/ambient_light-1.1.0.tar.gz",
       "sha256": "cc3f6aa62ecb53fc660dbd0fefa4d46a2f4add74fd78d165f41e34b873293151",
       "platform": null,
-      "default": false
+      "default": false,
+      "claims": [
+        "can.tx:0x679:1"
+      ]
     },
     {
       "id": "auto_speed",
@@ -25,7 +28,10 @@
       "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/auto_speed-1.1.0.tar.gz",
       "sha256": "19fb68b2c79d39017f1bea71daa8b75d8b073f13df8e236b7e02e00fbc3bb229",
       "platform": null,
-      "default": false
+      "default": false,
+      "claims": [
+        "can.tx:0x3C2:1"
+      ]
     },
     {
       "id": "blindspot_edges",
@@ -38,7 +44,8 @@
       "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/blindspot_edges-1.0.2.tar.gz",
       "sha256": "e66eb4bb05af6a53c5b6f12881a2f2ece1ce1eda77ccfb04cd79f53477b63ece",
       "platform": null,
-      "default": true
+      "default": true,
+      "claims": []
     },
     {
       "id": "bms",
@@ -51,7 +58,10 @@
       "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/bms-1.1.0.tar.gz",
       "sha256": "9fb625a22262b0646327aef2cd6186532f19fd5e943dd3706d482289425d2365",
       "platform": null,
-      "default": false
+      "default": false,
+      "claims": [
+        "msg:bms.state"
+      ]
     },
     {
       "id": "car_tile",
@@ -64,7 +74,8 @@
       "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/car_tile-1.0.3.tar.gz",
       "sha256": "f7c8d66293a0b59ec2d0d3919748183816b600b469751e0332a9f081007015b8",
       "platform": null,
-      "default": true
+      "default": true,
+      "claims": []
     },
     {
       "id": "clock_tile",
@@ -77,7 +88,8 @@
       "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/clock_tile-1.0.3.tar.gz",
       "sha256": "b72801d54f99a3653f477a16c5220e17a72a675f36ffdf7ed924551c52bd1931",
       "platform": null,
-      "default": true
+      "default": true,
+      "claims": []
     },
     {
       "id": "external_compute",
@@ -90,7 +102,11 @@
       "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/external_compute-1.0.3.tar.gz",
       "sha256": "834f9e8bcdf149c210594a11c162bac5a51348bec2bbb6a9db00f10ac913ee23",
       "platform": null,
-      "default": false
+      "default": false,
+      "claims": [
+        "process:externald",
+        "msg:external.in"
+      ]
     },
     {
       "id": "ip_tile",
@@ -103,20 +119,24 @@
       "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/ip_tile-1.0.3.tar.gz",
       "sha256": "62a6e0e5f981c1c95029f24bbc825ec9eb0a9954ac00d2676c058c8ab7dae0fb",
       "platform": null,
-      "default": true
+      "default": true,
+      "claims": []
     },
     {
       "id": "lang_zh_chs",
       "name": "\u7b80\u4f53\u4e2d\u6587\u8bed\u8a00\u5305 / Simplified Chinese",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "api": 1,
       "category": "ui",
       "author": "xpilot",
       "description": "Complete Simplified Chinese translation for the xpilot interface.",
-      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/lang_zh_chs-1.0.0.tar.gz",
-      "sha256": "8cd4b63a11fcee3bcc0f1fc39ac1be5a37e37a542aacab041ff6aa9b02667be2",
+      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/lang_zh_chs-1.0.1.tar.gz",
+      "sha256": "d0766d7458b05830264e1684d35b6839cf94a48273b7ede67acb6800be77bdb2",
       "platform": null,
-      "default": false
+      "default": false,
+      "claims": [
+        "lang:zh-CHS"
+      ]
     },
     {
       "id": "lead_card",
@@ -129,7 +149,8 @@
       "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/lead_card-1.0.3.tar.gz",
       "sha256": "e12a8e81a8b5ad375ed6bb7b79df13cda54fbe26843fac825dac3f44d20baa41",
       "platform": null,
-      "default": true
+      "default": true,
+      "claims": []
     },
     {
       "id": "lean_mici",
@@ -145,7 +166,13 @@
         "machine": "aarch64",
         "python": "cpython-312"
       },
-      "default": false
+      "default": false,
+      "claims": [
+        "role:perception.model",
+        "process:lean_modeld",
+        "msg:lean_mici.navigation",
+        "long.target"
+      ]
     },
     {
       "id": "map_tile",
@@ -158,7 +185,8 @@
       "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/map_tile-1.0.3.tar.gz",
       "sha256": "f170e51acb05227f64c52cd6a8ee6cfb72ea2e5bfe270f3c233111e71e422e61",
       "platform": null,
-      "default": true
+      "default": true,
+      "claims": []
     },
     {
       "id": "nav_lane_change",
@@ -171,7 +199,10 @@
       "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/nav_lane_change-0.4.0.tar.gz",
       "sha256": "cb86e9a44e6b48966ee90d0d7ab2a9443a29a3b0f52da6342871c4c2e48f92c6",
       "platform": null,
-      "default": false
+      "default": false,
+      "claims": [
+        "can.tx:0x249:1"
+      ]
     },
     {
       "id": "op_models",
@@ -184,7 +215,11 @@
       "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/op_models-1.0.1.tar.gz",
       "sha256": "a50da8122b4199d385d15915b8d94472218fb7dafa67b2693aca6631c410e166",
       "platform": null,
-      "default": false
+      "default": false,
+      "claims": [
+        "role:perception.model",
+        "process:op_modeld"
+      ]
     },
     {
       "id": "overspeed_warning",
@@ -197,7 +232,10 @@
       "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/overspeed_warning-1.0.2.tar.gz",
       "sha256": "7eae4e1493856479dd63ef59fd5d1011cf13f53ab349d406932dc5a7d74b9cea",
       "platform": null,
-      "default": false
+      "default": false,
+      "claims": [
+        "alert"
+      ]
     },
     {
       "id": "speed_card",
@@ -210,7 +248,8 @@
       "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/speed_card-1.0.3.tar.gz",
       "sha256": "e356e1d0c0644dd52d22905f579026bab0d50f9b50893f0cda690f150d47ef6a",
       "platform": null,
-      "default": true
+      "default": true,
+      "claims": []
     },
     {
       "id": "speed_limit_card",
@@ -223,7 +262,8 @@
       "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/speed_limit_card-1.0.3.tar.gz",
       "sha256": "26e59d989e33e976547ee5ff9e279d83c351e07fb701740eea3971c9e8d156bf",
       "platform": null,
-      "default": true
+      "default": true,
+      "claims": []
     },
     {
       "id": "tesla_dynamic_acc",
@@ -236,7 +276,10 @@
       "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/tesla_dynamic_acc-1.2.0.tar.gz",
       "sha256": "2805eae8f43b147e8baabb5735293d6eb604da41e95296a3280e5e2ad90fba65",
       "platform": null,
-      "default": false
+      "default": false,
+      "claims": [
+        "role:long.owner"
+      ]
     },
     {
       "id": "tesla_eap",
@@ -249,7 +292,12 @@
       "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/tesla_eap-1.0.0.tar.gz",
       "sha256": "d827f6e9e2da1d6189cfb32bff2e1a031f6830abcdd28167d7622fe577764b06",
       "platform": null,
-      "default": false
+      "default": false,
+      "claims": [
+        "role:stock.ap",
+        "role:engagement.state",
+        "can.tx:0x249:1"
+      ]
     },
     {
       "id": "tesla_mixed_control",
@@ -262,7 +310,11 @@
       "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/tesla_mixed_control-1.2.0.tar.gz",
       "sha256": "24b782c8c9392beb4e93eb490490ed54ec566d226f7e2142be737e0af0fb4008",
       "platform": null,
-      "default": false
+      "default": false,
+      "claims": [
+        "role:lateral.controller",
+        "event.filter"
+      ]
     },
     {
       "id": "tesla_tlssc",
@@ -275,7 +327,11 @@
       "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/tesla_tlssc-1.0.0.tar.gz",
       "sha256": "cfa9774f3c1aace2985afb7eb1e15a439deaf8dff806b97b871475eadbed1af8",
       "platform": null,
-      "default": false
+      "default": false,
+      "claims": [
+        "can.tx:0x3FD:1",
+        "msg:tlssc.state"
+      ]
     },
     {
       "id": "traffic_light",
@@ -288,7 +344,14 @@
       "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/traffic_light-1.1.0.tar.gz",
       "sha256": "d9f20c4051c6ecf374e8fcb8a8516853f7aa656fe9ded3763d67e0c425446a70",
       "platform": null,
-      "default": false
+      "default": false,
+      "claims": [
+        "plan.filter",
+        "process:trafficcontrold",
+        "msg:traffic.observation",
+        "msg:traffic.target",
+        "msg:traffic.plan"
+      ]
     }
   ]
 }

@@ -1,7 +1,7 @@
 {
   "id": "lang_zh_chs",
   "name": "简体中文语言包 / Simplified Chinese",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "api": 1,
   "use": "both",
   "category": "ui",

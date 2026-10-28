@@ -1853,3 +1853,31 @@ msgstr "{} 已排队"
 #: openpilot/tesla/ui/plugins_page.py:83
 msgid "{}/{} on"
 msgstr "已开启 {}/{}"
+
+#: openpilot/tesla/ui/offroad.py
+msgid "Driving Modes"
+msgstr "驾驶模式"
+
+#: openpilot/tesla/ui/offroad.py
+msgid "Lateral Control"
+msgstr "横向控制"
+
+#: openpilot/tesla/ui/offroad.py
+msgid "Longitudinal Control"
+msgstr "纵向控制"
+
+#: openpilot/tesla/ui/offroad.py
+msgid "Car Actions (CAN)"
+msgstr "车辆动作（CAN）"
+
+#: openpilot/tesla/ui/offroad.py
+msgid "Data & System"
+msgstr "数据与系统"
+
+#: openpilot/tesla/ui/offroad.py
+msgid "Tiles & Overlays"
+msgstr "磁贴与叠加层"
+
+#: openpilot/tesla/ui/offroad.py
+msgid "Languages"
+msgstr "语言"

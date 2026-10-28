@@ -1,5 +1,5 @@
 from .. import stalk
-from ..logic import LEFT, RIGHT, SPACING_NS, Decider
+from ..logic import LEFT, RIGHT, SPACING_NS, TURN_MAX_SPEED, Decider, TurnSignal
 
 S = 1_000_000_000
 
@@ -56,3 +56,22 @@ def test_flicker_restarts_hold():
   d = Decider(threshold=.6)
   taps = [r for t in range(60) if (r := d.update(t * S // 20, nav(left=(.9 if t % 15 else .1, 0)), True, True, False, False))]
   assert taps == [] and SPACING_NS == 8 * S
+
+
+def turn_nav(maneuver=15, distance=60, health=7):
+  return {'health': health, 'state': [2, maneuver, 10, 0, distance, 5000, 300, 10, 2, 255, 0xFFFF], 'road': None}
+
+
+def test_turn_signal():
+  """T1 no tap for a non-turn maneuver, beyond the distance, without a healthy route, at or above TURN_MAX_SPEED or
+  with a blinker already on; T2 more than one tap per approach, or no re-arm after the condition clears."""
+  assert TURN_MAX_SPEED < 20 * 0.44704
+  t = TurnSignal(80)
+  for nav, v in ((turn_nav(maneuver=7), 5), (turn_nav(distance=120), 5), (turn_nav(health=1), 5), (turn_nav(), TURN_MAX_SPEED),
+                 (turn_nav(distance=0xFFFFFFFF), 5), (None, 5)):
+    assert t.update(nav, v, False) == 0
+  assert t.update(turn_nav(), 5, True) == 0  # driver already signalling
+  assert t.update(turn_nav(), 5, False) == LEFT
+  assert t.update(turn_nav(), 5, False) == 0 and t.update(turn_nav(distance=20), 0, False) == 0
+  assert t.update(turn_nav(maneuver=7), 5, False) == 0  # turn done
+  assert t.update(turn_nav(maneuver=10), 5, False) == RIGHT

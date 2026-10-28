@@ -5,7 +5,7 @@ from opendbc.car.can_definitions import CanData
 from opendbc.car.tesla.values import CANBUS
 from openpilot.tesla.plugin import Plugin
 
-from .logic import LEFT, MIN_SPEED, Decider
+from .logic import LEFT, MIN_SPEED, Decider, TurnSignal
 from . import stalk
 
 PULSE_NS = 600_000_000      # hold the stalk this long (one cloned frame per fresh car frame)
@@ -20,6 +20,7 @@ class NavLaneChange(Plugin):
     self.sm = messaging.SubMaster(['modelV2'])
     self.msgs = plugins.PluginMsgs()
     self.decider = Decider()
+    self.turn = TurnSignal()
     self.template, self.template_ns, self.sent_ns = None, 0, 0
     self.pulse_turn, self.pulse_until = 0, 0
     self.service_params(params)
@@ -37,11 +38,13 @@ class NavLaneChange(Plugin):
     meta = model.meta
     ready = (CC.latActive and CS.vEgo >= MIN_SPEED and not (CS.steeringPressed or CS.gasPressed or CS.brakePressed) and
              not (CS.leftBlinker or CS.rightBlinker) and str(meta.laneChangeState) == 'off' and not self.pulse_turn)
-    direction = self.decider.update(now_ns, self.msgs.latest('lean_mici.navigation', 'lean_mici'), model.big, ready,
-                                    CS.leftBlindspot, CS.rightBlindspot)
+    nav = self.msgs.latest('lean_mici.navigation', 'lean_mici')
+    direction = self.decider.update(now_ns, nav, model.big, ready, CS.leftBlindspot, CS.rightBlindspot)
+    if self.turn_enabled and not direction and not self.pulse_turn:
+      direction = self.turn.update(nav, CS.vEgo, CS.leftBlinker or CS.rightBlinker)
     if direction:
       self.pulse_turn, self.pulse_until = (stalk.LEFT if direction == LEFT else stalk.RIGHT), now_ns + PULSE_NS
-    if self.pulse_turn and (now_ns > self.pulse_until or not CC.latActive or CS.steeringPressed):
+    if self.pulse_turn and (now_ns > self.pulse_until or (CS.vEgo >= MIN_SPEED and (not CC.latActive or CS.steeringPressed))):
       self.pulse_turn = 0
     if (not self.pulse_turn or self.template is None or self.template_ns <= self.sent_ns or
         now_ns - self.template_ns > TEMPLATE_MAX_AGE_NS):
@@ -51,3 +54,5 @@ class NavLaneChange(Plugin):
 
   def service_params(self, params) -> None:
     self.decider.threshold = (params.get("XpNavLaneChangeIntent", return_default=True) or 60) / 100
+    self.turn_enabled = params.get_bool("XpNavTurnSignal")
+    self.turn.distance_m = params.get("XpNavTurnSignalDistance", return_default=True) or 80

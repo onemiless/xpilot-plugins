@@ -8,6 +8,8 @@ HORIZON = 2  # use the predictions for now and +2 s
 INTENT_HOLD_NS = 1_000_000_000
 SPACING_NS = 8_000_000_000
 MIN_SPEED = 30 / 3.6
+TURN_MAX_SPEED = 20 * 0.44704 - 3 / 3.6  # below SP's LANE_CHANGE_SPEED_MIN (20 mph) with margin: the blinker cannot start a lane change
+TURN_RIGHT, TURN_LEFT = (10, 11, 12), (13, 14, 15)  # NAV_STATE maneuver: turn/sharp/U-turn right, U-turn/sharp/turn left
 NAV_FED = 0x02  # NAV_STATE nav_input_flags bit1: navigation fed to the model
 
 
@@ -51,3 +53,29 @@ class Decider:
       return 0
     self.last_tap = now_ns
     return self.direction
+
+
+class TurnSignal:
+  """Navigation turn signal: one stalk tap when the route's next maneuver is a turn within distance_m and the car is
+  slower than TURN_MAX_SPEED, so the blinker only signals the turn. Once per approach: re-arms after the turn condition
+  has been false (turn done, route changed, speed up)."""
+
+  def __init__(self, distance_m=80):
+    self.distance_m = distance_m
+    self.fired = False
+
+  def update(self, nav, v_ego, blinker_on):
+    want = 0
+    try:
+      state = nav['state']
+      if nav['health'] & 11 == 3 and state and 0 < state[4] <= self.distance_m and 0 <= v_ego < TURN_MAX_SPEED:
+        want = LEFT if state[1] in TURN_LEFT else RIGHT if state[1] in TURN_RIGHT else 0
+    except (KeyError, TypeError, IndexError):
+      want = 0
+    if not want:
+      self.fired = False
+      return 0
+    if self.fired or blinker_on:
+      return 0
+    self.fired = True
+    return want

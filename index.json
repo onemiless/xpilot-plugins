@@ -163,13 +163,13 @@
     {
       "id": "nav_lane_change",
       "name": "Navigation Lane Change",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "api": 1,
       "category": "lateral_planning",
       "author": "xpilot",
-      "description": "Taps the turn stalk when the phone big model (lean_mici) predicts the driver's blinker (now or within 2 s) for 1 s, in that direction; SP's auto lane change does the rest. Only with an active route that the phone feeds to the model, never on single-lane roads, roundabouts, ramps or in tunnels (phone road data). 8 s apart, never with a car in that blind spot, while you steer, accelerate or brake, or below 30 km/h. Needs lean_mici 0.8+, SP auto lane change and the vehicle-bus harness.",
-      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/nav_lane_change-0.3.0.tar.gz",
-      "sha256": "768946fd65ddfc9146219ae3e943359604715d1f6ce27a620d93e99b1ec3ef62",
+      "description": "Taps the turn stalk when the phone big model (lean_mici) predicts the driver's blinker (now or within 2 s) for 1 s, in that direction; SP's auto lane change does the rest. Only with an active route that the phone feeds to the model, never on single-lane roads, roundabouts, ramps or in tunnels (phone road data). 8 s apart, never with a car in that blind spot, while you steer, accelerate or brake, or below 30 km/h. Needs lean_mici 0.8+, SP auto lane change and the vehicle-bus harness. Turn signal (on by default): when the route's next maneuver is a turn within the set distance and the car is below 17 km/h (under SP's 20 mph lane-change speed), it taps the stalk once so the blinker signals the turn; needs cruise engaged (panda rule).",
+      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/nav_lane_change-0.4.0.tar.gz",
+      "sha256": "cb86e9a44e6b48966ee90d0d7ab2a9443a29a3b0f52da6342871c4c2e48f92c6",
       "platform": null,
       "default": false
     },

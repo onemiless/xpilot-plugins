@@ -1,24 +1,65 @@
 {
   "id": "nav_lane_change",
   "name": "Navigation Lane Change",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "api": 1,
   "use": "onroad",
   "category": "lateral_planning",
   "entry": "plugin:NavLaneChange",
   "author": "xpilot",
-  "description": "Taps the turn stalk when the phone big model (lean_mici) predicts the driver's blinker (now or within 2 s) for 1 s, in that direction; SP's auto lane change does the rest. Only with an active route that the phone feeds to the model, never on single-lane roads, roundabouts, ramps or in tunnels (phone road data). 8 s apart, never with a car in that blind spot, while you steer, accelerate or brake, or below 30 km/h. Needs lean_mici 0.8+, SP auto lane change and the vehicle-bus harness.",
+  "description": "Taps the turn stalk when the phone big model (lean_mici) predicts the driver's blinker (now or within 2 s) for 1 s, in that direction; SP's auto lane change does the rest. Only with an active route that the phone feeds to the model, never on single-lane roads, roundabouts, ramps or in tunnels (phone road data). 8 s apart, never with a car in that blind spot, while you steer, accelerate or brake, or below 30 km/h. Needs lean_mici 0.8+, SP auto lane change and the vehicle-bus harness. Turn signal (on by default): when the route's next maneuver is a turn within the set distance and the car is below 17 km/h (under SP's 20 mph lane-change speed), it taps the stalk once so the blinker signals the turn; needs cruise engaged (panda rule).",
   "priority": 100,
   "enable_param": "XpNavLaneChange",
   "claims": [
     "can.tx:0x249:1"
   ],
   "settings": [
-    {"key": "XpNavLaneChangeIntent", "label": "Model blinker threshold", "range": [30, 95, 5, "%", 1]}
+    {
+      "key": "XpNavLaneChangeIntent",
+      "label": "Model blinker threshold",
+      "range": [
+        30,
+        95,
+        5,
+        "%",
+        1
+      ]
+    },
+    {
+      "key": "XpNavTurnSignal",
+      "label": "Navigation turn signal"
+    },
+    {
+      "key": "XpNavTurnSignalDistance",
+      "label": "Turn signal distance",
+      "range": [
+        20,
+        150,
+        10,
+        "m",
+        1
+      ]
+    }
   ],
   "params": {
-    "XpNavLaneChange": {"type": "BOOL", "default": "0"},
-    "XpNavLaneChangeIntent": {"type": "INT", "default": "60", "note": "% phone-model blinker probability held 1 s"}
+    "XpNavLaneChange": {
+      "type": "BOOL",
+      "default": "0"
+    },
+    "XpNavLaneChangeIntent": {
+      "type": "INT",
+      "default": "60",
+      "note": "% phone-model blinker probability held 1 s"
+    },
+    "XpNavTurnSignal": {
+      "type": "BOOL",
+      "default": "1"
+    },
+    "XpNavTurnSignalDistance": {
+      "type": "INT",
+      "default": "80",
+      "note": "m before a navigation turn"
+    }
   },
   "requires": {
     "rule_abi": 1
@@ -34,25 +75,104 @@
       "max_count": 30,
       "idle_reset_us": 0,
       "window_us": 10000000,
-      "counter": {"kind": 1, "bit_offset": 8, "width": 4},
-      "tx_checksum": {"kind": 0, "checksum_byte": 0},
-      "rx_checksum": {"kind": 0, "checksum_byte": 0},
-      "predicate_mask": [0, 0, 7, 0, 0, 0, 0, 0],
-      "predicate_value": [0, 0, 0, 0, 0, 0, 0, 0],
-      "constant_mask": [0, 0, 0, 0, 0, 0, 0, 0],
-      "constant_value": [0, 0, 0, 0, 0, 0, 0, 0],
+      "counter": {
+        "kind": 1,
+        "bit_offset": 8,
+        "width": 4
+      },
+      "tx_checksum": {
+        "kind": 0,
+        "checksum_byte": 0
+      },
+      "rx_checksum": {
+        "kind": 0,
+        "checksum_byte": 0
+      },
+      "predicate_mask": [
+        0,
+        0,
+        7,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "predicate_value": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "constant_mask": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "constant_value": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
       "tx_address": 585,
       "rx_address": 585,
       "tx_length": 4,
       "rx_length": 4,
-      "copy_mask": [0, 240, 248, 255, 0, 0, 0, 0],
+      "copy_mask": [
+        0,
+        240,
+        248,
+        255,
+        0,
+        0,
+        0,
+        0
+      ],
       "fields": [
-        {"bit_offset": 0, "width": 8, "min": 0, "max": 255, "exempt_values": []},
-        {"bit_offset": 16, "width": 3, "min": 2, "max": 6, "exempt_values": []}
+        {
+          "bit_offset": 0,
+          "width": 8,
+          "min": 0,
+          "max": 255,
+          "exempt_values": []
+        },
+        {
+          "bit_offset": 16,
+          "width": 3,
+          "min": 2,
+          "max": 6,
+          "exempt_values": []
+        }
       ],
       "legal_tuples": [
-        {"field_mask": 2, "values": [0, 2]},
-        {"field_mask": 2, "values": [0, 6]}
+        {
+          "field_mask": 2,
+          "values": [
+            0,
+            2
+          ]
+        },
+        {
+          "field_mask": 2,
+          "values": [
+            0,
+            6
+          ]
+        }
       ]
     }
   ]

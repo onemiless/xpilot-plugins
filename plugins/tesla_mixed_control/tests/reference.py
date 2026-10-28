@@ -7,7 +7,6 @@ See the LICENSE.md file in the root directory for more details.
 import math
 import numpy as np
 from collections import namedtuple
-from dataclasses import replace
 
 from opendbc.car import structs, rate_limit, DT_CTRL
 from opendbc.car.vehicle_model import VehicleModel
@@ -22,7 +21,10 @@ DT_LAT_CTRL = DT_CTRL * CarControllerParams.STEER_STEP
 STEER_RESUME_RATE_LIMIT_RAMP_RATE = 300 # deg/s^2
 
 class CoopSteeringCarControllerParams(CarControllerParams):
-  ANGLE_LIMITS = replace(CarControllerParams.ANGLE_LIMITS, MAX_ANGLE_RATE=5)
+  ANGLE_LIMITS = CarControllerParams.ANGLE_LIMITS  # final limit follows the car port (xpilot owner 2026-10-28; was 5)
+
+
+OVERRIDE_MAX_ANGLE_RATE = 5  # deg/frame: driver-override slew gains keep their original 5 deg/frame scale
 
 # angle override # todo implement steering torque inertia compensation to increase gains
 STEER_OVERRIDE_MIN_TORQUE = 0.5 # Nm - based on typical steering bias + noise - used for the deadzone
@@ -35,7 +37,7 @@ STEER_OVERRIDE_TARGET_ANGLE_MAX = CarControllerParams.ANGLE_LIMITS.STEER_ANGLE_M
 
 # override angle ramp control
 STEER_OVERRIDE_DELTA_GAIN_LIMIT = 125 # deg/s/Nm
-STEER_OVERRIDE_DELTA_GAIN_LIMIT_CENTERING = CoopSteeringCarControllerParams.ANGLE_LIMITS.MAX_ANGLE_RATE / DT_LAT_CTRL / STEER_OVERRIDE_TORQUE_RANGE
+STEER_OVERRIDE_DELTA_GAIN_LIMIT_CENTERING = OVERRIDE_MAX_ANGLE_RATE / DT_LAT_CTRL / STEER_OVERRIDE_TORQUE_RANGE
 
 CoopSteeringDataSP = namedtuple("CoopSteeringDataSP",
                                 ["steeringAngleDeg", "lat_active"])
@@ -78,7 +80,7 @@ def calc_override_angle_delta_limit(torque: float, gain_limit: float) -> float:
   """
   Convert torque magnitude to a per-step steering angle delta limit.
   """
-  delta_gain_limit_max = CoopSteeringCarControllerParams.ANGLE_LIMITS.MAX_ANGLE_RATE / DT_LAT_CTRL / STEER_OVERRIDE_TORQUE_RANGE
+  delta_gain_limit_max = OVERRIDE_MAX_ANGLE_RATE / DT_LAT_CTRL / STEER_OVERRIDE_TORQUE_RANGE
   return torque * min(gain_limit, delta_gain_limit_max) * DT_LAT_CTRL
 
 

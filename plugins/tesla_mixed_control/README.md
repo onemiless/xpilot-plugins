@@ -52,8 +52,10 @@ using controlsd's learned VM. Every two active calls, the adapter first runs
 the original baseline limiter and then one complete 20 ms cooperative step.
 It holds the resulting angle on the intervening 10 ms call. Both limiters
 and the torque mapping use a separate `VehicleModel(get_safety_CP())`;
-the learned VM never supplies safety limits. The 300 deg/s^2 resume ramp and
-5 degrees **per 20 ms update** limit retain their original units.
+the learned VM never supplies safety limits. The 300 deg/s^2 resume ramp retains its original units. Since 1.2.0 the final angle limit follows the car
+port's `CarControllerParams.ANGLE_LIMITS` (xpilot raised it from 5 to 8 degrees per 20 ms update, owner 2026-10-28;
+it only binds below ~15-19 km/h, where the lateral-jerk limit is looser); driver-override slew gains keep the 5
+degree scale (`OVERRIDE_MAX_ANGLE_RATE`). `tests/reference.py` carries the same two-line deviation from O.
 
 The Tesla car port still limits and encodes the output at 50 Hz. For paired
 inputs, its additional limiter is idempotent: the unquantized output matches

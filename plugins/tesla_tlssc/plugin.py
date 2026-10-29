@@ -1,5 +1,5 @@
 """Tesla TLSSC: re-sends the car's UI_autopilotControl (0x3FD mux 0, vehicle bus) with the TLSSC bits set while
-sunnypilot is engaged (CC.enabled), like t2can injectTLSSC without its stock-Autopilot gate. Standalone; also publishes tlssc.state (traffic light colour, stop line).
+sunnypilot is engaged (CC.enabled) and the car is at or below XpTeslaTlsscMax. Standalone; also publishes tlssc.state (traffic light colour, stop line).
 Panda permissions: plugin.json runtime rule (cloned stock frame, only bits 38/39 forced, controls allowed, budgeted)."""
 import math
 import time
@@ -11,7 +11,7 @@ from opendbc.car.tesla.values import CANBUS, DBC
 from openpilot.tesla import plugins
 from openpilot.tesla.plugin import Plugin
 
-from .logic import ADDRESS, is_template, tlssc_frame
+from .logic import ADDRESS, KPH, is_template, tlssc_frame
 
 TEMPLATE_MAX_AGE_NS = 300_000_000
 PUBLISH_NS = 100_000_000
@@ -23,6 +23,7 @@ class TeslaTlssc(Plugin):
     self.road = CANParser(DBC[CP.carFingerprint][Bus.party], [("DAS_road", math.nan)], CANBUS.autopilot_party)
     self.template, self.template_ns, self.sent_ns, self.published_ns = None, 0, 0, 0
     self.active = False
+    self.service_params(params)
 
   def observe_can(self, can_list, now_ns: int) -> list:
     self.road.update(can_list)
@@ -44,7 +45,7 @@ class TeslaTlssc(Plugin):
     plugins.send_msg(self, "tlssc.state", payload, valid_for_ms=500)
 
   def control_sends(self, CS, CC, now_ns: int) -> list:
-    self.active = CC.enabled
+    self.active = CC.enabled and CS.vEgo * KPH <= self.max_kph
     if (not self.active or self.template is None or self.template_ns <= self.sent_ns or
         now_ns - self.template_ns > TEMPLATE_MAX_AGE_NS):
       return []
@@ -52,3 +53,5 @@ class TeslaTlssc(Plugin):
     frame = tlssc_frame(self.template)
     return [] if frame is None else [CanData(ADDRESS, frame, CANBUS.vehicle)]
 
+  def service_params(self, params) -> None:
+    self.max_kph = params.get("XpTeslaTlsscMax", return_default=True) or 0

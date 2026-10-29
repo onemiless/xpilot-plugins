@@ -1,7 +1,7 @@
 """Failure cases:
 - T1 a non-mux-0 or short 0x3FD frame is cloned
 - T2 the clone changes anything but byte 4 bits 6/7, or sends when the car already has TLSSC on
-- T4 the manifest requires another plugin (TLSSC must work standalone) or keeps the removed speed-window settings
+- T4 the manifest requires another plugin (TLSSC must work standalone) or loses the max-speed setting
 - T5 the manifest rule is not mux-0 only, forces other bits, or copies bits 38/39 from the stock frame
 """
 import json
@@ -27,8 +27,8 @@ def test_clone_sets_only_tlssc_bits():
 
 def test_standalone_manifest():
   manifest = json.loads((Path(__file__).parents[1] / "plugin.json").read_text())
-  assert "plugins" not in manifest["requires"] and "settings" not in manifest
-  assert list(manifest["params"]) == ["XpTeslaTlssc"]
+  assert "plugins" not in manifest["requires"] and [s["key"] for s in manifest["settings"]] == ["XpTeslaTlsscMax"]
+  assert list(manifest["params"]) == ["XpTeslaTlssc", "XpTeslaTlsscMax"]
 
 
 def test_rule_matches_logic():

@@ -7,12 +7,16 @@
   "category": "longitudinal_planning",
   "entry": "plugin:TeslaTlssc",
   "author": "xpilot",
-  "description": "Turns on the car's own Traffic Light and Stop Sign Control (TLSSC) while sunnypilot is engaged: it re-sends the car's UI_autopilotControl (0x3FD mux 0) with bits 38/39 set. Works on its own, no other plugin needed. Needs the vehicle-bus harness. Unverified on this car.",
+  "description": "Turns on the car's own Traffic Light and Stop Sign Control (TLSSC) while sunnypilot is engaged and the car is at or below the speed you set: it re-sends the car's UI_autopilotControl (0x3FD mux 0) with bits 38/39 set. Works on its own, no other plugin needed. Needs the vehicle-bus harness. Unverified on this car.",
   "priority": 100,
   "enable_param": "XpTeslaTlssc",
   "claims": ["can.tx:0x3FD:1", "msg:tlssc.state"],
+  "settings": [
+    {"key": "XpTeslaTlsscMax", "label": "Active up to", "range": [0, 150, 5, "km/h", 1]}
+  ],
   "params": {
-    "XpTeslaTlssc": {"type": "BOOL", "default": "0"}
+    "XpTeslaTlssc": {"type": "BOOL", "default": "0"},
+    "XpTeslaTlsscMax": {"type": "INT", "default": "90", "note": "km/h; TLSSC off above this speed"}
   },
   "requires": {"rule_abi": 1},
   "rules": [

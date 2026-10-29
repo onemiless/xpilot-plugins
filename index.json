@@ -340,9 +340,9 @@
       "api": 1,
       "category": "longitudinal_planning",
       "author": "xpilot",
-      "description": "Turns on the car's own Traffic Light and Stop Sign Control (TLSSC) while sunnypilot is engaged: it re-sends the car's UI_autopilotControl (0x3FD mux 0) with bits 38/39 set. Works on its own, no other plugin needed. Needs the vehicle-bus harness. Unverified on this car.",
+      "description": "Turns on the car's own Traffic Light and Stop Sign Control (TLSSC) while sunnypilot is engaged and the car is at or below the speed you set: it re-sends the car's UI_autopilotControl (0x3FD mux 0) with bits 38/39 set. Works on its own, no other plugin needed. Needs the vehicle-bus harness. Unverified on this car.",
       "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/tesla_tlssc-1.3.0.tar.gz",
-      "sha256": "07e8dc97a548231d89a3d06cd885a85e9fc6ea1eaa2745234fb1acb7016721e1",
+      "sha256": "0ccb17d0fd56447a3393ac2310199eb317829d1271e78eb47c10023c4702bcfb",
       "platform": null,
       "default": false,
       "claims": [

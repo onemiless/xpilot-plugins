@@ -3,6 +3,7 @@ mux 0 (byte 0 bits 0..2), TLSSC enable = bits 38 and 39 (byte 4 bits 6, 7); no c
 ADDRESS = 0x3FD
 LENGTH = 8
 TLSSC_BITS = 0xC0  # byte 4
+KPH = 3.6
 
 
 def is_template(data: bytes) -> bool:

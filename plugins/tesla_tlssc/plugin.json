@@ -1,7 +1,7 @@
 {
   "id": "tesla_tlssc",
   "name": "Tesla Traffic Light Stop",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "api": 1,
   "use": "onroad",
   "category": "longitudinal_planning",
@@ -20,7 +20,7 @@
     "XpTeslaTlsscMin": {"type": "INT", "default": "0", "note": "km/h; TLSSC on at or above this speed"},
     "XpTeslaTlsscMax": {"type": "INT", "default": "90", "note": "km/h; TLSSC off above this speed"}
   },
-  "requires": {"rule_abi": 1},
+  "requires": {"rule_abi": 1, "plugins": ["tesla_dynamic_acc"]},
   "rules": [
     {
       "type": "template_clone.v1",

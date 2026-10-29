@@ -34,6 +34,22 @@
       ]
     },
     {
+      "id": "blendful",
+      "name": "Blendful (alpha)",
+      "version": "0.1.0",
+      "api": 1,
+      "category": "lateral_planning",
+      "author": "xpilot",
+      "description": "Port of sunnypilot Blendful (#2073, alpha): nudges the model's path toward the lane center when the lane lines are clear, and backs off when lines fade, the model goes around something, or during a lane change or turn. The correction builds at most 0.5 m/s^2 per second; the host caps it at 0.5 m/s^2 and SP's curvature limits still apply. Works with laneless models, not with lateral controller plugins that ignore the desired curvature.",
+      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/blendful-0.1.0.tar.gz",
+      "sha256": "f45ea5e6b81b3370203e886285c22d3f08d4122a084515af4561786696141956",
+      "platform": null,
+      "default": false,
+      "claims": [
+        "lat.correction"
+      ]
+    },
+    {
       "id": "blindspot_edges",
       "name": "Blind Spot Edges",
       "version": "1.0.2",

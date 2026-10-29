@@ -336,13 +336,13 @@
     {
       "id": "tesla_tlssc",
       "name": "Tesla Traffic Light Stop",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "api": 1,
       "category": "longitudinal_planning",
       "author": "xpilot",
-      "description": "Turns on the car's own Traffic Light and Stop Sign Control (TLSSC) between two speeds you set, like t2can: it re-sends the car's UI_autopilotControl (0x3FD mux 0) with bits 38/39 set while cruise is on. The car stops only while the stock ACC drives; Tesla Dynamic ACC 1.1+ hands longitudinal to the stock ACC when the car shows a red/yellow light or a stop line. Needs the vehicle-bus harness. Unverified on this car: whether TLSSC acts while SP steers.",
-      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/tesla_tlssc-1.1.0.tar.gz",
-      "sha256": "85033cf7cbc88bdea3dbd9d1691fa6b4a3b8eed084f0111575c88f8852b4c417",
+      "description": "Turns on the car's own Traffic Light and Stop Sign Control (TLSSC) with the original t2can logic: while the stock Autopilot is active (DAS_autopilotState 3..6), it re-sends the car's UI_autopilotControl (0x3FD mux 0) with bits 38/39 set. Works on its own, no other plugin needed. Needs the vehicle-bus harness. Unverified on this car.",
+      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/tesla_tlssc-1.2.0.tar.gz",
+      "sha256": "046e56230060ef80d9c54467a358cf65c024ca29e6d8a05611d8effd7004a118",
       "platform": null,
       "default": false,
       "claims": [

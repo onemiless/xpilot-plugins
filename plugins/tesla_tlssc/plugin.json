@@ -1,26 +1,20 @@
 {
   "id": "tesla_tlssc",
   "name": "Tesla Traffic Light Stop",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "api": 1,
   "use": "onroad",
   "category": "longitudinal_planning",
   "entry": "plugin:TeslaTlssc",
   "author": "xpilot",
-  "description": "Turns on the car's own Traffic Light and Stop Sign Control (TLSSC) between two speeds you set, like t2can: it re-sends the car's UI_autopilotControl (0x3FD mux 0) with bits 38/39 set while cruise is on. The car stops only while the stock ACC drives; Tesla Dynamic ACC 1.1+ hands longitudinal to the stock ACC when the car shows a red/yellow light or a stop line. Needs the vehicle-bus harness. Unverified on this car: whether TLSSC acts while SP steers.",
+  "description": "Turns on the car's own Traffic Light and Stop Sign Control (TLSSC) with the original t2can logic: while the stock Autopilot is active (DAS_autopilotState 3..6), it re-sends the car's UI_autopilotControl (0x3FD mux 0) with bits 38/39 set. Works on its own, no other plugin needed. Needs the vehicle-bus harness. Unverified on this car.",
   "priority": 100,
   "enable_param": "XpTeslaTlssc",
   "claims": ["can.tx:0x3FD:1", "msg:tlssc.state"],
-  "settings": [
-    {"key": "XpTeslaTlsscMin", "label": "Active from", "range": [0, 150, 5, "km/h", 1]},
-    {"key": "XpTeslaTlsscMax", "label": "Active up to", "range": [0, 150, 5, "km/h", 1]}
-  ],
   "params": {
-    "XpTeslaTlssc": {"type": "BOOL", "default": "0"},
-    "XpTeslaTlsscMin": {"type": "INT", "default": "0", "note": "km/h; TLSSC on at or above this speed"},
-    "XpTeslaTlsscMax": {"type": "INT", "default": "90", "note": "km/h; TLSSC off above this speed"}
+    "XpTeslaTlssc": {"type": "BOOL", "default": "0"}
   },
-  "requires": {"rule_abi": 1, "plugins": ["tesla_dynamic_acc"]},
+  "requires": {"rule_abi": 1},
   "rules": [
     {
       "type": "template_clone.v1",

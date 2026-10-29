@@ -3,8 +3,7 @@ mux 0 (byte 0 bits 0..2), TLSSC enable = bits 38 and 39 (byte 4 bits 6, 7); no c
 ADDRESS = 0x3FD
 LENGTH = 8
 TLSSC_BITS = 0xC0  # byte 4
-KPH = 3.6
-RED, GREEN, YELLOW = 1, 2, 3  # DAS_road.DAS_trafficLightColor
+AP_ACTIVE = (3, 4, 5, 6)  # DAS_status.DAS_autopilotState ACTIVE_NOMINAL/RESTRICTED/NAV/FSD (t2can gateAPActive)
 
 
 def is_template(data: bytes) -> bool:
@@ -20,10 +19,6 @@ def tlssc_frame(template: bytes) -> bytes | None:
   return bytes(data)
 
 
-def in_window(v_ego: float, min_kph: float, max_kph: float) -> bool:
-  return min_kph <= v_ego * KPH <= max_kph
-
-
-def stopping(state) -> bool:
-  """tlssc.state payload says the car is about to stop for a light or a stop line (stock ACC should drive)."""
-  return bool(state) and bool(state.get("active")) and (state.get("color") in (RED, YELLOW) or 0 < (state.get("stop_m") or 0) < 100)
+def desired_active(autopilot_state: int) -> bool:
+  """t2can injectTLSSC: inject only while the stock Autopilot is active. No speed window, no cruise gate."""
+  return autopilot_state in AP_ACTIVE

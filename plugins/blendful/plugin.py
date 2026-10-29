@@ -4,6 +4,7 @@ import time
 
 import numpy as np
 
+from openpilot.tesla import plugins
 from openpilot.tesla.plugin import Plugin
 
 from .blendful import Blendful
@@ -43,6 +44,8 @@ class Correction:
       turning = sm.valid.get('modelDataV2SP', False) and str(sm['modelDataV2SP'].laneTurnDirection) != 'none'
       active = out is not None and str(m.meta.laneChangeState) == 'off' and not turning
       self.k = self.bf.update(out, v_ego, active, curvature)
+      plugins.send_msg(BlendfulPlugin, "blendful.state", {"trust": self.bf.trust, "l_prob": self.bf.l_prob, "r_prob": self.bf.r_prob,
+                                                         "lane_width": self.bf.lane_width.x}, valid_for_ms=300)
     return curvature + self.k
 
 

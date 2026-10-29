@@ -147,3 +147,14 @@ def test_correction_matches_upstream_and_yields():
   for state, turn in (('preLaneChange', 'none'), ('off', 'turnLeft')):
     c = Correction()
     assert all(c.update(SM(model_v2(frame(center=1.0), state), turn), 20.0, 0.0) == 0.0 for _ in range(40))
+
+
+def test_lane_center_matches_upstream_renderer():
+  from ..ui import lane_center
+  left, right = np.zeros((5, 3)), np.zeros((5, 3))
+  left[:, 1], right[:, 1] = -1.0, 1.0  # 2 m apart: clipped to 2.8, so each line alone puts the center 0.4 m off
+  st = {"l_prob": 0.9, "r_prob": 0.9, "lane_width": 3.6}
+  assert np.allclose(lane_center(left, right, [0, 0.2, 0.2, 0], st)[:, 1], 0.0)  # equal stds: midpoint
+  assert np.allclose(lane_center(left, right, [0, 0.1, 0.3, 0], st)[:, 1], (0.09 * 0.4 - 0.01 * 0.4) / 0.10)  # sharp left wins
+  st = {"l_prob": 0.9, "r_prob": 0.1, "lane_width": 3.0}  # right faded: stored width, left line dominates
+  assert np.allclose(lane_center(left, right, [0, 0.2, 0.2, 0], st)[:, 1], (0.04 / 0.1 * 0.5 - 0.04 / 0.9 * 0.5) / (0.04 / 0.1 + 0.04 / 0.9))

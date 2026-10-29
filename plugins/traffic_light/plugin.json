@@ -1,7 +1,7 @@
 {
   "id": "traffic_light",
   "name": "Traffic Light Control (Experimental)",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "api": 1,
   "use": "onroad",
   "category": "longitudinal_planning",

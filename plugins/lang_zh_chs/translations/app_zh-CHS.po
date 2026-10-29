@@ -1885,3 +1885,264 @@ msgstr "磁贴与叠加层"
 #: openpilot/tesla/ui/offroad.py
 msgid "Languages"
 msgstr "语言"
+
+msgid "Accel Personality"
+msgstr "加速风格"
+
+msgid "Accel Profile"
+msgstr "加速模式"
+
+msgid "Active from"
+msgstr "生效起始速度"
+
+msgid "Active up to"
+msgstr "生效最高速度"
+
+msgid "Angle-based cooperative steering: light driver torque adjusts the SP steering target with speed-dependent effort. SP must own steering; stock Autosteer must not steer at the same time (AP ownership/handoff is not implemented). Enable while parked, then restart. Overrides native TeslaCoopSteering mode for this session without changing its saved setting. Host-tested only; vehicle validation is pending."
+msgstr "基于转角的协作转向：驾驶员轻转方向盘可调整 SP 转向目标，力度随车速变化。转向必须由 SP 接管，原车 Autosteer 不得同时转向；AP 控制权交接尚未实现。停车启用后重启。本次运行会覆盖原生 TeslaCoopSteering 模式，但不改其保存值。目前仅做过宿主测试，尚待实车验证。"
+
+msgid "Auto Speed Limit"
+msgstr "自动限速设定"
+
+msgid "BGM1 v4 Walnut V3 phone inference with physical sanity checks and local fallback. Uses the system engaged bounded-wait contract."
+msgstr "使用手机运行 BGM1 v4 Walnut V3 推理，包含物理合理性检查和本地回退；接合状态下使用系统限定等待时间的约定。"
+
+msgid "Battery"
+msgstr "电池"
+
+msgid "Battery (BMS)"
+msgstr "电池状态（BMS）"
+
+msgid "Big screen: red edge on the left or right column while a car is in that blind spot. Display only; on by default."
+msgstr "大屏左右边缘在对应盲区有车时显示红色提示；仅显示，默认开启。"
+
+msgid "Big-screen card: distance and relative speed of the lead car (radarState). Display only; on by default."
+msgstr "大屏磁贴显示 radarState 中的前车距离和相对速度；仅显示，默认开启。"
+
+msgid "Big-screen card: ego speed and the set speed. Display only; on by default."
+msgstr "大屏磁贴显示本车速度与设定速度；仅显示，默认开启。"
+
+msgid "Big-screen card: the speed limit sunnypilot resolved (longitudinalPlanSP). Display only; on by default."
+msgstr "大屏磁贴显示 sunnypilot 在 longitudinalPlanSP 中解析的限速；仅显示，默认开启。"
+
+msgid "Big-screen tile: battery charge, pack voltage, current and power from the BMS messages on the vehicle bus. Needs the vehicle-bus harness. Read only."
+msgstr "大屏磁贴显示车辆 BMS 的电量、电池组电压、电流和功率；需要车辆总线线束，仅只读。"
+
+msgid "Big-screen tile: cluster speed, gear, blinkers and blind spots. Display only; on by default."
+msgstr "大屏磁贴显示仪表车速、挡位、转向灯和盲区；仅显示，默认开启。"
+
+msgid "Big-screen tile: local time and date. Display only; on by default."
+msgstr "大屏磁贴显示本地时间和日期；仅显示，默认开启。"
+
+msgid "Big-screen tile: speed limit, road name and next maneuver from any map or navigation provider. Display only; on by default."
+msgstr "大屏磁贴显示地图或导航源提供的限速、道路名称和下一步指引；仅显示，默认开启。"
+
+msgid "Big-screen tile: the device IP address and network type. Display only; on by default."
+msgstr "大屏磁贴显示设备 IP 地址和网络类型；仅显示，默认开启。"
+
+msgid "Blendful (alpha)"
+msgstr "Blendful 车道居中（测试版）"
+
+msgid "Blind Spot Edges"
+msgstr "盲区边缘提示"
+
+msgid "Blindspot Ambient Lights"
+msgstr "盲区氛围灯"
+
+msgid "Blinker delay"
+msgstr "转向灯延迟"
+
+msgid "Car Tile"
+msgstr "车辆磁贴"
+
+msgid "Clock"
+msgstr "时钟"
+
+msgid "Clock Tile"
+msgstr "时钟磁贴"
+
+msgid "Complete Simplified Chinese translation for the xpilot interface."
+msgstr "xpilot 界面的完整简体中文翻译。"
+
+msgid "Day Brightness"
+msgstr "日间亮度"
+
+msgid "Drive with the model that ships with openpilot (selfdrive/modeld, no downloads). Replaces the SP model manager while on; switch it off to go back."
+msgstr "使用 openpilot 随附模型，无需下载。启用时替换 SP 模型管理器，停用后恢复。"
+
+msgid "Example plugin: warns when driving faster than the resolved speed limit plus a margin. Shows the manifest, store-backed params, a settings row, an alert hook and a relative import."
+msgstr "示例插件：车速超过已识别限速加容许偏差时发出提醒；展示清单、商店参数、设置行、提醒接口及相对导入。"
+
+msgid "External Compute"
+msgstr "外部算力"
+
+msgid "IP Tile"
+msgstr "网络地址磁贴"
+
+msgid "Internet access using the existing mihomo VPN configuration. Local networks stay direct. Includes an offline ARM64 core, node selection and phone import. Not a satellite service."
+msgstr "使用现有 mihomo 配置上网，本地网络保持直连。随包提供离线 ARM64 内核，支持节点选择和手机导入；不是卫星网络服务。"
+
+msgid "Lead"
+msgstr "前车"
+
+msgid "Lead Card"
+msgstr "前车磁贴"
+
+msgid "Lets a laptop, LLM server or accelerator exchange data with the device over a cable or WiFi (TCP JSON lines). Peers need the token in /data/params/d/XpilotExternalToken."
+msgstr "允许笔记本、大模型服务器或加速器通过有线或无线网络与设备交换 TCP JSON 行数据；连接端需使用 /data/params/d/XpilotExternalToken 中的令牌。"
+
+msgid "Limit {}"
+msgstr "限速 {}"
+
+msgid "Map"
+msgstr "地图"
+
+msgid "Map Tile"
+msgstr "地图磁贴"
+
+msgid "Margin"
+msgstr "容许偏差"
+
+msgid "Max Speed"
+msgstr "最高速度"
+
+msgid "Model blinker threshold"
+msgstr "模型转向灯阈值"
+
+msgid "Native xpilot Simplified Chinese language pack. Enable, restart, then select Simplified Chinese in the host language settings. Requires upstream language-pack support."
+msgstr "xpilot 原生简体中文语言包。启用并重启后，在系统语言设置中选择简体中文；需要宿主支持语言包。"
+
+msgid "Navigation"
+msgstr "导航"
+
+msgid "Navigation Lane Change"
+msgstr "导航变道"
+
+msgid "Night Brightness"
+msgstr "夜间亮度"
+
+msgid "No map data"
+msgstr "暂无地图数据"
+
+msgid "Overspeed Warning"
+msgstr "超速提醒"
+
+msgid "Port"
+msgstr "端口"
+
+msgid "Port of sunnypilot Blendful (#2073, alpha): nudges the model's path toward the lane center when the lane lines are clear, and backs off when lines fade, the model goes around something, or during a lane change or turn. The correction builds at most 0.5 m/s^2 per second; the host caps it at 0.5 m/s^2 and SP's curvature limits still apply. Works with laneless models, not with lateral controller plugins that ignore the desired curvature. While engaged, a cyan line on the road shows the lane center Blendful steers toward; it fades as Blendful's trust in the lines drops (needs a host with RoadOverlay)."
+msgstr "移植自 sunnypilot Blendful 测试版：车道线清晰时向车道中心微调模型路径；车道线不清、绕行、变道或转弯时减弱修正。修正每秒最多增加 0.5 m/s²，宿主限制为 0.5 m/s²，SP 曲率限制仍生效。支持无车道线模型，不支持忽略目标曲率的横向控制插件。辅助驾驶启用时，路面青色线显示目标车道中心并随信任度下降淡出；需要 RoadOverlay 宿主接口。"
+
+msgid "Replaces SP's longitudinal plan, including lead following, with the TN-NoDEC planner (legacy cruise-obstacle MPC and TN acceleration controller). Prebuilt acados solvers: installs only on the platform it was built for. TN's stopping policy in controlsd is not included."
+msgstr "用 TN-NoDEC 规划器替换 SP 纵向规划及跟车，包含传统巡航障碍物 MPC 与 TN 加速度控制器。预编译 acados 求解器仅支持对应构建平台；未包含 controlsd 中的 TN 停车策略。"
+
+msgid "SET {}"
+msgstr "设定 {}"
+
+msgid "SP below"
+msgstr "低于此速度由 SP 接管"
+
+msgid "Sets cruise speed to the car's speed limit plus an offset. Needs openpilot longitudinal and the vehicle bus."
+msgstr "按车辆识别的限速加偏移量设置巡航速度；需要 openpilot 纵向控制和车辆总线连接。"
+
+msgid "Speed"
+msgstr "车速"
+
+msgid "Speed Card"
+msgstr "车速磁贴"
+
+msgid "Speed Limit"
+msgstr "限速"
+
+msgid "Speed Limit Card"
+msgstr "限速磁贴"
+
+msgid "Speed Limit Offset"
+msgstr "限速偏移"
+
+msgid "Speed Limit Tile"
+msgstr "限速"
+
+msgid "Speed-based longitudinal owner, like the old DynamicAutoStock: above High the stock ACC drives, below Low SP drives, in between the current owner stays. With Tesla Traffic Light Stop (tesla_tlssc) on, the stock ACC is proposed whenever the car shows a red/yellow light or a stop line, so the car can stop for it. Optional four-finger touch on the car screen switches to the other owner and keeps that choice until the next touch or until SP disengages (set MADS to 3 or 5 fingers if both are used). Switches while engaged; the host (1 s confirm, 2 s cooldown, gas/brake/AEB/lead/acceleration vetoes) and the panda (DRAIN handoff) decide whether a switch happens. Needs SP longitudinal and the G8 panda firmware. Enable while parked, then restart."
+msgstr "根据车速切换纵向控制：高于高阈值由原车 ACC 控制，低于低阈值由 SP 控制，中间区间保持当前控制方。启用特斯拉红绿灯停车插件时，车辆显示红灯、黄灯或停止线会建议原车 ACC 接管。可选四指触摸车屏切换，保持至再次触摸或 SP 退出；与 MADS 同用时可将其改为三指或五指。启用期间的切换由宿主确认、冷却及油门、制动、AEB、前车和加速度限制，以及 Panda 交接规则共同决定。需要 SP 纵向控制及 G8 Panda 固件；停车时启用并重启。"
+
+msgid "Speed-based longitudinal owner, like the old DynamicAutoStock: above High the stock ACC drives, below Low SP drives, in between the current owner stays. With Tesla Traffic Light Stop (tesla_tlssc) on, the stock ACC is proposed whenever the car shows a red/yellow light or a stop line, so the car can stop for it. Switches while engaged; the host (1 s confirm, 2 s cooldown, gas/brake/AEB/lead/acceleration vetoes) and the panda (DRAIN handoff) decide whether a switch happens. Needs SP longitudinal and the G8 panda firmware. Enable while parked, then restart."
+msgstr "按速度切换纵向控制方，类似旧版 DynamicAutoStock：高于上限时由原车 ACC 控制，低于下限时由 SP 控制，中间区间保持当前控制方。启用特斯拉红绿灯停车插件（tesla_tlssc）时，车辆显示红灯、黄灯或停止线便提出由原车 ACC 接管，以便车辆停车。可在接合时请求切换；是否切换由宿主（1 秒确认、2 秒冷却，以及油门、刹车、AEB、前车和加速度否决条件）和 Panda（DRAIN 交接）共同决定。需要 SP 纵向控制和 G8 Panda 固件。停车启用后重启。"
+
+msgid "Starlink"
+msgstr "Starlink"
+
+msgid "Stock ACC above"
+msgstr "高于此速度由原车 ACC 接管"
+
+msgid "Stock Autopilot mode, like t2can Advanced EAP. While on, SP never engages and the panda passes the car's own Autopilot through (stock Autosteer, TACC, Navigate on Autopilot). When Navigate on Autopilot asks for a lane change, it taps the turn stalk after the set delay, only toward a side the car reports free. Needs the vehicle-bus harness and panda firmware with STOCK_AP. Enable while parked, then restart."
+msgstr "原车 Autopilot 模式，类似 t2can Advanced EAP。启用时 SP 不会接合，Panda 透传车辆原有 Autopilot（原车自动转向、TACC 和导航辅助驾驶）。导航辅助驾驶请求变道时，在设定延迟后轻拨转向灯杆，且只朝车辆报告为空闲的一侧操作。需要车辆总线线束和支持 STOCK_AP 的 Panda 固件。停车启用后重启。"
+
+msgid "Stop Reference"
+msgstr "停车参考距离"
+
+msgid "Stops for red lights seen by the car's own traffic-control perception. Only ever slows down."
+msgstr "基于原车交通感知识别红灯并停车；作者声明此插件仅执行减速。"
+
+msgid "TN Longitudinal (TN-NoDEC)"
+msgstr "TN 纵向控制（TN-NoDEC）"
+
+msgid "Taps the turn stalk when the phone big model (lean_mici) predicts the driver's blinker (now or within 2 s) for 1 s, in that direction; SP's auto lane change does the rest. Only with an active route that the phone feeds to the model, never on single-lane roads, roundabouts, ramps or in tunnels (phone road data). 8 s apart, never with a car in that blind spot, while you steer, accelerate or brake, or below 30 km/h. Needs lean_mici 0.8+, SP auto lane change and the vehicle-bus harness."
+msgstr "手机大模型（lean_mici）预测驾驶员现在或 2 秒内将打转向灯时，朝预测方向轻拨转向灯杆 1 秒；其余变道由 SP 自动变道完成。仅在手机向模型提供有效路线时使用；单车道、环岛、匝道和隧道中不使用（依据手机道路数据）。两次操作至少间隔 8 秒；盲区有车、驾驶员正在转向、加速或刹车，或车速低于 30 km/h 时不操作。需要 lean_mici 0.8 及以上、SP 自动变道和车辆总线线束。"
+
+msgid "Taps the turn stalk when the phone big model (lean_mici) predicts the driver's blinker (now or within 2 s) for 1 s, in that direction; SP's auto lane change does the rest. Only with an active route that the phone feeds to the model, never on single-lane roads, roundabouts, ramps or in tunnels (phone road data). 8 s apart, never with a car in that blind spot, while you steer, accelerate or brake, or below 30 km/h. Needs lean_mici 0.8+, SP auto lane change and the vehicle-bus harness. Turn signal (on by default): when the route's next maneuver is a turn within the set distance and the car is below 17 km/h (under SP's 20 mph lane-change speed), it taps the stalk once so the blinker signals the turn; needs cruise engaged (panda rule)."
+msgstr "手机大模型 lean_mici 预测驾驶员转向灯当前或两秒内开启并持续一秒时，轻触对应方向转向杆，由 SP 自动变道完成后续操作。仅限手机提供有效导航路线，单车道、环岛、匝道或隧道内不触发；间隔至少八秒，盲区有车、驾驶员转向、加速或制动时，以及低于 30 km/h 时不触发。需要 lean_mici 0.8 及以上、SP 自动变道和车身总线线束。转向灯功能默认开启：下一转弯进入设定距离且车速低于 17 km/h 时轻触一次转向杆，需启用巡航及相应 Panda 规则。"
+
+msgid "TesNav Navigation"
+msgstr "特会开导航"
+
+msgid "TesNav guidance via the existing upstream External Compute bridge. No listener is opened by this plugin. Requires a bridge-compatible phone sender; legacy UDP Apps are not compatible. Optional turn slowdown stays disabled by default."
+msgstr "TesNav 通过上游外部计算桥接接收导航，本插件不开放监听端口。手机端需要支持该桥接，旧版 UDP 应用不兼容；可选转弯减速默认关闭。"
+
+msgid "TesNav phone guidance over the host UDP navigation ingress. Optional turn slowdown is disabled by default."
+msgstr "通过 UDP 接收特会开手机导航提示，转弯减速默认关闭。"
+
+msgid "Tesla Dynamic ACC"
+msgstr "特斯拉动态巡航"
+
+msgid "Tesla EAP Mode"
+msgstr "特斯拉 EAP 模式"
+
+msgid "Tesla Mixed Control"
+msgstr "特斯拉协作转向"
+
+msgid "Tesla Traffic Light Stop"
+msgstr "特斯拉红绿灯停车"
+
+msgid "Traffic Light"
+msgstr "红绿灯"
+
+msgid "Traffic Light Control (Experimental)"
+msgstr "红绿灯控制（实验性）"
+
+msgid "Turns on the car's own Traffic Light and Stop Sign Control (TLSSC) between two speeds you set, like t2can: it re-sends the car's UI_autopilotControl (0x3FD mux 0) with bits 38/39 set while cruise is on. The car stops only while the stock ACC drives; Tesla Dynamic ACC 1.1+ hands longitudinal to the stock ACC when the car shows a red/yellow light or a stop line. Needs the vehicle-bus harness. Unverified on this car: whether TLSSC acts while SP steers."
+msgstr "在设定的两个速度之间启用车辆原有红绿灯与停止标志控制（TLSSC），方式类似 t2can：巡航开启时重发车辆 UI_autopilotControl（0x3FD mux 0），并置位第 38、39 位。只有原车 ACC 负责驾驶时车辆才会停车；Tesla Dynamic ACC 1.1 及以上可在车辆显示红灯、黄灯或停止线时将纵向控制交给原车 ACC。需要车辆总线线束。尚未在此车验证 SP 转向时 TLSSC 是否生效。"
+
+msgid "Turns the cabin ambient lights red while a car is in the blind spot."
+msgstr "盲区内有车辆时，将车内氛围灯变为红色。"
+
+msgid "ethernet"
+msgstr "有线网络"
+
+msgid "lean mici phone inference"
+msgstr "lean mici 手机推理"
+
+msgid "no lead"
+msgstr "未检测到前车"
+
+msgid "offline"
+msgstr "离线"
+
+msgid "openpilot Model"
+msgstr "openpilot 内置模型"
+
+msgid "wifi"
+msgstr "无线网络"
+
+msgid "简体中文语言包 / Simplified Chinese"
+msgstr "简体中文语言包"

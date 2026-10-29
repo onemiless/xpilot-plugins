@@ -74,6 +74,7 @@ class TrafficControlRenderer(Tile):
   """Icon-only traffic signal driven by the already-published final plan."""
 
   SPEC = TileSpec("traffic_light", "Traffic Light", sizes=("small",), show="onroad", hz=10, order=40)
+  TRANSLATE_TITLE = True
 
   def __init__(self):
     self.msgs = plugins.PluginMsgs()

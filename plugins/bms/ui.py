@@ -6,6 +6,7 @@ from openpilot.tesla.ui.tiles import TileSpec
 
 class BmsTile(Tile):
   SPEC = TileSpec("bms", "Battery", sizes=("small", "medium", "wide"), show="always", hz=2, order=90)
+  TRANSLATE_TITLE = True
 
   def __init__(self):
     self.msgs = plugins.PluginMsgs()

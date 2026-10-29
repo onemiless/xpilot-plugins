@@ -1,7 +1,7 @@
 {
   "id": "lead_card",
   "name": "Lead Card",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "api": 1,
   "use": "both",
   "category": "ui",

@@ -7,6 +7,7 @@ from openpilot.tesla.ui.tiles import TileSpec
 
 class SpeedLimitCardTile(Tile):
   SPEC = TileSpec("speed_limit_card", "Speed Limit", sizes=("small", "medium", "wide"), show="always", hz=2, order=20)
+  TRANSLATE_TITLE = True
 
   def state(self, sm):
     limit = sm['longitudinalPlanSP'].speedLimit.resolver.speedLimit if sm.alive['longitudinalPlanSP'] else 0.0

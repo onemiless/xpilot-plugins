@@ -11,6 +11,7 @@ VALUE, VALUE_TOP = 96, 36  # tesla.ui.tile shared type scale (small tile px)
 
 class NavigationTile(Tile):
   SPEC = TileSpec("lean_navigation", "Navigation", sizes=("small", "medium", "wide"), show="always", hz=2, order=61)
+  TRANSLATE_TITLE = True
 
   def __init__(self):
     self.msgs = plugins.PluginMsgs()

@@ -1,7 +1,7 @@
 {
   "id": "car_tile",
   "name": "Car Tile",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "api": 1,
   "use": "both",
   "category": "ui",

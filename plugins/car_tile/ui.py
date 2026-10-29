@@ -7,6 +7,7 @@ from openpilot.tesla.ui.tiles import TileSpec
 
 class CarTile(Tile):
   SPEC = TileSpec("car", "Car", sizes=("small", "medium", "wide"), show="always", hz=10, order=50)
+  TRANSLATE_TITLE = True
 
   def state(self, sm):
     cs = sm['carState']

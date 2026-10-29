@@ -3,7 +3,6 @@ mux 0 (byte 0 bits 0..2), TLSSC enable = bits 38 and 39 (byte 4 bits 6, 7); no c
 ADDRESS = 0x3FD
 LENGTH = 8
 TLSSC_BITS = 0xC0  # byte 4
-AP_ACTIVE = (3, 4, 5, 6)  # DAS_status.DAS_autopilotState ACTIVE_NOMINAL/RESTRICTED/NAV/FSD (t2can gateAPActive)
 
 
 def is_template(data: bytes) -> bool:
@@ -18,7 +17,3 @@ def tlssc_frame(template: bytes) -> bytes | None:
   data[4] |= TLSSC_BITS
   return bytes(data)
 
-
-def desired_active(autopilot_state: int) -> bool:
-  """t2can injectTLSSC: inject only while the stock Autopilot is active. No speed window, no cruise gate."""
-  return autopilot_state in AP_ACTIVE

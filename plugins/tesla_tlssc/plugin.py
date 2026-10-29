@@ -1,5 +1,5 @@
-"""Tesla TLSSC, t2can logic: re-sends the car's UI_autopilotControl (0x3FD mux 0, vehicle bus) with the TLSSC bits set while
-the stock Autopilot is active (DAS_autopilotState 3..6). Standalone; also publishes tlssc.state (traffic light colour, stop line).
+"""Tesla TLSSC: re-sends the car's UI_autopilotControl (0x3FD mux 0, vehicle bus) with the TLSSC bits set while
+sunnypilot is engaged (CC.enabled), like t2can injectTLSSC without its stock-Autopilot gate. Standalone; also publishes tlssc.state (traffic light colour, stop line).
 Panda permissions: plugin.json runtime rule (cloned stock frame, only bits 38/39 forced, controls allowed, budgeted)."""
 import math
 import time
@@ -11,7 +11,7 @@ from opendbc.car.tesla.values import CANBUS, DBC
 from openpilot.tesla import plugins
 from openpilot.tesla.plugin import Plugin
 
-from .logic import ADDRESS, desired_active, is_template, tlssc_frame
+from .logic import ADDRESS, is_template, tlssc_frame
 
 TEMPLATE_MAX_AGE_NS = 300_000_000
 PUBLISH_NS = 100_000_000
@@ -20,8 +20,7 @@ PUBLISH_NS = 100_000_000
 class TeslaTlssc(Plugin):
   def __init__(self, CP, params):
     super().__init__(CP, params)
-    self.road = CANParser(DBC[CP.carFingerprint][Bus.party], [("DAS_road", math.nan), ("DAS_status", math.nan)],
-                          CANBUS.autopilot_party)
+    self.road = CANParser(DBC[CP.carFingerprint][Bus.party], [("DAS_road", math.nan)], CANBUS.autopilot_party)
     self.template, self.template_ns, self.sent_ns, self.published_ns = None, 0, 0, 0
     self.active = False
 
@@ -45,7 +44,7 @@ class TeslaTlssc(Plugin):
     plugins.send_msg(self, "tlssc.state", payload, valid_for_ms=500)
 
   def control_sends(self, CS, CC, now_ns: int) -> list:
-    self.active = desired_active(int(self.road.vl["DAS_status"]["DAS_autopilotState"]))
+    self.active = CC.enabled
     if (not self.active or self.template is None or self.template_ns <= self.sent_ns or
         now_ns - self.template_ns > TEMPLATE_MAX_AGE_NS):
       return []

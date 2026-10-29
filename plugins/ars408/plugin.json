@@ -1,0 +1,58 @@
+{
+  "id": "ars408",
+  "name": "ARS408 Radar Receiver",
+  "version": "0.2.1",
+  "api": 1,
+  "use": "onroad",
+  "category": "data_source",
+  "entry": "plugin:ARS408",
+  "author": "juyun86",
+  "description": "Independent ARS408 targets, tracking and diagnostics with calibrated vehicle motion input at 20 Hz. Requires sensor_motion.v1 Panda firmware. Sensor configuration writes are not enabled.",
+  "priority": 100,
+  "enable_param": "ExtARS408Enabled",
+  "claims": [
+    "source:radar",
+    "can.tx:0x300:1",
+    "can.tx:0x301:1"
+  ],
+  "requires": {
+    "hooks": [
+      "radar_interface",
+      "radar_context",
+      "card_context",
+      "control_sends"
+    ],
+    "rule_abi": 1,
+    "rule_types": [
+      "sensor_motion.v1"
+    ]
+  },
+  "rules": [
+    {
+      "type": "sensor_motion.v1",
+      "tx_address": 768,
+      "tx_bus": 1
+    },
+    {
+      "type": "sensor_motion.v1",
+      "tx_address": 769,
+      "tx_bus": 1
+    }
+  ],
+  "settings": [
+    {
+      "key": "ExtARS408Inverted",
+      "label": "Radar mounted upside down"
+    }
+  ],
+  "params": {
+    "ExtARS408Enabled": {
+      "type": "BOOL",
+      "default": "0"
+    },
+    "ExtARS408Inverted": {
+      "type": "BOOL",
+      "default": "1"
+    }
+  }
+}

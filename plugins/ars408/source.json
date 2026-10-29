@@ -1,0 +1,83 @@
+{
+  "device_commit": "6db98169cfefd6e7e4bd1f3bdaaf70623f79750d",
+  "files": [
+    {
+      "path": "opendbc_repo/opendbc/sunnypilot/car/tesla/ars408/constants.py",
+      "sha256": "94e4625b83796634b3b753b6eb54d49f610319b621c73438ccbf2293ad847500"
+    },
+    {
+      "path": "opendbc_repo/opendbc/sunnypilot/car/tesla/ars408/cycle.py",
+      "sha256": "bca56a34fe858e3489534118c88da814ad330a73b4b76569ab52d2a9493f034e"
+    },
+    {
+      "path": "opendbc_repo/opendbc/sunnypilot/car/tesla/ars408/diagnostics.py",
+      "sha256": "08572fe88dac366442b5d479a419b897983c16f704741de3c2f2ab3050860f8a"
+    },
+    {
+      "path": "opendbc_repo/opendbc/sunnypilot/car/tesla/ars408/interface.py",
+      "sha256": "71c7ff55b8f44898d1e3a1f1b534235aeab4b549a7bcd9a40d7d966bd4fda052"
+    },
+    {
+      "path": "opendbc_repo/opendbc/sunnypilot/car/tesla/ars408/models.py",
+      "sha256": "0c2189e4c35d3e2d1bce29dc0f05c904281580a46167fc1dde2080bc6f8ebafe"
+    },
+    {
+      "path": "opendbc_repo/opendbc/sunnypilot/car/tesla/ars408/parser.py",
+      "sha256": "2f64ebcb8d340c3db21a9aa193e61482af443b4eaa5dec4ffeb1980a32301241"
+    },
+    {
+      "path": "opendbc_repo/opendbc/sunnypilot/car/tesla/ars408/tracker.py",
+      "sha256": "8868f321a9b30d9a1637891b814ea17a44b24a4141dd87f0f8dbcf3b328d5a69"
+    },
+    {
+      "path": "opendbc_repo/opendbc/sunnypilot/car/tesla/ars408/transmitter.py",
+      "sha256": "3898bc019124b2377b14942bd3032838ee3b066a59c598189920f9d4751056d5"
+    },
+    {
+      "path": "opendbc_repo/opendbc/sunnypilot/car/tesla/ars408/tests/test_cycle.py",
+      "sha256": "23d1f5788e2b4f3fa628fceca40d8793613433d030689ff1b61ff6192698f592"
+    },
+    {
+      "path": "opendbc_repo/opendbc/sunnypilot/car/tesla/ars408/tests/test_diagnostics.py",
+      "sha256": "fcbe990cfb3ab6b796360e5a4aa70c5a3258e3113c5f443f3cc0e00bef4d1518"
+    },
+    {
+      "path": "opendbc_repo/opendbc/sunnypilot/car/tesla/ars408/tests/test_interface.py",
+      "sha256": "91e0d76fe2366a3e582f4988e5999d1ece97304d0c79752ed5f2b9f07ef0e549"
+    },
+    {
+      "path": "opendbc_repo/opendbc/sunnypilot/car/tesla/ars408/tests/test_parser.py",
+      "sha256": "8524db9b93cbe791ec235e6c7ae42a3a83243fca19d7f9497cfa3c05d36153a1"
+    },
+    {
+      "path": "opendbc_repo/opendbc/sunnypilot/car/tesla/ars408/tests/test_tracker.py",
+      "sha256": "91b9bc780a8f35ad9aecf347ac509b66609ab1405d8924e34840dacf6a4a522e"
+    },
+    {
+      "path": "opendbc_repo/opendbc/sunnypilot/car/tesla/ars408/tests/test_transmitter.py",
+      "sha256": "c72d6d98703d010c6e25a61f3ed7569884a2f51588352ecd3f53921e76e1418a"
+    },
+    {
+      "path": "opendbc_repo/opendbc/sunnypilot/car/tesla/ars408/tests/test_truck_echo.py",
+      "sha256": "ff0548510c8523e847011aa2aafa73996cc156425cae9454aea8c50259d7844f"
+    },
+    {
+      "path": "opendbc_repo/opendbc/dbc/ARS408.dbc",
+      "sha256": "8cbc5631b7d07df1da12e7251804620aee7cf2cc19d62f51522c2fa03da388c5"
+    }
+  ],
+  "changes": [
+    "relative imports",
+    "bundled absolute DBC path",
+    "explicit optional motion encoder enabled argument; old flag compatibility retained",
+    "optional interface mount inversion argument; old default preserved"
+  ],
+  "activated_tx": false,
+  "motion_source": [
+    {
+      "path": "openpilot/sunnypilot/selfdrive/car/tesla/card_adapter.py",
+      "sha256": "25345918060562fd877014977bb84c4dda2ce9f48490407c879db3b441cfbe13"
+    }
+  ],
+  "motion_changes": "Extract radar_yaw_rate_context only, inject existing PoseCalibrator, share 150ms freshness constant; no navigation/turn-signal/traffic-light adapters or live sends."
+}

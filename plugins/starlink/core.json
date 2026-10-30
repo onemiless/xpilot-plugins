@@ -1,0 +1,20 @@
+{
+  "version": "v1.19.32",
+  "size": 57213054,
+  "sha256": "e44258004baf8b61a4e804d86049c1e3312aae81e3f4ea6e265f0f7660714376",
+  "compressed_sha256": "3f0dc49598b414534fbc352833e9aecb90ab8b0e5b33b12fcc0bf8922b3e6e76",
+  "source": "https://github.com/MetaCubeX/mihomo/tree/88dcbf7f1614a67c3b36b848ee3592dfa92ada36",
+  "source_commit": "88dcbf7f1614a67c3b36b848ee3592dfa92ada36",
+  "toolchain": "go version go1.26.10 windows/amd64",
+  "source_date_epoch": "1792972800",
+  "build_tags": [
+    "with_gvisor"
+  ],
+  "ldflags": "-extldflags --static -X github.com/metacubex/mihomo/constant.Version=v1.19.32 -X github.com/metacubex/mihomo/constant.BuildTime=1792972800 -w -s -buildid=",
+  "reference_toolchain_archive": "go1.26.windows-amd64.zip",
+  "reference_toolchain_sha256": "2483b14ce111fa89ac671cdb00073c5b19670198be1334f491a8f3fe36affeb0",
+  "upstream_build": "https://github.com/MetaCubeX/mihomo/blob/88dcbf7f1614a67c3b36b848ee3592dfa92ada36/.github/workflows/build.yml",
+  "compatible_existing_sha256": [
+    "c80df2ca5159567804da883401e0118908fc1155e05df2baf3dbd4d3ecfc3754"
+  ]
+}

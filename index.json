@@ -283,6 +283,27 @@
       "claims": []
     },
     {
+      "id": "starlink",
+      "name": "Starlink",
+      "version": "1.2.2",
+      "api": 1,
+      "category": "tools",
+      "author": "xpilot",
+      "description": "Internet access using the existing mihomo VPN configuration. Local networks stay direct. Includes an offline ARM64 core, node selection and phone import. Not a satellite service.",
+      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/starlink-1.2.2.tar.gz",
+      "sha256": "684969602ffe2033ea32948d7e8c4834b7c4962b5c4e7f257f599db51adf64a9",
+      "platform": {
+        "machine": "aarch64",
+        "python": "cpython-312"
+      },
+      "default": false,
+      "claims": [
+        "process:starlinkd",
+        "role:network.vpn",
+        "msg:network.vpn"
+      ]
+    },
+    {
       "id": "tesla_dynamic_acc",
       "name": "Tesla Dynamic ACC",
       "version": "1.2.0",

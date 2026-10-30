@@ -1,0 +1,51 @@
+{
+  "id": "starlink",
+  "name": "Starlink",
+  "version": "1.2.2",
+  "api": 1,
+  "use": "both",
+  "category": "tools",
+  "entry": "plugin:Starlink",
+  "author": "xpilot",
+  "description": "Internet access using the existing mihomo VPN configuration. Local networks stay direct. Includes an offline ARM64 core, node selection and phone import. Not a satellite service.",
+  "priority": 100,
+  "enable_param": "ExtStarlinkEnabled",
+  "claims": [
+    "process:starlinkd",
+    "role:network.vpn",
+    "msg:network.vpn"
+  ],
+  "platform": {
+    "machine": "aarch64",
+    "python": "cpython-312"
+  },
+  "requires": {
+    "hooks": [
+      "processes",
+      "network_vpn"
+    ],
+    "native": {
+      "machine": "aarch64",
+      "python": "cpython-312"
+    },
+    "host_api": [
+      "data_dir"
+    ]
+  },
+  "settings": [
+    {
+      "key": "ExtStarlinkConnect",
+      "label": "Start VPN while parked"
+    }
+  ],
+  "params": {
+    "ExtStarlinkEnabled": {
+      "type": "BOOL",
+      "default": "0"
+    },
+    "ExtStarlinkConnect": {
+      "type": "BOOL",
+      "default": "0"
+    }
+  }
+}

@@ -351,6 +351,24 @@
       ]
     },
     {
+      "id": "tesnav",
+      "name": "TesNav Navigation",
+      "version": "0.4.0",
+      "api": 1,
+      "category": "navigation",
+      "author": "juyun86",
+      "description": "TesNav phone guidance over the host UDP navigation ingress. Optional turn slowdown is disabled by default.",
+      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/tesnav-0.4.0.tar.gz",
+      "sha256": "7052aca5b7a8919bad80c3fd093e55285ee9d49fba352b0c070437ef56d21f70",
+      "platform": null,
+      "default": false,
+      "claims": [
+        "source:navigation",
+        "process:tesnavd",
+        "long.target"
+      ]
+    },
+    {
       "id": "traffic_light",
       "name": "Traffic Light Control (Experimental)",
       "version": "1.1.0",

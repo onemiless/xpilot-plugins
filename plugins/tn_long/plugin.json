@@ -1,25 +1,72 @@
 {
   "id": "tn_long",
   "name": "TN Longitudinal (TN-NoDEC)",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "api": 1,
   "use": "onroad",
   "category": "longitudinal_planning",
   "entry": "plugin:TnLong",
   "author": "xpilot",
-  "description": "Replaces SP's longitudinal plan, including lead following, with the TN-NoDEC planner (legacy cruise-obstacle MPC and TN acceleration controller). Prebuilt acados solvers: installs only on the platform it was built for. TN's stopping policy in controlsd is not included.",
+  "description": "Replaces SP's longitudinal plan with the TN-NoDEC planner. The card plugin also reads Tesla STW_ACTN_RQ.DTR_Dist_Rq from the right scroll wheel and the planner applies seven t_follow levels (1.05..2.10 s). Prebuilt acados solvers: installs only on the platform it was built for. TN's stopping policy in controlsd is not included.",
   "priority": 100,
   "enable_param": "ExtTnLong",
-  "claims": ["role:long.planner"],
+  "claims": [
+    "role:long.planner"
+  ],
   "settings": [
-    {"key": "ExtTnAccelPersonalityEnabled", "label": "Accel Personality"},
-    {"key": "ExtTnAccelPersonality", "label": "Accel Profile", "choices": [["Eco", 0], ["Normal", 1], ["Sport", 2]]}
+    {
+      "key": "ExtTnAccelPersonalityEnabled",
+      "label": "Accel Personality"
+    },
+    {
+      "key": "ExtTnAccelPersonality",
+      "label": "Accel Profile",
+      "choices": [
+        [
+          "Eco",
+          0
+        ],
+        [
+          "Normal",
+          1
+        ],
+        [
+          "Sport",
+          2
+        ]
+      ]
+    }
   ],
   "params": {
-    "ExtTnLong": {"type": "BOOL", "default": "0"},
-    "ExtTnAccelPersonalityEnabled": {"type": "BOOL", "default": "0"},
-    "ExtTnAccelPersonality": {"type": "INT", "default": "1"},
-    "ExtTnLongTuning": {"type": "JSON", "note": "TN runtime tuning config (schema v2); absent = TN defaults"}
+    "ExtTnLong": {
+      "type": "BOOL",
+      "default": "0"
+    },
+    "ExtTnAccelPersonalityEnabled": {
+      "type": "BOOL",
+      "default": "0"
+    },
+    "ExtTnAccelPersonality": {
+      "type": "INT",
+      "default": "1"
+    },
+    "ExtTnLongTuning": {
+      "type": "JSON",
+      "note": "TN runtime tuning config (schema v2); absent = TN defaults"
+    },
+    "ExtTnScrollLevel": {
+      "type": "INT",
+      "default": "-1",
+      "note": "Right-scroll follow level 0..6; -1 = normal TN personality tuning"
+    },
+    "ExtTnFollowApplied": {
+      "type": "INT",
+      "default": "-1",
+      "note": "Diagnostic: applied TN t_follow in milliseconds; -1 = normal tuning"
+    }
   },
-  "platform": null
+  "platform": {
+    "machine": "aarch64",
+    "python": "cpython-312"
+  }
 }

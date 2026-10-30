@@ -351,6 +351,21 @@
       ]
     },
     {
+      "id": "tn_long",
+      "name": "TN Longitudinal (TN-NoDEC)",
+      "version": "1.1.0",
+      "api": 1,
+      "category": "longitudinal_planning",
+      "author": "xpilot",
+      "description": "Replaces SP's longitudinal plan with the TN-NoDEC planner. The card plugin also reads Tesla STW_ACTN_RQ.DTR_Dist_Rq from the right scroll wheel and the planner applies seven t_follow levels (1.05..2.10 s). Prebuilt acados solvers: installs only on the platform it was built for. TN's stopping policy in controlsd is not included.",
+      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/tn_long-1.1.0.tar.gz",
+      "sha256": "08eb1edbdcdcee86ab5edf6a5e5f66e37c576db6c2166c5318a8931e772a5c24",
+      "platform": {
+        "machine": "aarch64",
+        "python": "cpython-312"
+      }
+    },
+    {
       "id": "traffic_light",
       "name": "Traffic Light Control (Experimental)",
       "version": "1.1.0",

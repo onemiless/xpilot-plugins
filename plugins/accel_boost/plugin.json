@@ -1,0 +1,28 @@
+{
+  "id": "accel_boost",
+  "name": "Predictive Accel Boost",
+  "version": "1.0.0",
+  "api": 1,
+  "use": "onroad",
+  "category": "longitudinal_planning",
+  "entry": "plugin:AccelBoostPlugin",
+  "author": "sunnypilot",
+  "description": "Port of sunnypilot predictive accel boost (#2089): while engaged with openpilot longitudinal, adds up to 0.4/0.25/0.1 m/s^2 (aggressive/standard/relaxed) to the model's acceleration when the model predicts a gas press and no brake press, building at 0.2 m/s^3. No boost when the model wants to stop, in curves (fades out 1.5-2.5 m/s^2 lateral) or below 1 m/s. The planner still takes the lowest of lead following, cruise and model, so it never passes a lead car or the set speed. Replaces openpilot's gas-override boost while on. On by default, as upstream.",
+  "priority": 100,
+  "enable_param": "XpAccelBoost",
+  "default": true,
+  "claims": [
+    "role:long.accel_boost"
+  ],
+  "params": {
+    "XpAccelBoost": {
+      "type": "BOOL",
+      "default": "1"
+    }
+  },
+  "requires": {
+    "hooks": [
+      "accel_boost"
+    ]
+  }
+}

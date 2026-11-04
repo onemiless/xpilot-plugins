@@ -2,6 +2,22 @@
   "api": 1,
   "plugins": [
     {
+      "id": "accel_boost",
+      "name": "Predictive Accel Boost",
+      "version": "1.0.0",
+      "api": 1,
+      "category": "longitudinal_planning",
+      "author": "sunnypilot",
+      "description": "Port of sunnypilot predictive accel boost (#2089): while engaged with openpilot longitudinal, adds up to 0.4/0.25/0.1 m/s^2 (aggressive/standard/relaxed) to the model's acceleration when the model predicts a gas press and no brake press, building at 0.2 m/s^3. No boost when the model wants to stop, in curves (fades out 1.5-2.5 m/s^2 lateral) or below 1 m/s. The planner still takes the lowest of lead following, cruise and model, so it never passes a lead car or the set speed. Replaces openpilot's gas-override boost while on. On by default, as upstream.",
+      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/accel_boost-1.0.0.tar.gz",
+      "sha256": "0a97bdf82ae78a304ac3a9d04890a1ada0ef57a41dddd9e79770b56478c27198",
+      "platform": null,
+      "default": true,
+      "claims": [
+        "role:long.accel_boost"
+      ]
+    },
+    {
       "id": "ambient_light",
       "name": "Blindspot Ambient Lights",
       "version": "1.1.0",
@@ -31,23 +47,6 @@
       "default": false,
       "claims": [
         "can.tx:0x3C2:1"
-      ]
-    },
-    {
-      "id": "blendful",
-      "name": "Blendful (alpha)",
-      "version": "0.2.0",
-      "api": 1,
-      "category": "lateral_planning",
-      "author": "xpilot",
-      "description": "Port of sunnypilot Blendful (#2073, alpha): nudges the model's path toward the lane center when the lane lines are clear, and backs off when lines fade, the model goes around something, or during a lane change or turn. The correction builds at most 0.5 m/s^2 per second; the host caps it at 0.5 m/s^2 and SP's curvature limits still apply. Works with laneless models, not with lateral controller plugins that ignore the desired curvature. While engaged, a cyan line on the road shows the lane center Blendful steers toward; it fades as Blendful's trust in the lines drops (needs a host with RoadOverlay).",
-      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/blendful-0.2.0.tar.gz",
-      "sha256": "76c47e8377ea75cd5af95fde327931796d277a08d2f7022cf0ad850fa30c1a0f",
-      "platform": null,
-      "default": false,
-      "claims": [
-        "lat.correction",
-        "msg:blendful.state"
       ]
     },
     {

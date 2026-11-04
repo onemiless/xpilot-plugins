@@ -4,7 +4,6 @@ ADDRESS = 0x3FD
 LENGTH = 8
 TLSSC_BITS = 0xC0  # byte 4
 KPH = 3.6
-RED, GREEN, YELLOW = 1, 2, 3  # DAS_road.DAS_trafficLightColor
 
 
 def is_template(data: bytes) -> bool:
@@ -19,11 +18,3 @@ def tlssc_frame(template: bytes) -> bytes | None:
   data[4] |= TLSSC_BITS
   return bytes(data)
 
-
-def in_window(v_ego: float, min_kph: float, max_kph: float) -> bool:
-  return min_kph <= v_ego * KPH <= max_kph
-
-
-def stopping(state) -> bool:
-  """tlssc.state payload says the car is about to stop for a light or a stop line (stock ACC should drive)."""
-  return bool(state) and bool(state.get("active")) and (state.get("color") in (RED, YELLOW) or 0 < (state.get("stop_m") or 0) < 100)

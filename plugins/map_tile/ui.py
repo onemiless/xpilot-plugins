@@ -9,7 +9,6 @@ from openpilot.tesla.ui.tiles import TileSpec
 
 class MapTile(Tile):
   SPEC = TileSpec("map", "Map", sizes=("small", "medium", "wide"), services=("liveMapDataSP", "navInstruction"), show="always", hz=2, order=60)
-  TRANSLATE_TITLE = True
 
   def state(self, sm):
     lines = []

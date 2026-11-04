@@ -24,9 +24,9 @@
       "api": 1,
       "category": "data_source",
       "author": "juyun86",
-      "description": "Independent ARS408 targets, tracking and diagnostics with calibrated vehicle motion input at 20 Hz. Requires sensor_motion.v1 Panda firmware. Sensor configuration writes are not enabled.",
+      "description": "Independent ARS408 targets, tracking and diagnostics with calibrated vehicle motion input at 20 Hz. Requires sensor_input Panda firmware. Sensor configuration writes are not enabled.",
       "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/ars408-0.2.1.tar.gz",
-      "sha256": "84b239b336d3903aa70b383c0753c1d1a199033ca1a7ae2903b70a515812d3b1",
+      "sha256": "fbea674e30b390f68b5fe5fabcc4b7c7eddfa8c6429f6a46ceeac9dc685e10b4",
       "platform": null,
       "default": false,
       "claims": [
@@ -49,6 +49,23 @@
       "default": false,
       "claims": [
         "can.tx:0x3C2:1"
+      ]
+    },
+    {
+      "id": "blendful",
+      "name": "Blendful (alpha)",
+      "version": "0.2.0",
+      "api": 1,
+      "category": "lateral_planning",
+      "author": "xpilot",
+      "description": "Port of sunnypilot Blendful (#2073, alpha): nudges the model's path toward the lane center when the lane lines are clear, and backs off when lines fade, the model goes around something, or during a lane change or turn. The correction builds at most 0.5 m/s^2 per second; the host caps it at 0.5 m/s^2 and SP's curvature limits still apply. Works with laneless models, not with lateral controller plugins that ignore the desired curvature. While engaged, a cyan line on the road shows the lane center Blendful steers toward; it fades as Blendful's trust in the lines drops (needs a host with RoadOverlay).",
+      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/blendful-0.2.0.tar.gz",
+      "sha256": "76c47e8377ea75cd5af95fde327931796d277a08d2f7022cf0ad850fa30c1a0f",
+      "platform": null,
+      "default": false,
+      "claims": [
+        "lat.correction",
+        "msg:blendful.state"
       ]
     },
     {
@@ -143,13 +160,13 @@
     {
       "id": "lang_zh_chs",
       "name": "\u7b80\u4f53\u4e2d\u6587\u8bed\u8a00\u5305 / Simplified Chinese",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "api": 1,
       "category": "ui",
       "author": "xpilot",
       "description": "Complete Simplified Chinese translation for the xpilot interface.",
-      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/lang_zh_chs-1.0.1.tar.gz",
-      "sha256": "d0766d7458b05830264e1684d35b6839cf94a48273b7ede67acb6800be77bdb2",
+      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/lang_zh_chs-1.0.2.tar.gz",
+      "sha256": "097091bc0514c8819a3d4f396c52885302820dee970c07b95f7f801802ed634e",
       "platform": null,
       "default": false,
       "claims": [
@@ -173,13 +190,13 @@
     {
       "id": "lean_mici",
       "name": "lean mici phone inference",
-      "version": "0.8.2",
+      "version": "0.8.3",
       "api": 1,
       "category": "perception_model",
       "author": "xpilot",
       "description": "BGM1 v4 Walnut V3 phone inference with physical sanity checks and local fallback. Uses the system engaged bounded-wait contract.",
-      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/lean_mici-0.8.2.tar.gz",
-      "sha256": "21eb4905f4925e20662e51ed882dda1e29f8e437ad416ee970d95c865bf83a8e",
+      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/lean_mici-0.8.3.tar.gz",
+      "sha256": "2c605a55aa2448b0e564c0f88709d9db6381d530f754dd9743a7ed10128ccf76",
       "platform": {
         "machine": "aarch64",
         "python": "cpython-312"
@@ -337,13 +354,13 @@
     {
       "id": "tesla_tlssc",
       "name": "Tesla Traffic Light Stop",
-      "version": "1.0.0",
+      "version": "1.3.0",
       "api": 1,
       "category": "longitudinal_planning",
       "author": "xpilot",
-      "description": "Turns on the car's own Traffic Light and Stop Sign Control (TLSSC) between two speeds you set, like t2can: it re-sends the car's UI_autopilotControl (0x3FD mux 0) with bits 38/39 set while cruise is on. The car stops only while the stock ACC drives; Tesla Dynamic ACC 1.1+ hands longitudinal to the stock ACC when the car shows a red/yellow light or a stop line. Needs the vehicle-bus harness. Unverified on this car: whether TLSSC acts while SP steers.",
-      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/tesla_tlssc-1.0.0.tar.gz",
-      "sha256": "cfa9774f3c1aace2985afb7eb1e15a439deaf8dff806b97b871475eadbed1af8",
+      "description": "Turns on the car's own Traffic Light and Stop Sign Control (TLSSC) while sunnypilot is engaged and the car is at or below the speed you set: it re-sends the car's UI_autopilotControl (0x3FD mux 0) with bits 38/39 set. Works on its own, no other plugin needed. Needs the vehicle-bus harness. Unverified on this car.",
+      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/tesla_tlssc-1.3.0.tar.gz",
+      "sha256": "0ccb17d0fd56447a3393ac2310199eb317829d1271e78eb47c10023c4702bcfb",
       "platform": null,
       "default": false,
       "claims": [

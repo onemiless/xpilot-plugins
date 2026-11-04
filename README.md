@@ -31,7 +31,9 @@ tools/build_index.py     builds dist/ and index.json; --check verifies they are 
    that reproduces them (see Native plugins). CAN senders declare `rules` (`template_clone.v1`) and
    `requires: {"rule_abi": 1}`; `can.tx` claims must equal the rules' TX address/bus pairs. The host validates
    and compiles these rules for the Panda runtime engine. Legacy `safety` manifests are rejected;
-   there is no translation layer. Store plugins are pure plugin/API extensions: all rule data
+   there is no translation layer. Sensor frames a device needs while disengaged (e.g. ARS408 speed/yaw)
+   add `"sensor_input": true`: the RX frame then only proves presence, and fields/constants, TTL, interval and
+   budget still apply (system XPILOT.md section 6). Store plugins are pure plugin/API extensions: all rule data
    stays in the plugin manifest; no plugin-specific C header, registry or build hook lives in the system.
 5. Run `python3 tools/build_index.py` and commit `dist/` and `index.json` with the source.
 6. Describe in the PR what the plugin changes on the road, which claims it takes, and how you tested it.

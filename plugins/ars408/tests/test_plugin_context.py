@@ -1,13 +1,13 @@
 """API wiring failures: no declared subscriptions, cold/stale samples emitting
 motion, invalidation retaining an old yaw, wrong mount sign, or excessive TX rate.
-Uses real capnp readers, PoseCalibrator, host CardContext and radar DBC. No sockets.
+Uses real capnp readers, PoseCalibrator and radar DBC with an isolated SubMaster.
 """
 from types import SimpleNamespace
+from unittest.mock import patch
 
 import pytest
 from opendbc.car import structs
 from openpilot.cereal import log
-from openpilot.tesla.card_context import CardContext, METADATA
 
 from ..plugin import ARS408
 from .test_transmitter import decode
@@ -17,7 +17,6 @@ NOW = 3_000_000_000
 
 def fixture(inverted=True):
   params = SimpleNamespace(get_bool=lambda key: inverted if key == 'ExtARS408Inverted' else False)
-  plugin = ARS408(SimpleNamespace(brand='tesla'), params)
   motion = log.DeviceMotion.new_message()
   motion.inputsOK = motion.sensorsOK = motion.posenetOK = True
   motion.timestamp = NOW
@@ -26,10 +25,13 @@ def fixture(inverted=True):
   calibration.rpyCalib = [0., 0., 0.]
   calibration.calStatus = 'calibrated'
   class Snapshot(dict):
-    pass
+    def update(self, timeout):
+      assert timeout == 0
   sm = Snapshot(deviceMotion=motion.as_reader(), extrinsicsCalibration=calibration.as_reader())
-  for key in METADATA:
+  for key in ('seen', 'valid', 'logMonoTime'):
     setattr(sm, key, dict.fromkeys(sm, NOW if key == 'logMonoTime' else True))
+  with patch('openpilot.cereal.messaging.SubMaster', return_value=sm):
+    plugin = ARS408(SimpleNamespace(brand='tesla'), params)
   cs = structs.CarState()
   cs.canValid = True
   cs.vEgoRaw = 10.
@@ -40,9 +42,9 @@ def fixture(inverted=True):
 @pytest.mark.parametrize('inverted,sign', [(True, 1), (False, -1)])
 def test_host_snapshot_reaches_calibrated_encoder_and_declared_sends(inverted, sign):
   plugin, sm, cs = fixture(inverted)
-  assert set(plugin.SERVICES) == set(sm)
+  assert plugin._motion_sm is sm
   assert plugin.motion_transmitter.update(0, cs, NOW) == []
-  plugin.card_context(CardContext(sm, plugin.SERVICES), NOW)
+  plugin._update_motion(NOW)
   frames = plugin.motion_transmitter.update(0, cs, NOW)
   assert len(frames) == 2
   assert decode(frames[0], 'SpeedInformation')['RadarDevice_Speed'] == pytest.approx(10.)
@@ -54,7 +56,7 @@ def test_host_snapshot_reaches_calibrated_encoder_and_declared_sends(inverted, s
 @pytest.mark.parametrize('failure', ['invalid', 'unseen', 'stale', 'uncalibrated'])
 def test_api_invalidates_previous_sample(failure):
   plugin, sm, cs = fixture()
-  plugin.card_context(CardContext(sm, plugin.SERVICES), NOW)
+  plugin._update_motion(NOW)
   assert plugin.motion_transmitter.yaw_rate_valid(NOW)
   if failure == 'invalid':
     sm.valid['deviceMotion'] = False
@@ -67,14 +69,14 @@ def test_api_invalidates_previous_sample(failure):
     calibration.rpyCalib = [0., 0., 0.]
     calibration.calStatus = 'uncalibrated'
     sm['extrinsicsCalibration'] = calibration.as_reader()
-  plugin.card_context(CardContext(sm, plugin.SERVICES), NOW + 1)
+  plugin._update_motion(NOW + 1)
   assert plugin.motion_transmitter.update(5, cs, NOW + 1) == []
   assert plugin.control_sends(cs, None, NOW + 1) == []
 
 
 def test_send_scheduler_and_expired_motion():
   plugin, sm, cs = fixture()
-  plugin.card_context(CardContext(sm, plugin.SERVICES), NOW)
+  plugin._update_motion(NOW)
   for delta, count in [(0, 2), (1, 0), (49_999_999, 0), (50_000_000, 2),
                        (50_000_001, 0), (100_000_000, 2)]:
     assert len(plugin.control_sends(cs, None, NOW + delta)) == count
@@ -86,15 +88,15 @@ def test_host_manifest_and_real_panda_accept_only_declared_frames():
   from pathlib import Path
   from openpilot.tesla import panda_rules
   from opendbc.safety.tests.xpilot_rules_helpers import configure, harness, packet
-  from opendbc.safety.tests.test_xpilot_sensor_motion import motion_rule
 
   manifest = json.loads((Path(__file__).parents[1] / 'plugin.json').read_text())
   assert set(manifest['claims']) == {'source:radar', 'can.tx:0x300:1', 'can.tx:0x301:1'}
-  assert manifest['requires']['rule_types'] == ['sensor_motion.v1']
+  assert manifest['requires'] == {'hooks': ['radar_interface', 'control_sends'], 'rule_abi': 1}
   rules = tuple(panda_rules.encode_rule(r) for r in manifest['rules'])
-  assert rules == (motion_rule(0x300), motion_rule(0x301))
+  assert all(rule[43] == 1 for rule in rules)  # sensor_input flag
+  assert [r['tx_address'] for r in manifest['rules']] == [0x300, 0x301]
   plugin, sm, cs = fixture()
-  plugin.card_context(CardContext(sm, plugin.SERVICES), NOW)
+  plugin._update_motion(NOW)
   safety = harness()
   configure(safety, rules)
   safety.set_controls_allowed(False)

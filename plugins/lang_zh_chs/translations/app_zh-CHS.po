@@ -1749,6 +1749,10 @@ msgstr "已移除 {}：重启后生效"
 msgid "required role {}"
 msgstr "需要角色 {}"
 
+#: openpilot/tesla/ui/offroad.py:174
+msgid "turn on first: {}"
+msgstr "请先打开：{}"
+
 #: openpilot/tesla/ui/pages/plugins.py:84
 msgid "store (removable)"
 msgstr "商店（可移除）"

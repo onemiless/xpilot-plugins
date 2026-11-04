@@ -3,6 +3,7 @@ import math
 import time
 
 from opendbc.car import structs
+from openpilot.cereal import messaging
 from openpilot.selfdrive.locationd.helpers import PoseCalibrator
 from .constants import MOTION_MAX_AGE_NS
 from .motion import radar_yaw_rate_context
@@ -10,9 +11,10 @@ from .transmitter import MAX_ABS_YAW_RATE_DEG_S
 
 
 class MotionAwareRadar:
-  def __init__(self, radar, *, clock=time.monotonic_ns):
+  def __init__(self, radar, *, clock=time.monotonic_ns, sm=None):
     self._radar = radar
     self._clock = clock
+    self._sm = sm if sm is not None else messaging.SubMaster(['deviceMotion', 'extrinsicsCalibration'])
     self._calibrator = PoseCalibrator()
     self._cache = {}
     self._sample = (None, 0)
@@ -21,13 +23,12 @@ class MotionAwareRadar:
   def __getattr__(self, name):
     return getattr(self._radar, name)
 
-  def radar_context(self, context, now_ns):
-    self._sample = (None, 0)
-    self._sample = radar_yaw_rate_context(context, now_ns, self._calibrator, self._cache)
-
   def update(self, can_packets):
     result = self._radar.update(can_packets)
     now = self._clock()
+    self._sample = (None, 0)
+    self._sm.update(0)
+    self._sample = radar_yaw_rate_context(self._sm, now, self._calibrator, self._cache)
     yaw, timestamp = self._sample
     healthy = (yaw is not None and math.isfinite(yaw) and
                abs(math.degrees(yaw)) <= MAX_ABS_YAW_RATE_DEG_S and timestamp > 0 and

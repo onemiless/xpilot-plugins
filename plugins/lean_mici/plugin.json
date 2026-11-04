@@ -1,7 +1,7 @@
 {
   "id": "lean_mici",
   "name": "lean mici phone inference",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "api": 1,
   "use": "both",
   "category": "perception_model",

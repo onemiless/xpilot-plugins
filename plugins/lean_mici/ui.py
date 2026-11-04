@@ -11,6 +11,10 @@ VALUE, VALUE_TOP = 96, 36  # tesla.ui.tile shared type scale (small tile px)
 
 class NavigationTile(Tile):
   SPEC = TileSpec("lean_navigation", "Navigation", sizes=("small", "medium", "wide"), show="always", hz=2, order=61)
+  DOCK = "view"  # onroad beside the drive view until dragged into the grid (xpilot Tile.DOCK; older hosts ignore it)
+
+  def docked(self, state):
+    return len(state) == 3  # a maneuver, not "-" or a status line
 
   def __init__(self):
     self.msgs = plugins.PluginMsgs()

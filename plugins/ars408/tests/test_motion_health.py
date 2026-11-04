@@ -2,7 +2,6 @@
 sensor faults, and silence instead of an unavailable report when no cycle arrives.
 """
 from opendbc.car import structs
-from openpilot.tesla.card_context import CardContext
 from ..motion_health import MotionAwareRadar
 from .test_plugin_context import fixture, NOW
 
@@ -23,9 +22,10 @@ def test_missing_lost_and_recovered_motion_marks_receiver_unavailable():
   _, sm, _ = fixture()
   clock = [NOW]
   source = Radar()
-  radar = MotionAwareRadar(source, clock=lambda: clock[0])
+  radar = MotionAwareRadar(source, clock=lambda: clock[0], sm=sm)
+  sm.seen['deviceMotion'] = False
   assert radar.update([]).errors.radarUnavailableTemporary
-  radar.radar_context(CardContext(sm, tuple(sm)), NOW)
+  sm.seen['deviceMotion'] = True
   assert not radar.update([]).errors.radarUnavailableTemporary
   source.fault = True
   assert radar.update([]).errors.radarFault
@@ -33,10 +33,8 @@ def test_missing_lost_and_recovered_motion_marks_receiver_unavailable():
   assert radar.update([]).errors.radarUnavailableTemporary
   clock[0] = NOW
   sm.valid['deviceMotion'] = False
-  radar.radar_context(CardContext(sm, tuple(sm)), NOW)
   assert radar.update([]).errors.radarUnavailableTemporary
   sm.valid['deviceMotion'] = True
-  radar.radar_context(CardContext(sm, tuple(sm)), NOW)
   assert not radar.update([]).errors.radarUnavailableTemporary
 
 
@@ -44,7 +42,9 @@ def test_no_cycle_reports_unavailable_at_bounded_rate():
   source = Radar()
   source.empty = True
   clock = [NOW]
-  radar = MotionAwareRadar(source, clock=lambda: clock[0])
+  _, sm, _ = fixture()
+  sm.valid['deviceMotion'] = False
+  radar = MotionAwareRadar(source, clock=lambda: clock[0], sm=sm)
   assert radar.update([]).errors.radarUnavailableTemporary
   clock[0] += 1
   assert radar.update([]) is None

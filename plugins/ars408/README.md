@@ -19,24 +19,26 @@ does not modify factory CP/CP_SP flags or the original fallback receiver.
 
 The receiver now supplies calibrated motion through the host control_sends hook
 at 20 Hz: bus 1, sensor ID 0, two-byte speed 0x300 and yaw 0x301. It declares both
-can.tx claims and requires card_context, radar_context, control_sends, rule ABI 1
-and sensor_motion.v1 support. Install the compatible host and Panda firmware
-before enabling it; older hosts reject the requirements and older firmware
-rejects the type-2 rule upload. A manifest claim alone never permits CAN TX.
+can.tx claims and requires radar_interface, control_sends, rule ABI 1 and
+template_clone.v1 sensor_input support. Install compatible host and Panda firmware
+before enabling it; older hosts or firmware reject the rule. A manifest claim alone
+never permits CAN TX.
 
-The closed firmware profile requires a fresh real 0x60A object-status frame,
+The sensor_input firmware rule requires a fresh real 0x60A object-status frame,
 checks the complete payload, and enforces bus, DLC, standard ID, speed/yaw bounds,
-rate, relay and safety-mode gates. It allows sensor motion while driving control
-is disengaged, but does not authorize steering, braking, radar configuration or
-filter writes. See the [sensor motion contract](https://github.com/juyun86/xpilot/blob/xpilot/docs/design/sensor-motion-rule.md).
+rate, relay and safety-mode gates. The per-byte Panda ranges are wider than the
+encoder limits: up to 87 m/s and roughly -101.6 to +102.4 degrees/s, while the
+encoder restricts speed to 85 m/s and yaw to +/-100 degrees/s. It allows sensor
+motion while driving control is disengaged, but does not authorize steering,
+braking, radar configuration or filter writes. See the [Panda runtime rule contract](https://github.com/onemiless/xpilot/blob/xpilot/docs/design/xpilot-panda-rules.md).
 
 `motion.py` preserves calibrated deviceMotion extraction: 150 ms motion freshness,
 2 s calibration freshness, sensor health, finite values, calibrated axes and
-cache invalidation. The card_context hook invalidates the old sample before each
-update. Invalid CAN speed or missing/stale calibrated motion stops both sends;
-zero yaw and Tesla CarState.yawRate are not substitutes. The receiver separately
-consumes declared radar_context and reports radarUnavailableTemporary when its
-motion input is unavailable, with bounded empty error updates. Hook exceptions
+cache invalidation. The plugin owns its motion subscriptions and invalidates the
+old sample before each update. Invalid CAN speed or missing/stale calibrated motion stops both sends;
+zero yaw and Tesla CarState.yawRate are not substitutes. The receiver independently subscribes to motion and calibration and reports
+radarUnavailableTemporary when its motion input is unavailable, with bounded empty
+error updates. Hook exceptions
 latch the provider off through the host's original-receiver fallback.
 
 Configuration/query/filter encoders in transmitter.py remain inactive. This

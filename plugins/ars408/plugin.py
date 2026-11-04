@@ -3,28 +3,30 @@ from openpilot.tesla.plugin import Plugin
 
 
 class ARS408(Plugin):
-  SERVICES = ('deviceMotion', 'extrinsicsCalibration')
-
   def __init__(self, CP, params):
     super().__init__(CP, params)
+    from openpilot.cereal import messaging
     from openpilot.selfdrive.locationd.helpers import PoseCalibrator
     from .transmitter import ARS408Transmitter
+    self._motion_sm = messaging.SubMaster(['deviceMotion', 'extrinsicsCalibration'])
     self._calibrator = PoseCalibrator()
     self._motion_cache = {}
     self._next_motion_ns = 0
     self.motion_transmitter = ARS408Transmitter(
       None, enabled=True, mount_inverted=params.get_bool('ExtARS408Inverted'))
 
-  def card_context(self, context, now_ns):
+  def _update_motion(self, now_ns):
     from .motion import radar_yaw_rate_context
-    # Clear first: a malformed context must never preserve an older good sample.
+    # Clear first: invalid or stale data must never preserve an older good sample.
     self.motion_transmitter.update_yaw_rate(None, 0)
+    self._motion_sm.update(0)
     self.motion_transmitter.update_yaw_rate(
-      *radar_yaw_rate_context(context, now_ns, self._calibrator, self._motion_cache))
+      *radar_yaw_rate_context(self._motion_sm, now_ns, self._calibrator, self._motion_cache))
 
   def control_sends(self, CS, CC, now_ns):
     if now_ns < self._next_motion_ns:
       return []
+    self._update_motion(now_ns)
     frames = self.motion_transmitter.update(0, CS, now_ns)
     if frames:
       self._next_motion_ns = now_ns + 50_000_000

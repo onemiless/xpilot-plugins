@@ -288,7 +288,8 @@ def test_default_catalog_e13():
   spec.loader.exec_module(builder)
   files = builder.build()
   entries = json.loads(files[root / "index.json"])["plugins"]
-  expected = {"speed_card", "lead_card", "speed_limit_card", "car_tile", "map_tile", "clock_tile", "ip_tile", "blindspot_edges"}
+  expected = {"speed_card", "lead_card", "speed_limit_card", "car_tile", "map_tile", "clock_tile", "ip_tile", "blindspot_edges",
+              "accel_boost"}  # owner 2026-11-04: on by default, as sunnypilot
   assert {e["id"] for e in entries if e.get("default") is True} == expected
   for entry in entries:
     source = json.loads((root / "plugins" / entry["id"] / "plugin.json").read_text())

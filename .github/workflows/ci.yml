@@ -42,6 +42,8 @@ jobs:
       with:
         name: runtime-rules
         path: /tmp/runtime-rules
+    - name: UI translation state regression
+      run: python3 tools/ui_language_check.py
     - name: Plugin tests
       working-directory: plugins
       run: PYTHONPATH=$X:$X/tinygrad_repo:$X/msgq_repo:$X/opendbc_repo python3 -m pytest -q -p no:cacheprovider .

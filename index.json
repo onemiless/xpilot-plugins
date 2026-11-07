@@ -34,6 +34,24 @@
       ]
     },
     {
+      "id": "ars408",
+      "name": "ARS408 Radar Receiver",
+      "version": "0.2.1",
+      "api": 1,
+      "category": "data_source",
+      "author": "juyun86",
+      "description": "Independent ARS408 targets, tracking and diagnostics with calibrated vehicle motion input at 20 Hz. Requires sensor_input Panda firmware. Sensor configuration writes are not enabled.",
+      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/ars408-0.2.1.tar.gz",
+      "sha256": "fbea674e30b390f68b5fe5fabcc4b7c7eddfa8c6429f6a46ceeac9dc685e10b4",
+      "platform": null,
+      "default": false,
+      "claims": [
+        "source:radar",
+        "can.tx:0x300:1",
+        "can.tx:0x301:1"
+      ]
+    },
+    {
       "id": "auto_speed",
       "name": "Auto Speed Limit",
       "version": "1.1.0",

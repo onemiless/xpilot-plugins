@@ -1,0 +1,242 @@
+{
+  "id": "ars408",
+  "name": "ARS408 Radar Receiver",
+  "version": "0.2.1",
+  "api": 1,
+  "use": "onroad",
+  "category": "data_source",
+  "entry": "plugin:ARS408",
+  "author": "juyun86",
+  "description": "Independent ARS408 targets, tracking and diagnostics with calibrated vehicle motion input at 20 Hz. Requires sensor_input Panda firmware. Sensor configuration writes are not enabled.",
+  "priority": 100,
+  "enable_param": "ExtARS408Enabled",
+  "claims": [
+    "source:radar",
+    "can.tx:0x300:1",
+    "can.tx:0x301:1"
+  ],
+  "requires": {
+    "hooks": [
+      "radar_interface",
+      "control_sends"
+    ],
+    "rule_abi": 1
+  },
+  "rules": [
+    {
+      "type": "template_clone.v1",
+      "sensor_input": true,
+      "rx_address": 1546,
+      "tx_bus": 1,
+      "rx_bus": 1,
+      "tx_length": 2,
+      "rx_length": 4,
+      "template_ttl_us": 200000,
+      "min_interval_us": 40000,
+      "session": 2,
+      "max_count": 25,
+      "idle_reset_us": 0,
+      "window_us": 1000000,
+      "counter": {
+        "kind": 0,
+        "bit_offset": 0,
+        "width": 0
+      },
+      "tx_checksum": {
+        "kind": 0,
+        "checksum_byte": 0
+      },
+      "rx_checksum": {
+        "kind": 0,
+        "checksum_byte": 0
+      },
+      "predicate_mask": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "predicate_value": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "copy_mask": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "constant_value": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "legal_tuples": [],
+      "tx_address": 768,
+      "constant_mask": [
+        32,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "fields": [
+        {
+          "bit_offset": 0,
+          "width": 5,
+          "min": 0,
+          "max": 16,
+          "exempt_values": []
+        },
+        {
+          "bit_offset": 6,
+          "width": 2,
+          "min": 0,
+          "max": 2,
+          "exempt_values": []
+        },
+        {
+          "bit_offset": 8,
+          "width": 8,
+          "min": 0,
+          "max": 255,
+          "exempt_values": []
+        }
+      ]
+    },
+    {
+      "type": "template_clone.v1",
+      "sensor_input": true,
+      "rx_address": 1546,
+      "tx_bus": 1,
+      "rx_bus": 1,
+      "tx_length": 2,
+      "rx_length": 4,
+      "template_ttl_us": 200000,
+      "min_interval_us": 40000,
+      "session": 2,
+      "max_count": 25,
+      "idle_reset_us": 0,
+      "window_us": 1000000,
+      "counter": {
+        "kind": 0,
+        "bit_offset": 0,
+        "width": 0
+      },
+      "tx_checksum": {
+        "kind": 0,
+        "checksum_byte": 0
+      },
+      "rx_checksum": {
+        "kind": 0,
+        "checksum_byte": 0
+      },
+      "predicate_mask": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "predicate_value": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "copy_mask": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "constant_value": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "legal_tuples": [],
+      "tx_address": 769,
+      "constant_mask": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "fields": [
+        {
+          "bit_offset": 0,
+          "width": 8,
+          "min": 88,
+          "max": 167,
+          "exempt_values": []
+        },
+        {
+          "bit_offset": 8,
+          "width": 8,
+          "min": 0,
+          "max": 255,
+          "exempt_values": []
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "key": "ExtARS408Inverted",
+      "label": "Radar mounted upside down"
+    }
+  ],
+  "params": {
+    "ExtARS408Enabled": {
+      "type": "BOOL",
+      "default": "0"
+    },
+    "ExtARS408Inverted": {
+      "type": "BOOL",
+      "default": "1"
+    }
+  }
+}

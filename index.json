@@ -177,7 +177,7 @@
       "author": "xpilot",
       "description": "BGM1 v4 Walnut V3 phone inference with physical sanity checks and local fallback. Uses the system engaged bounded-wait contract.",
       "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/lean_mici-0.8.5.tar.gz",
-      "sha256": "18e22999a22cf389ca7512b46bd68f0466a114f10bc19e64f5904c510579343f",
+      "sha256": "4476f4a1338bb90d7728b9bc0bf21dd3b85216d6207d986c12fee9d76eb9d1c3",
       "platform": {
         "machine": "aarch64",
         "python": "cpython-312"

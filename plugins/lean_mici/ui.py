@@ -4,13 +4,13 @@ import pyray as rl
 from openpilot.tesla import plugins
 from openpilot.system.ui.lib.application import FontWeight
 from openpilot.tesla.ui.tile import PAD, Tile, fit, lines_in, text
-from openpilot.tesla.ui.tiles import TileSpec, scale
+from openpilot.tesla.ui.tiles import SIZES, TileSpec, scale
 
 VALUE, VALUE_TOP = 96, 36  # tesla.ui.tile shared type scale (small tile px)
 
 
 class NavigationTile(Tile):
-  SPEC = TileSpec("lean_navigation", "Navigation", sizes=("small", "medium", "wide"), show="always", hz=2, order=61)
+  SPEC = TileSpec("lean_navigation", "Navigation", sizes=tuple(s for s in ("small", "tall", "medium", "wide") if s in SIZES), show="always", hz=2, order=61)
   DOCK = "view"  # onroad beside the drive view until dragged into the grid (xpilot Tile.DOCK; older hosts ignore it)
 
   def docked(self, state):

@@ -6,6 +6,7 @@ The worker runs at SCHED_FIFO 50 on cores 2/6 (bigmodeld placement). Encoder bit
 `ExtLeanMiciBitrate` (default 2000000, read each second). `lean_mici.link` logs once per second: replies, late (>60 ms
 after EOF), dropped, bitrate and p50/p95 of capture+encode, EOF->send, send->reply and EOF->reply. Needs the xpilot
 system with the dev-sp-npu selection (2 s liveness wait, 0.5 s cross-fade, adaptive frame delay).
+The navigation tile also offers the `tall` size (1x3 cells, as high as the onroad drive view) on xpilot that has it.
 
 0.8.4 (2026-11-08): the worker stays off core 7, where modeld runs at SCHED_FIFO; sharing it delayed every frame by
 the local model run. On an Android hotspot whose NSD record does not reach the C3, the worker connects to the default

@@ -11,7 +11,7 @@ import time
 from openpilot.common.swaglog import cloudlog
 from openpilot.tesla.plugin_params import ParamsView
 
-from .network import Beacon, discover, scope
+from .network import Beacon, discover, gateway, scope
 from .wire import frame, hello, reply, receive, to_mailbox, receive_reply, vehicle, nav_ext
 
 META = struct.Struct('<4sIQIIQQ30f')
@@ -55,6 +55,9 @@ def main(path, parent, navigation=None):
     libc = ctypes.CDLL(None, use_errno=True)
     if libc.prctl(1, signal.SIGKILL, 0, 0, 0):
       raise OSError(ctypes.get_errno(), 'PR_SET_PDEATHSIG')
+    # The parent becomes modeld, which pins itself to core 7 at SCHED_FIFO; sharing that core starves this
+    # worker for the whole local model run (~10 ms per frame) before it even sees the frame metadata.
+    os.sched_setaffinity(0, os.sched_getaffinity(0) - {7} or {0})
   if os.getppid() != parent:
     return
   from .camera import Camera
@@ -86,6 +89,9 @@ def main(path, parent, navigation=None):
                     print('lean_mici: ignoring unpinned advertiser', peer[0], flush=True)
                     ignored.add(peer[0])
                 peers = [peer for peer in peers if peer[0] == pinned['name']]
+              if not peers and sys.platform == 'linux':
+                address = gateway()
+                peers = [('hotspot gateway', address, 7070)] if address else []
               if len(peers) != 1:
                 time.sleep(1)
                 continue
@@ -93,7 +99,7 @@ def main(path, parent, navigation=None):
                 conn.settimeout(.2)
                 conn.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
                 hello(receive(conn, 48))
-                if not pinned:
+                if not pinned and peers[0][0] != 'hotspot gateway':
                   # HELLO instance_id changes on every server start; pin the NSD name, not that per-start identifier.
                   pinned = {'name': peers[0][0]}
                   params.put('ExtLeanMiciPeer', pinned)

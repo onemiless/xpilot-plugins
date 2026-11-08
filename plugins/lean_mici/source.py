@@ -21,7 +21,7 @@ class PhoneSource(ModelSource):
     if self.sent and self.wake is not None:
       try:
         os.write(self.wake, b'\0')
-      except BlockingIOError:
+      except OSError:
         pass
 
   def pick(self, local):

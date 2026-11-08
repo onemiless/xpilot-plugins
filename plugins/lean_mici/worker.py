@@ -30,10 +30,8 @@ def now():
 
 
 def publish(fd, session, epoch, arrival, paired, data):
-  try:
-    fcntl.lockf(fd, fcntl.LOCK_EX | fcntl.LOCK_NB, SIZE - OFFSET, OFFSET)
-  except BlockingIOError:
-    return
+  # The modeld reader holds this lock only while copying and clearing the slot.
+  fcntl.lockf(fd, fcntl.LOCK_EX, SIZE - OFFSET, OFFSET)
   try:
     os.pwrite(fd, bytes(ENVELOPE.size), OFFSET)
     os.pwrite(fd, data, OFFSET + ENVELOPE.size)

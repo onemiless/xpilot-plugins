@@ -1,4 +1,6 @@
-# lean_mici 0.8.5
+# lean_mici 0.8.6
+
+0.8.6: preserve phone replies when modeld briefly holds the mailbox read lock.
 
 0.8.5 (2026-11-08): uplink matches dev-sp-npu bigmodeld. Replies are read on their own thread, so the next frame is sent
 without waiting (one frame on the phone plus one queued; a third is dropped and the sequence restarts with dual IDR).

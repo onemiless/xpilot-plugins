@@ -69,7 +69,7 @@ warm-up and exact frame/epoch checks come directly from ModelSource.
 
 ## Action, lifecycle and peer fixes
 
-Bad discovery, wire, calibration, struct and codec input drops the connection;
+Bad discovery, wire, struct and codec input drops the connection; frames before calibration are skipped;
 new Camera/encoders and dual IDR are required on reconnect. Linux child startup
 sets PR_SET_PDEATHSIG(SIGKILL), with the parent's PID supplied before spawn and
 checked for the startup race. Mac validation also exits when its parent changes.

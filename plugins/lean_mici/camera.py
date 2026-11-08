@@ -36,7 +36,9 @@ class Camera:
     from .worker import META
     matrices = np.array(meta[7:25], dtype=np.float32).reshape(2, 3, 3)
     if not np.isfinite(matrices).all() or (np.abs(np.linalg.det(matrices)) < 1e-9).any():
-      raise ValueError('camera calibration not ready')
+      # modeld sends zero transforms until extrinsicsCalibration arrives. Raising here closed encoders that never
+      # got a frame; V4LEncoder::encoder_close then waits forever for an EOS that Venus does not send.
+      return None
     result = self.lib.lean_capture(self.handle, META.pack(*meta), reset, *self.buffers, self.sizes)
     if result < 0:
       raise RuntimeError(self.lib.lean_error().decode())

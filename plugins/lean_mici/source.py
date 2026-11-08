@@ -1,5 +1,6 @@
 """S1 selection with a recoverable per-frame control envelope."""
 from collections import Counter
+import os
 from threading import Lock
 
 from openpilot.tesla.model_source import ModelSource
@@ -7,11 +8,21 @@ from .profile import decode, reject_reason
 
 
 class PhoneSource(ModelSource):
+  wake = None
+
   def __init__(self, directory):
     self.envelope_reason = ''
     self.counts = Counter()
     self.counts_lock = Lock()
     super().__init__(directory, decode, self._admit)
+
+  def send_frame(self, *args):
+    super().send_frame(*args)
+    if self.sent and self.wake is not None:
+      try:
+        os.write(self.wake, b'\0')
+      except BlockingIOError:
+        pass
 
   def pick(self, local):
     result = super().pick(local)

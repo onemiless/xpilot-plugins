@@ -1,4 +1,6 @@
-# lean_mici 0.8.4
+# lean_mici 0.8.5
+
+0.8.5 (2026-11-08): worker wakes on a pipe when modeld writes frame metadata instead of a 1 ms poll; measured poll delay 1.24 ms p50.
 
 0.8.4 (2026-11-08): the worker stays off core 7, where modeld runs at SCHED_FIFO; sharing it delayed every frame by
 the local model run. On an Android hotspot whose NSD record does not reach the C3, the worker connects to the default

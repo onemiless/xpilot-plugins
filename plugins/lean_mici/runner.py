@@ -41,7 +41,7 @@ def status(directory, source, stop, navigation):
     state = ('Phone active' if source.selected else 'Phone warming' if source.reason in ('warmup','warmup_flags','need_dual_idr') else
              'Local fallback' if source.epoch or source.locked else 'Local ready')
     path = directory / 'status.tmp'
-    path.write_text(json.dumps({'state': state, 'version': '0.8.4', 'updated_at': time.time()}))
+    path.write_text(json.dumps({'state': state, 'version': '0.8.5', 'updated_at': time.time()}))
     os.replace(path, directory / 'status.json')
     stop.wait(.5)
 
@@ -51,7 +51,10 @@ def main():
   directory = data_dir()
   source = PhoneSource(directory)
   navigation = multiprocessing.Queue(maxsize=2)
-  process = multiprocessing.Process(target=child, args=(source.path, os.getpid(), navigation), daemon=True)
+  wake_r, wake_w = os.pipe()
+  os.set_blocking(wake_w, False)
+  source.wake = wake_w
+  process = multiprocessing.Process(target=child, args=(source.path, os.getpid(), navigation, wake_r), daemon=True)
   stop = threading.Event()
   reporter = threading.Thread(target=status, args=(directory, source, stop, navigation), daemon=True)
   def terminate(signum, frame):
@@ -59,6 +62,7 @@ def main():
   old_handler = signal.signal(signal.SIGTERM, terminate)
   try:
     process.start()
+    os.close(wake_r)
     reporter.start()
     run_with_model_source(source)
   finally:
@@ -71,6 +75,8 @@ def main():
         process.kill()
         process.join()
     source.close()
+    source.wake = None
+    os.close(wake_w)
     (directory / 'status.json').unlink(missing_ok=True)
     signal.signal(signal.SIGTERM, old_handler)
 

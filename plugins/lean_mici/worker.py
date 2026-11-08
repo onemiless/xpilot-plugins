@@ -3,6 +3,7 @@ import ctypes
 import fcntl
 import os
 import resource
+import select
 import signal
 import socket
 import struct
@@ -50,7 +51,15 @@ def metadata(fd):
   return data if data[:2] == (b'XMS1', 1) else None
 
 
-def main(path, parent, navigation=None):
+def idle(wake):
+  if wake is None:
+    time.sleep(.001)
+    return
+  if select.select([wake], [], [], .05)[0]:
+    os.read(wake, 4096)
+
+
+def main(path, parent, navigation=None, wake=None):
   if sys.platform == 'linux':
     libc = ctypes.CDLL(None, use_errno=True)
     if libc.prctl(1, signal.SIGKILL, 0, 0, 0):
@@ -113,11 +122,11 @@ def main(path, parent, navigation=None):
                 while os.getppid() == parent:
                   # These unlocked words are hints only; the full metadata is still validated under its lock.
                   if os.pread(fd,4,0)!=b'XMS1' or last is not None and int.from_bytes(os.pread(fd,4,16),'little')==last:
-                    time.sleep(.001)
+                    idle(wake)
                     continue
                   meta = metadata(fd)
                   if meta is None or meta[3] == last:
-                    time.sleep(.001)
+                    idle(wake)
                     continue
                   if last is not None and meta[3] != last + 1:
                     reset = True

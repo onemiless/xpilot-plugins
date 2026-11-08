@@ -1,13 +1,13 @@
 {
   "id": "lean_mici",
   "name": "lean mici phone inference",
-  "version": "0.8.4",
+  "version": "0.8.5",
   "api": 1,
   "use": "both",
   "category": "perception_model",
   "entry": "plugin:LeanMici",
   "author": "xpilot",
-  "description": "BGM1 v4 Walnut V3 phone inference with physical sanity checks and local fallback. Uses the system engaged bounded-wait contract.",
+  "description": "BGM1 v4 Walnut V3 phone inference with physical sanity checks and local fallback. Uses the system phone selection (dev-sp-npu liveness wait and cross-fade).",
   "priority": 100,
   "enable_param": "ExtLeanMici",
   "claims": [
@@ -17,7 +17,11 @@
     "long.target"
   ],
   "rules": [],
-  "requires": {"msg": ["lean_mici.navigation"]},
+  "requires": {
+    "msg": [
+      "lean_mici.navigation"
+    ]
+  },
   "params": {
     "ExtLeanMici": {
       "type": "BOOL",
@@ -25,6 +29,11 @@
     },
     "ExtLeanMiciPeer": {
       "type": "JSON"
+    },
+    "ExtLeanMiciBitrate": {
+      "type": "INT",
+      "default": "2000000",
+      "note": "per stream, bits/s"
     }
   },
   "platform": {

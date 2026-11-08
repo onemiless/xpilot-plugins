@@ -1,4 +1,8 @@
-# lean_mici 0.8.2
+# lean_mici 0.8.4
+
+0.8.4 (2026-11-08): the worker stays off core 7, where modeld runs at SCHED_FIFO; sharing it delayed every frame by
+the local model run. On an Android hotspot whose NSD record does not reach the C3, the worker connects to the default
+gateway on port 7070. `build_native.py` links zstd (needed by libcommon).
 
 0.8.2 (2026-10-28): the navigation tile has a tall layout (big arrow, distance and instruction lines) that the big
 screen uses in the column beside the drive view. A dropped phone link is logged (`lean_mici.link_lost` /

@@ -68,6 +68,17 @@ def discover(interface='wlan0'):
   return sorted(peers)
 
 
+def gateway(interface='wlan0'):
+  """IPv4 default gateway on interface. On an Android hotspot the phone is the gateway and its own NSD
+  record often does not reach clients, so the worker falls back to it when discovery finds nothing."""
+  with open('/proc/net/route') as f:
+    for line in f.read().splitlines()[1:]:
+      fields = line.split()
+      if fields[0] == interface and fields[1] == '00000000' and int(fields[3], 16) & 2:
+        return socket.inet_ntoa(struct.pack('<I', int(fields[2], 16)))
+  return None
+
+
 class Beacon:
   def __init__(self, address):
     self.address, self.requests = address, 0

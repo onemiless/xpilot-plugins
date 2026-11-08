@@ -33,14 +33,14 @@ struct Stream {
   bool released = true;
   std::unique_ptr<V4LEncoder> encoder;
 
-  Stream(VisionStreamType type) : camera("camerad", type, true) {
+  Stream(VisionStreamType type, int bitrate) : camera("camerad", type, true) {
     input.allocate(VENUS_BUFFER_SIZE(COLOR_FMT_NV12, 512, 256));
     input.init_yuv(512, 256, VENUS_Y_STRIDE(COLOR_FMT_NV12, 512),
                    VENUS_Y_STRIDE(COLOR_FMT_NV12, 512) * VENUS_Y_SCANLINES(COLOR_FMT_NV12, 256));
     EncoderInfo info{};
     info.publish_name = "lean_mici";
     info.fps = 20;
-    info.get_settings = [](int) { return EncoderSettings{cereal::EncodeIndex::Type::FULL_H_E_V_C, 2'000'000, 20, 0}; };
+    info.get_settings = [bitrate](int) { return EncoderSettings{cereal::EncodeIndex::Type::FULL_H_E_V_C, bitrate, 20, 0}; };
     V4LEncoder::Options options;
     options.max_performance = true;
     options.packet_callback = [this](uint8_t *data, size_t size, int64_t, bool config, bool key) {
@@ -95,18 +95,23 @@ struct Stream {
   }
 };
 struct Camera {
-  Stream road{VISION_STREAM_NARROW_ROAD}, wide{VISION_STREAM_WIDE_ROAD};
+  Stream road, wide;
   int sequence = 0;
+  Camera(int bitrate) : road(VISION_STREAM_NARROW_ROAD, bitrate), wide(VISION_STREAM_WIDE_ROAD, bitrate) {}
 };
 }
 
 extern "C" {
 const char *lean_error() { return error.c_str(); }
-void *lean_open() {
-  try { return new Camera; }
+void *lean_open(int bitrate) {
+  try { return new Camera(bitrate); }
   catch (const std::exception &e) { error = e.what(); return nullptr; }
 }
 void lean_close(Camera *camera) { delete camera; }
+void lean_set_bitrate(Camera *camera, int bitrate) {
+  camera->road.encoder->set_bitrate(bitrate);
+  camera->wide.encoder->set_bitrate(bitrate);
+}
 int lean_capture(Camera *camera, const Meta *meta, bool reset, uint8_t *road, uint8_t *wide, uint32_t *sizes) {
   try {
     VisionIpcBufExtra extra[2];

@@ -12,6 +12,8 @@ def idr(data):
 def library():
   lib = ctypes.CDLL(str(Path(__file__).with_name('libcamera.so')))
   lib.lean_open.restype = ctypes.c_void_p
+  lib.lean_open.argtypes = [ctypes.c_int]
+  lib.lean_set_bitrate.argtypes = [ctypes.c_void_p, ctypes.c_int]
   lib.lean_close.argtypes = [ctypes.c_void_p]
   lib.lean_capture.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_bool, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p]
   lib.lean_error.restype = ctypes.c_char_p
@@ -19,13 +21,16 @@ def library():
 
 
 class Camera:
-  def __init__(self):
+  def __init__(self, bitrate):
     self.lib = library()
-    self.handle = self.lib.lean_open()
+    self.handle = self.lib.lean_open(bitrate)
     if not self.handle:
       raise RuntimeError(self.lib.lean_error().decode())
     self.buffers = [ctypes.create_string_buffer(1024 * 1024) for _ in range(2)]
     self.sizes = (ctypes.c_uint32 * 2)()
+
+  def set_bitrate(self, bitrate):
+    self.lib.lean_set_bitrate(self.handle, bitrate)
 
   def close(self):
     if self.handle:

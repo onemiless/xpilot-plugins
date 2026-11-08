@@ -12,7 +12,7 @@ def child(path,parent,address,root,orphan=False):
  manifest.INSTALL_DIR=Path(root)
  count=0
  class Capture:
-  def __init__(self):
+  def __init__(self,bitrate):
    nonlocal count
    count+=1
    if orphan:self.resource=os.open('/dev/null',os.O_RDONLY)

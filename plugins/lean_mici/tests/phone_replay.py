@@ -159,7 +159,7 @@ try:
   if sent_dual:epoch+=1
   epoch=max(epoch,1)
   source.frame=rows[i]['frameId'];source.eof=rows[i]['EOF'];source.sent=True
-  publish(source.fd,source.session,epoch,rows[i]['arrival'],3,wire.to_mailbox(wire_reply,source.frame))
+  publish(source.fd,source.buffer,source.session,epoch,rows[i]['arrival'],3,wire.to_mailbox(wire_reply,source.frame))
   with patch('openpilot.tesla.model_source.nanos_since_boot',return_value=rows[i]['arrival']):
    _,selected=source.pick(outputs)
   rows[i]['selected_source']='phone' if selected else 'local'

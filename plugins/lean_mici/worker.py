@@ -3,6 +3,7 @@ from collections import deque
 import contextlib
 import ctypes
 import fcntl
+import mmap
 import os
 import resource
 import signal
@@ -29,15 +30,15 @@ def now():
   return time.clock_gettime_ns(getattr(time, 'CLOCK_BOOTTIME', time.CLOCK_MONOTONIC))
 
 
-def publish(fd, session, epoch, arrival, paired, data):
-  # The modeld reader holds this lock only while copying and clearing the slot.
+def publish(fd, mailbox, session, epoch, arrival, paired, data):
+  payload = ENVELOPE.pack(session, epoch, arrival, paired, 0) + data
+  length = struct.pack('<I', len(data))
+  # pwrite updates ext4 inode timestamps and can wait on its journal while holding the reader's lock.
   fcntl.lockf(fd, fcntl.LOCK_EX, SIZE - OFFSET, OFFSET)
   try:
-    os.pwrite(fd, bytes(ENVELOPE.size), OFFSET)
-    os.pwrite(fd, data, OFFSET + ENVELOPE.size)
-    envelope = ENVELOPE.pack(session, epoch, arrival, paired, len(data))
-    os.pwrite(fd, envelope[:-4], OFFSET)
-    os.pwrite(fd, envelope[-4:], OFFSET + ENVELOPE.size - 4)
+    mailbox[OFFSET + ENVELOPE.size - 4:OFFSET + ENVELOPE.size] = b"\0" * 4
+    mailbox[OFFSET:OFFSET + len(payload)] = payload
+    mailbox[OFFSET + ENVELOPE.size - 4:OFFSET + ENVELOPE.size] = length
   finally:
     fcntl.lockf(fd, fcntl.LOCK_UN, SIZE - OFFSET, OFFSET)
 
@@ -73,6 +74,7 @@ def link_stats(stats, dropped, bitrate):
 def replies(conn, pending, cv, fd, navigation, stats, failure):
   """Replies arrive on their own thread, so the next frame goes out without waiting for this one."""
   last_nav = 0
+  mailbox = mmap.mmap(fd, SIZE)
   try:
     while True:
       with cv:
@@ -89,7 +91,7 @@ def replies(conn, pending, cv, fd, navigation, stats, failure):
         raise ValueError('REPLY does not echo sent frame/EOF')
       if reply_flags & 1 and flags != 3:
         raise ValueError('phone sequence reset requires fresh dual IDR')
-      publish(fd, session, epoch, arrival, paired, to_mailbox(data, host_frame))
+      publish(fd, mailbox, session, epoch, arrival, paired, to_mailbox(data, host_frame))
       with cv:
         if pending and pending[0] is sent:  # a reconnect may already have replaced the queue with its stop marker
           pending.popleft()
@@ -109,6 +111,8 @@ def replies(conn, pending, cv, fd, navigation, stats, failure):
       conn.shutdown(socket.SHUT_RDWR)
     except OSError:
       pass
+  finally:
+    mailbox.close()
 
 
 def main(path, parent, navigation=None):

@@ -42,10 +42,10 @@ def archive_worker(path,input_dir,address,output_dir,stop,ack,parent):
    first,second=original_frame(*args);fw.write(len(first+second).to_bytes(4,'little')+first+second);return first,second
   def receive(conn):
    data=original_receive(conn);rw.write(data);return data
-  def publish(fd,session,epoch,arrival,paired,data):
+  def publish(fd,mailbox,session,epoch,arrival,paired,data):
    fid=int.from_bytes(data[8:12],'little');eof=int.from_bytes(data[16:24],'little')
    writer.writerow({'frameId':fid,'arrival':arrival,'latency_ms':(arrival-eof)/1e6,'epoch':epoch})
-   original_publish(fd,session,epoch,arrival,paired,data)
+   original_publish(fd,mailbox,session,epoch,arrival,paired,data)
    ack.value=fid
   try:
    with (patch('plugins.lean_mici.camera.Camera',return_value=ArchiveCamera()),patch.object(worker.resource,'setrlimit'),

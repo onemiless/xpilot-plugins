@@ -49,7 +49,9 @@ def status(directory, source, stop, navigation):
 def main():
   from .worker import main as child
   directory = data_dir()
-  source = PhoneSource(directory)
+  mailbox = Path("/dev/shm/lean_mici")
+  mailbox.mkdir(mode=0o700, exist_ok=True)
+  source = PhoneSource(mailbox)
   navigation = multiprocessing.Queue(maxsize=2)
   process = multiprocessing.Process(target=child, args=(source.path, os.getpid(), navigation), daemon=True)
   stop = threading.Event()

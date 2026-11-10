@@ -183,7 +183,7 @@ def main(path, parent, navigation=None):
                 thread.start()
                 first_eof = None
                 epoch += 1
-                last = None
+                last = host = used = None
                 paired = 0
                 reset = True
                 dropped = 0
@@ -201,34 +201,31 @@ def main(path, parent, navigation=None):
                       if (new := get_bitrate(params)) != bitrate:
                         camera.set_bitrate(new)
                         bitrate = new
-                    # These unlocked words are hints only; the full metadata is still validated under its lock.
-                    if os.pread(fd,4,0)!=b'XMS1' or last is not None and int.from_bytes(os.pread(fd,4,16),'little')==last:
-                      time.sleep(.001)
+                    # Frames come straight from camerad (dev-sp-npu bigmodeld), so a late modeld publish never delays
+                    # the next send. modeld's latest META supplies session, calibration and its inputs, one frame old.
+                    host = metadata(fd) or host
+                    if host is None:
+                      time.sleep(.005)
                       continue
-                    meta = metadata(fd)
-                    if meta is None or meta[3] == last:
-                      time.sleep(.001)
-                      continue
-                    if last is not None and meta[3] != last + 1:
-                      reset = True
-                      epoch += 1
-                      paired = 0
-                    last = meta[3]
-                    with cv:
-                      busy = len(pending) >= IN_FLIGHT
-                    if busy:
-                      dropped += 1
-                      reset = True
-                      epoch += 1
-                      paired = 0
-                      continue
+                    meta = host if host[3] != used else host[:25] + (0.,) * 8 + host[33:]  # send a desire pulse once
+                    used = host[3]
                     started = now()
                     encoded = camera.capture(meta, reset)
                     capture_ms = (now() - started) / 1e6
                     if encoded is None:
                       reset = True
                       continue
-                    flags, road, wide = encoded
+                    flags, road, wide, meta = encoded
+                    with cv:
+                      busy = len(pending) >= IN_FLIGHT
+                    gap = last is not None and meta[3] != last + 1
+                    last = meta[3]
+                    if busy or gap:
+                      dropped += busy
+                      reset = True
+                      epoch += 1
+                      paired = 0
+                      continue
                     if reset and flags != 3:
                       continue
                     if flags == 3:

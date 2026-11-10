@@ -17,6 +17,7 @@ def child(path,parent,address,root,orphan=False):
    count+=1
    if orphan:self.resource=os.open('/dev/null',os.O_RDONLY)
    (Path(root)/'camera-count').write_text(str(count))
+   self.fd,self.last=os.open(path,os.O_RDWR),None
   def close(self):pass
   def capture(self,meta,reset):
    if orphan:
@@ -24,7 +25,9 @@ def child(path,parent,address,root,orphan=False):
    import av
    errors=[ValueError('calibration not ready'),RuntimeError('encoder failed'),struct.error('bad input'),av.error.InvalidDataError(1,'bad HEVC')]
    if count<=len(errors):raise errors[count-1]
-   return 3 if reset else 1,b'road',b'wide'
+   while (m:=worker.metadata(self.fd)) is None or m[3]==self.last:time.sleep(.001)
+   self.last=m[3]
+   return 3 if reset else 1,b'road',b'wide',m
  calls=0
  def discover():
   nonlocal calls

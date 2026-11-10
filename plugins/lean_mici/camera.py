@@ -42,10 +42,11 @@ class Camera:
     matrices = np.array(meta[7:25], dtype=np.float32).reshape(2, 3, 3)
     if not np.isfinite(matrices).all() or (np.abs(np.linalg.det(matrices)) < 1e-9).any():
       raise ValueError('camera calibration not ready')
-    result = self.lib.lean_capture(self.handle, META.pack(*meta), reset, *self.buffers, self.sizes)
+    packed = ctypes.create_string_buffer(META.pack(*meta), META.size)
+    result = self.lib.lean_capture(self.handle, packed, reset, *self.buffers, self.sizes)
     if result < 0:
       raise RuntimeError(self.lib.lean_error().decode())
     if not result:
       return None
     road, wide = (b.raw[:n] for b, n in zip(self.buffers, self.sizes))
-    return int(idr(road)) | int(idr(wide)) << 1, road, wide
+    return int(idr(road)) | int(idr(wide)) << 1, road, wide, META.unpack(packed.raw)

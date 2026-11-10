@@ -45,9 +45,13 @@ def tcp_peer(path, control):
   endpoint = server.getsockname()
   class Capture:
     def close(self): pass
+    last = None
     def capture(self, meta, reset):
+      while (m := worker.metadata(fd)) is None or m[3] == self.last:
+        time.sleep(.001)
+      self.last = m[3]
       payload = bytes.fromhex('000000012601')
-      return 3 if reset else 0, payload, payload
+      return 3 if reset else 0, payload, payload, m
   def run_worker():
     with (patch('plugins.lean_mici.camera.Camera', return_value=Capture()),
           patch.object(worker.resource, 'setrlimit'),

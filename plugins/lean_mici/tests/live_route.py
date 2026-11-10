@@ -23,9 +23,12 @@ def archive_worker(path,input_dir,address,output_dir,stop,ack,parent):
  cache=pickle.loads((Path(output_dir)/'encoded-cache.pkl').read_bytes())
  class ArchiveCamera:
   def close(self):pass
+  last=None;fd=os.open(path,os.O_RDWR)
   def capture(self,meta,reset):
-   if reset and meta[3]!=0:raise RuntimeError('archive reference chain interrupted; requires a new encoded sequence')
-   return cache[meta[3]]
+   while (m:=worker.metadata(self.fd)) is None or m[3]==self.last:time.sleep(.001)
+   self.last=m[3]
+   if reset and m[3]!=0:raise RuntimeError('archive reference chain interrupted; requires a new encoded sequence')
+   return (*cache[m[3]],m)
  original_sleep=time.sleep
  original_meta=worker.metadata;original_frame=worker.frame;original_receive=worker.receive_reply;original_publish=worker.publish
  class EndWorker(Exception):pass

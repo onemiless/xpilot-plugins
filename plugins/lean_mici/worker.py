@@ -210,7 +210,13 @@ def main(path, parent, navigation=None):
                     meta = host if host[3] != used else host[:25] + (0.,) * 8 + host[33:]  # send a desire pulse once
                     used = host[3]
                     started = now()
-                    encoded = camera.capture(meta, reset)
+                    try:
+                      encoded = camera.capture(meta, reset)
+                    except ValueError:
+                      # modeld's first METAs carry no calibration yet. Dropping the link here would close an encoder
+                      # that never got a frame, and V4LEncoder::encoder_close then waits forever for EOS.
+                      time.sleep(.005)
+                      continue
                     capture_ms = (now() - started) / 1e6
                     if encoded is None:
                       reset = True

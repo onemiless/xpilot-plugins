@@ -42,6 +42,7 @@ struct Stream {
   std::condition_variable ready;
   std::vector<uint8_t> header, packet;
   bool released = true;
+  bool used = false;  // set once a frame reaches the encoder
   std::unique_ptr<V4LEncoder> encoder;
 
   Stream(VisionStreamType type, int bitrate) : type(type) {
@@ -72,6 +73,13 @@ struct Stream {
     encoder->encoder_open();
   }
   ~Stream() {
+    if (!used) {
+      // Venus never signals EOS for a session without frames, so encoder_close would wait forever. Feed one frame first.
+      VisionIpcBufExtra extra{};
+      submit(extra, true);
+      std::unique_lock<std::mutex> lock(mutex);
+      ready.wait_for(lock, std::chrono::milliseconds(200), [this]{ return released && !packet.empty(); });
+    }
     encoder->encoder_close();
     encoder.reset();
     input.free();
@@ -83,6 +91,7 @@ struct Stream {
       std::lock_guard<std::mutex> lock(mutex);
       packet.clear();
       released = false;
+      used = true;
     }
     if (reset) encoder->request_keyframe();
     input.sync(VISIONBUF_SYNC_TO_DEVICE);

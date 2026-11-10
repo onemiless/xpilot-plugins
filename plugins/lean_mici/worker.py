@@ -23,7 +23,7 @@ from .wire import frame, hello, reply, receive, to_mailbox, receive_reply, vehic
 META = struct.Struct('<4sIQIIQQ30f')
 ENVELOPE = struct.Struct('<QQQII')
 OFFSET, SIZE = 256, 16384
-IN_FLIGHT = 2  # dev-sp-npu uplink: one frame on the phone plus one queued; a third frame is dropped and the sequence restarts
+IN_FLIGHT = 2  # Chipmunk sender: one on the phone + one queued; busy skips encoding, never drops encoded frames
 
 
 def now():
@@ -183,7 +183,7 @@ def main(path, parent, navigation=None):
                 thread.start()
                 first_eof = None
                 epoch += 1
-                last = host = used = None
+                host = used = None
                 paired = 0
                 reset = True
                 dropped = 0
@@ -203,6 +203,11 @@ def main(path, parent, navigation=None):
                         bitrate = new
                     # Frames come straight from camerad (dev-sp-npu bigmodeld), so a late modeld publish never delays
                     # the next send. modeld's latest META supplies session, calibration and its inputs, one frame old.
+                    with cv:
+                      if len(pending) >= IN_FLIGHT:
+                        dropped += 1
+                        cv.wait_for(lambda: len(pending) < IN_FLIGHT, .05)
+                        continue
                     host = metadata(fd) or host
                     if host is None:
                       time.sleep(.005)
@@ -222,16 +227,6 @@ def main(path, parent, navigation=None):
                       reset = True
                       continue
                     flags, road, wide, meta = encoded
-                    with cv:
-                      busy = len(pending) >= IN_FLIGHT
-                    gap = last is not None and meta[3] != last + 1
-                    last = meta[3]
-                    if busy or gap:
-                      dropped += busy
-                      reset = True
-                      epoch += 1
-                      paired = 0
-                      continue
                     if reset and flags != 3:
                       continue
                     if flags == 3:

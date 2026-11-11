@@ -39,6 +39,8 @@ jobs:
         run: PYTHONPATH=$X:$X/tinygrad_repo:$X/msgq_repo:$X/opendbc_repo python plugins/lean_mici/tests/envelope_e2e.py --output /tmp/x39-envelope
       - name: Worker recovery, parent death and message deadlines
         run: PYTHONPATH=$X:$X/tinygrad_repo:$X/msgq_repo:$X/opendbc_repo python plugins/lean_mici/tests/recovery_e2e.py --output /tmp/x39-recovery
+      - name: Worker supervisor, reconnect and desire edges
+        run: PYTHONPATH=$X:$X/tinygrad_repo:$X/msgq_repo:$X/opendbc_repo python plugins/lean_mici/tests/link_e2e.py --output /tmp/x39-link
       - name: Store, runner, TCP peer, host publication and faults
         run: PYTHONPATH=$X:$X/tinygrad_repo:$X/msgq_repo:$X/opendbc_repo python plugins/lean_mici/tests/e2e.py --system $X --output /tmp/x39-host
       - name: Record source identities

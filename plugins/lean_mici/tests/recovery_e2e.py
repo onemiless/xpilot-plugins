@@ -76,7 +76,7 @@ def main():
    raise AssertionError('slow drip was accepted')
   except TimeoutError:pass
   finally:left.close();right.close();t.join(1)
-  assert time.monotonic()-start<.35
+  assert time.monotonic()-start<(.35 if kind=='hello' else 1.15)  # REPLY deadline 1 s since 0.8.13
   checks.append(kind+'_overall_deadline')
  ctx=multiprocessing.get_context('spawn')
  with tempfile.TemporaryDirectory() as tmp:

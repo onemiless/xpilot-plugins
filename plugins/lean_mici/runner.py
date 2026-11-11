@@ -1,4 +1,5 @@
 import json
+import mmap
 import multiprocessing
 import os
 from pathlib import Path
@@ -46,14 +47,57 @@ def status(directory, source, stop, navigation):
     stop.wait(.5)
 
 
+STALE_NS = 5_000_000_000  # worker heartbeat age that counts as hung (e.g. blocked in V4LEncoder::encoder_close)
+
+
+def supervise(path, parent, navigation, stale_ns=STALE_NS):
+  """Restart the worker after a crash or hang, with 1 s .. 30 s backoff. Forked before modeld loads its model, so
+  forking the worker from here never copies the model's page tables or GPU fds."""
+  from . import worker
+  worker.die_with_parent()
+  fd = os.open(path, os.O_RDWR)
+  shared = mmap.mmap(fd, worker.SIZE)
+  def age():
+    return worker.now() - int.from_bytes(shared[worker.HEARTBEAT:worker.HEARTBEAT + 8], 'little')
+  backoff, me = 1, os.getpid()
+  try:
+    while os.getppid() == parent:
+      shared[worker.HEARTBEAT:worker.HEARTBEAT + 8] = worker.now().to_bytes(8, 'little')
+      started = time.monotonic()
+      pid = os.fork()
+      if pid == 0:
+        code = 0
+        try:
+          worker.main(path, me, navigation)
+        except BaseException:
+          code = 1
+        finally:
+          os._exit(code)
+      while not (done := os.waitpid(pid, os.WNOHANG))[0]:
+        if os.getppid() != parent or age() > stale_ns:
+          os.kill(pid, signal.SIGKILL)
+          done = os.waitpid(pid, 0)
+          break
+        time.sleep(.2)
+      if os.getppid() != parent:
+        break
+      if time.monotonic() - started > 60:
+        backoff = 1
+      cloudlog.warning(f'lean_mici: worker exited (status {done[1]}, heartbeat age {age() / 1e9:.1f} s), restart in {backoff} s')
+      time.sleep(backoff)
+      backoff = min(backoff * 2, 30)
+  finally:
+    shared.close()
+    os.close(fd)
+
+
 def main():
-  from .worker import main as child
   directory = data_dir()
   mailbox = Path("/dev/shm/lean_mici")
   mailbox.mkdir(mode=0o700, exist_ok=True)
   source = PhoneSource(mailbox)
   navigation = multiprocessing.Queue(maxsize=2)
-  process = multiprocessing.Process(target=child, args=(source.path, os.getpid(), navigation), daemon=True)
+  process = multiprocessing.Process(target=supervise, args=(source.path, os.getpid(), navigation), daemon=True)
   stop = threading.Event()
   reporter = threading.Thread(target=status, args=(directory, source, stop, navigation), daemon=True)
   def terminate(signum, frame):

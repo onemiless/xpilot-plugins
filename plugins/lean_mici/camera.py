@@ -15,7 +15,8 @@ def library():
   lib.lean_open.argtypes = [ctypes.c_int]
   lib.lean_set_bitrate.argtypes = [ctypes.c_void_p, ctypes.c_int]
   lib.lean_close.argtypes = [ctypes.c_void_p]
-  lib.lean_capture.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_bool, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p]
+  lib.lean_capture.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_bool, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p,
+                              ctypes.c_void_p]
   lib.lean_error.restype = ctypes.c_char_p
   return lib
 
@@ -28,6 +29,7 @@ class Camera:
       raise RuntimeError(self.lib.lean_error().decode())
     self.buffers = [ctypes.create_string_buffer(1024 * 1024) for _ in range(2)]
     self.sizes = (ctypes.c_uint32 * 2)()
+    self.times = (ctypes.c_uint64 * 7)()
 
   def set_bitrate(self, bitrate):
     self.lib.lean_set_bitrate(self.handle, bitrate)
@@ -43,10 +45,10 @@ class Camera:
     if not np.isfinite(matrices).all() or (np.abs(np.linalg.det(matrices)) < 1e-9).any():
       raise ValueError('camera calibration not ready')
     packed = ctypes.create_string_buffer(META.pack(*meta), META.size)
-    result = self.lib.lean_capture(self.handle, packed, reset, *self.buffers, self.sizes)
+    result = self.lib.lean_capture(self.handle, packed, reset, *self.buffers, self.sizes, self.times)
     if result < 0:
       raise RuntimeError(self.lib.lean_error().decode())
     if not result:
       return None
     road, wide = (b.raw[:n] for b, n in zip(self.buffers, self.sizes))
-    return int(idr(road)) | int(idr(wide)) << 1, road, wide, META.unpack(packed.raw)
+    return int(idr(road)) | int(idr(wide)) << 1, road, wide, META.unpack(packed.raw), tuple(self.times)

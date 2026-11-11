@@ -1,4 +1,10 @@
-# lean_mici 0.8.13
+# lean_mici 0.8.14
+
+0.8.14 (2026-11-11): uplink stage timing and two speedups (C3 bench, EOF->send p50).
+- `lean_mici.link` logs recv, warp, pair, wake, encode, release, py_post (they add up to EOF->send) and send.
+- Keyframe bits come from Venus instead of a Python Annex-B scan; packets copied with `string_at`; vehicle state
+  read before the frame is encoded; one `sendall`. 9.9/10.0 -> 8.8/8.5 ms (A/B twice, 300 s each).
+- Road receive thread on core 2, wide on core 6 (dev-sp-npu placement). 9.1/8.7 -> 8.3/7.5 ms (A/B twice, 120 s).
 
 0.8.13 (2026-11-11): self-recovery and desire level.
 - A supervisor (forked before modeld loads its model) restarts the worker after a crash, or when its heartbeat

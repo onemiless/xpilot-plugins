@@ -77,6 +77,17 @@ def get_bitrate(params):
   return min(max(value, 200_000), 20_000_000) if type(value) is int else 2_000_000
 
 
+STAGES = ('recv', 'warp', 'pair', 'wake', 'encode', 'release', 'py_post')
+
+
+def stages(times, sent):
+  """ms per uplink stage from the native BOOTTIME stamps; they add up to EOF->send. None if the stamps are missing."""
+  if not times or not all(times):
+    return None
+  points = (*times, sent)
+  return {k: (b - a) / 1e6 for k, a, b in zip(STAGES, points, points[1:])}
+
+
 def link_stats(stats, dropped, bitrate):
   """One line per second: the uplink stages dev-sp-npu publishes per frame in modelDataV2SP.bigStages."""
   def ms(key):
@@ -84,8 +95,8 @@ def link_stats(stats, dropped, bitrate):
     return [round(float(x), 1) for x in np.percentile(values, (50, 95))] if values else None
   late = sum(row['eof_to_reply'] > 60 for row in stats)
   # Phone-side times are absent (0) on older phone apps; then the network share stays unknown rather than negative.
-  return dict(replies=len(stats), late=late, dropped=dropped, bitrate=bitrate, capture_ms=ms('capture'),
-              eof_to_send_ms=ms('eof_to_send'), rtt_ms=ms('rtt'), eof_to_reply_ms=ms('eof_to_reply'),
+  return dict(replies=len(stats), late=late, dropped=dropped, bitrate=bitrate,
+              **{f'{k}_ms': ms(k) for k in (*STAGES, 'send')}, eof_to_send_ms=ms('eof_to_send'), rtt_ms=ms('rtt'), eof_to_reply_ms=ms('eof_to_reply'),
               srv_recv_ms=ms('srv_recv'), srv_prep_ms=ms('srv_prep'), srv_htp_ms=ms('srv_htp'),
               srv_total_ms=ms('srv_total'), net_ms=ms('net'))
 
@@ -104,7 +115,7 @@ def replies(conn, pending, cv, fd, navigation, stats, failure):
         return
       data = receive_reply(conn)
       arrival = now()
-      frame_idx, eof, host_frame, session, flags, epoch, paired, sent_ns, capture_ms = sent
+      frame_idx, eof, host_frame, session, flags, epoch, paired, sent_ns, row = sent
       index, reply_eof, reply_flags = reply(data)
       if (index, reply_eof) != (frame_idx, eof):
         raise ValueError('REPLY does not echo sent frame/EOF')
@@ -114,7 +125,7 @@ def replies(conn, pending, cv, fd, navigation, stats, failure):
       with cv:
         if pending and pending[0] is sent:  # a reconnect may already have replaced the queue with its stop marker
           pending.popleft()
-        row = {'capture': capture_ms, 'eof_to_send': (sent_ns - eof) / 1e6, 'rtt': (arrival - sent_ns) / 1e6,
+        row = {**row, 'eof_to_send': (sent_ns - eof) / 1e6, 'rtt': (arrival - sent_ns) / 1e6,
                'eof_to_reply': (arrival - eof) / 1e6}
         timing = phone_timing(data)
         if timing[3]:
@@ -265,7 +276,15 @@ def main(path, parent, navigation=None):
                     else:  # ABI 2 host sends the level; a new sequence (reset) clears the latch
                       desire = desire_class(host)
                       meta = with_desire(host, desire and desire != (0 if reset else latched))
-                    started = now()
+                    # Everything that does not need this frame's EOF runs while waiting for the camera.
+                    sm.update(0)
+                    motion, calib = sm['deviceMotion'], sm['extrinsicsCalibration']
+                    v, w = motion.velocityDevice, motion.angularVelocityDevice
+                    rpy = calib.rpyCalib if len(calib.rpyCalib) == 3 else (float('nan'),) * 3
+                    stamp = sm.logMonoTime['deviceMotion']
+                    tail = vehicle(rpy, (v.x, v.y, v.z), (w.x, w.y, w.z), sm.valid['deviceMotion'],
+                                   motion.sensorsOK, motion.inputsOK, motion.posenetOK,
+                                   sm.valid['extrinsicsCalibration'] and calib.calStatus != 'invalid', stamp, 0)
                     try:
                       encoded = camera.capture(meta, reset)
                     except ValueError:
@@ -277,11 +296,10 @@ def main(path, parent, navigation=None):
                       camera.close()
                       camera = None
                       raise
-                    capture_ms = (now() - started) / 1e6
                     if encoded is None:
                       reset = True
                       continue
-                    flags, road, wide, meta = encoded
+                    flags, road, wide, meta, *times = encoded
                     if reset and flags != 3:
                       continue
                     if flags == 3:
@@ -291,20 +309,16 @@ def main(path, parent, navigation=None):
                     if first_eof is None:
                       first_eof = meta[5]
                     frame_idx = (meta[5] - first_eof + 25_000_000) // 50_000_000
-                    sm.update(0)
-                    motion, calib = sm['deviceMotion'], sm['extrinsicsCalibration']
-                    v, w = motion.velocityDevice, motion.angularVelocityDevice
-                    rpy = calib.rpyCalib if len(calib.rpyCalib) == 3 else (float('nan'),) * 3
-                    tail = vehicle(rpy, (v.x, v.y, v.z), (w.x, w.y, w.z), sm.valid['deviceMotion'],
-                                   motion.sensorsOK, motion.inputsOK, motion.posenetOK,
-                                   sm.valid['extrinsicsCalibration'] and calib.calStatus != 'invalid',
-                                   sm.logMonoTime['deviceMotion'], meta[5])
+                    if meta[5] > stamp + 100_000_000:  # vehicle()'s freshness rule, now that the EOF is known
+                      tail = (0, -32768, 0)
                     first, second = frame(meta, road, wide, flags, frame_idx, tail)
+                    sent = now()
+                    row = stages(times[0] if times else None, sent) or {}
                     with cv:
-                      pending.append((frame_idx, meta[5], meta[3], meta[2], flags, epoch, paired, now(), capture_ms))
+                      pending.append((frame_idx, meta[5], meta[3], meta[2], flags, epoch, paired, sent, row))
                       cv.notify_all()
-                    conn.sendall(first)
-                    conn.sendall(second)
+                    conn.sendall(first + second)
+                    row['send'] = (now() - sent) / 1e6  # the reply thread copies row only after the phone answered
                     if host[1] != 1:
                       latched = desire
                 finally:

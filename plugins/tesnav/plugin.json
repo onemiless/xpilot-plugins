@@ -1,0 +1,45 @@
+{
+  "id": "tesnav",
+  "name": "TesNav Navigation",
+  "version": "0.4.0",
+  "api": 1,
+  "use": "both",
+  "category": "navigation",
+  "entry": "plugin:TesNav",
+  "author": "juyun86",
+  "description": "TesNav phone guidance over the host UDP navigation ingress. Optional turn slowdown is disabled by default.",
+  "priority": 100,
+  "enable_param": "ExtTesNavEnabled",
+  "claims": [
+    "source:navigation",
+    "process:tesnavd",
+    "long.target"
+  ],
+  "requires": {
+    "hooks": [
+      "navigation_ingress",
+      "processes",
+      "long_target"
+    ],
+    "host_api": [
+      "data_dir",
+      "parked"
+    ]
+  },
+  "settings": [
+    {
+      "key": "ExtTesNavSlowdown",
+      "label": "Navigation turn slowdown (experimental)"
+    }
+  ],
+  "params": {
+    "ExtTesNavEnabled": {
+      "type": "BOOL",
+      "default": "0"
+    },
+    "ExtTesNavSlowdown": {
+      "type": "BOOL",
+      "default": "0"
+    }
+  }
+}

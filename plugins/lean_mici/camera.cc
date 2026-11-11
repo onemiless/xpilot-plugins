@@ -45,6 +45,7 @@ struct Stream {
   VisionIpcBufExtra staged_extra{};
   uint64_t staged_recv = 0, staged_warp = 0;  // receive-thread times of the staged frame (guarded by Camera::mtx)
   uint64_t t_packet = 0;  // last packet callback (guarded by mutex)
+  bool key = false;  // Venus keyframe flag of the last packet (guarded by mutex)
   int front = 0;
   bool fresh = false;  // staged[front] holds a frame not yet encoded (guarded by Camera::mtx)
   chipmunk::WarpLut warp;
@@ -70,6 +71,7 @@ struct Stream {
       if (config) header.assign(data, data + size);
       else {
         packet = key ? header : std::vector<uint8_t>{};
+        this->key = key;
         packet.insert(packet.end(), data, data + size);
         t_packet = boottime();
         ready.notify_one();
@@ -108,12 +110,13 @@ struct Stream {
     input.sync(VISIONBUF_SYNC_TO_DEVICE);
     encoder->encode_frame(&input, &extra);
   }
-  size_t collect(uint8_t *out) {
+  size_t collect(uint8_t *out, bool &is_key) {
     std::unique_lock<std::mutex> lock(mutex);
     if (!ready.wait_for(lock, std::chrono::milliseconds(200), [this]{ return released && !packet.empty(); }))
       throw std::runtime_error("hardware encoder deadline");
     if (packet.size() > LIMIT) throw std::runtime_error("HEVC segment exceeds FRAME limit");
     std::memcpy(out, packet.data(), packet.size());
+    is_key = key;
     return packet.size();
   }
 };
@@ -190,7 +193,7 @@ void lean_set_bitrate(Camera *camera, int bitrate) {
 }
 // meta supplies warp matrices and receives the encoded frame IDs/EOFs. times (BOOTTIME ns, all 0 unless 1 is
 // returned): road EOF, then on the stream whose warp finished last: recv, warp done; pair seen, both submitted,
-// last packet, both collected (packet out and input buffer returned).
+// last packet, both collected (packet out and input buffer returned). sizes: road, wide, keyframe bits (1 road, 2 wide).
 int lean_capture(Camera *camera, Meta *meta, bool reset, uint8_t *road, uint8_t *wide, uint32_t *sizes, uint64_t *times) {
   std::memset(times, 0, 7 * sizeof(uint64_t));
   try {
@@ -227,8 +230,10 @@ int lean_capture(Camera *camera, Meta *meta, bool reset, uint8_t *road, uint8_t 
     camera->wide.submit(extra[1], reset || camera->sequence == 10);
     ++camera->sequence;
     uint64_t submitted = boottime();
-    sizes[0] = camera->road.collect(road);
-    sizes[1] = camera->wide.collect(wide);
+    bool key[2];
+    sizes[0] = camera->road.collect(road, key[0]);
+    sizes[1] = camera->wide.collect(wide, key[1]);
+    sizes[2] = key[0] | key[1] << 1;
     uint64_t collected = boottime();
     times[0] = extra[0].timestamp_eof; times[1] = recv; times[2] = warp; times[4] = submitted;
     times[5] = std::max(camera->road.t_packet, camera->wide.t_packet); times[6] = collected;

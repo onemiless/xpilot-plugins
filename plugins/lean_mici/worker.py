@@ -273,6 +273,15 @@ def main(path, parent, navigation=None):
                     else:  # ABI 2 host sends the level; a new sequence (reset) clears the latch
                       desire = desire_class(host)
                       meta = with_desire(host, desire and desire != (0 if reset else latched))
+                    # Everything that does not need this frame's EOF runs while waiting for the camera.
+                    sm.update(0)
+                    motion, calib = sm['deviceMotion'], sm['extrinsicsCalibration']
+                    v, w = motion.velocityDevice, motion.angularVelocityDevice
+                    rpy = calib.rpyCalib if len(calib.rpyCalib) == 3 else (float('nan'),) * 3
+                    stamp = sm.logMonoTime['deviceMotion']
+                    tail = vehicle(rpy, (v.x, v.y, v.z), (w.x, w.y, w.z), sm.valid['deviceMotion'],
+                                   motion.sensorsOK, motion.inputsOK, motion.posenetOK,
+                                   sm.valid['extrinsicsCalibration'] and calib.calStatus != 'invalid', stamp, 0)
                     try:
                       encoded = camera.capture(meta, reset)
                     except ValueError:
@@ -297,22 +306,15 @@ def main(path, parent, navigation=None):
                     if first_eof is None:
                       first_eof = meta[5]
                     frame_idx = (meta[5] - first_eof + 25_000_000) // 50_000_000
-                    sm.update(0)
-                    motion, calib = sm['deviceMotion'], sm['extrinsicsCalibration']
-                    v, w = motion.velocityDevice, motion.angularVelocityDevice
-                    rpy = calib.rpyCalib if len(calib.rpyCalib) == 3 else (float('nan'),) * 3
-                    tail = vehicle(rpy, (v.x, v.y, v.z), (w.x, w.y, w.z), sm.valid['deviceMotion'],
-                                   motion.sensorsOK, motion.inputsOK, motion.posenetOK,
-                                   sm.valid['extrinsicsCalibration'] and calib.calStatus != 'invalid',
-                                   sm.logMonoTime['deviceMotion'], meta[5])
+                    if meta[5] > stamp + 100_000_000:  # vehicle()'s freshness rule, now that the EOF is known
+                      tail = (0, -32768, 0)
                     first, second = frame(meta, road, wide, flags, frame_idx, tail)
                     sent = now()
                     row = stages(times[0] if times else None, sent) or {}
                     with cv:
                       pending.append((frame_idx, meta[5], meta[3], meta[2], flags, epoch, paired, sent, row))
                       cv.notify_all()
-                    conn.sendall(first)
-                    conn.sendall(second)
+                    conn.sendall(first + second)
                     row['send'] = (now() - sent) / 1e6  # the reply thread copies row only after the phone answered
                     if host[1] != 1:
                       latched = desire

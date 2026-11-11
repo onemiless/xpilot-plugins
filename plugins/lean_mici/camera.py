@@ -5,10 +5,6 @@ from pathlib import Path
 import numpy as np
 
 
-def idr(data):
-  return any(part and ((part[0] >> 1) & 63) in (19, 20) for part in data.replace(b'\0\0\0\1', b'\0\0\1').split(b'\0\0\1')[1:])
-
-
 def library():
   lib = ctypes.CDLL(str(Path(__file__).with_name('libcamera.so')))
   lib.lean_open.restype = ctypes.c_void_p
@@ -28,7 +24,7 @@ class Camera:
     if not self.handle:
       raise RuntimeError(self.lib.lean_error().decode())
     self.buffers = [ctypes.create_string_buffer(1024 * 1024) for _ in range(2)]
-    self.sizes = (ctypes.c_uint32 * 2)()
+    self.sizes = (ctypes.c_uint32 * 3)()
     self.times = (ctypes.c_uint64 * 7)()
 
   def set_bitrate(self, bitrate):
@@ -50,5 +46,6 @@ class Camera:
       raise RuntimeError(self.lib.lean_error().decode())
     if not result:
       return None
-    road, wide = (b.raw[:n] for b, n in zip(self.buffers, self.sizes))
-    return int(idr(road)) | int(idr(wide)) << 1, road, wide, META.unpack(packed.raw), tuple(self.times)
+    road, wide = (ctypes.string_at(b, n) for b, n in zip(self.buffers, self.sizes[:2]))
+    # Keyframe bits come from Venus (V4L2 keyframe flag), not from scanning the Annex-B NALs.
+    return self.sizes[2], road, wide, META.unpack(packed.raw), tuple(self.times)

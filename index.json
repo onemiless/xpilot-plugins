@@ -177,7 +177,7 @@
       "author": "xpilot",
       "description": "BGM1 v4 Walnut V3 phone inference with physical sanity checks and local fallback. Uses the system phone selection (dev-sp-npu liveness wait and cross-fade).",
       "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/lean_mici-0.8.13.tar.gz",
-      "sha256": "665f1cc84fa26f76e608fca10bf317eee2f6de5a103592d3ebb6906a437cb006",
+      "sha256": "7a20e27e5615091d56f770c5021dc3b54a43906bfca4a927fc0355e1bbe6da7d",
       "platform": {
         "machine": "aarch64",
         "python": "cpython-312"

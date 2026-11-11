@@ -153,6 +153,9 @@ def replies(conn, pending, cv, fd, navigation, stats, failure):
 def main(path, parent, navigation=None):
   die_with_parent()
   if sys.platform == 'linux':
+    # glibc reserves a 64 MB malloc arena per thread; on C3 nine of them put VmSize at 1013 MB of the 1 GiB
+    # RLIMIT_AS below (RSS 59 MB). Two arenas are plenty for this process.
+    ctypes.CDLL(None).mallopt(-8, 2)  # M_ARENA_MAX
     # dev-sp-npu bigmodeld placement: cores 2 and 6 at SCHED_FIFO 50, away from modeld (core 7, FIFO 54) and
     # controls/ui (cores 4/5, FIFO 53). Threads and the Venus encoder callbacks started later inherit it.
     os.sched_setaffinity(0, {2, 6} & os.sched_getaffinity(0) or os.sched_getaffinity(0))

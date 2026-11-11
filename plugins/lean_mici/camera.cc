@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
@@ -6,6 +7,9 @@
 #include <stdexcept>
 #include <string>
 #include <thread>
+#include <pthread.h>
+#include <sched.h>
+#include <time.h>
 #include <media/msm_media_info.h>
 #include "system/loggerd/encoder/v4l_encoder.h"
 #include "warp_pack.h"
@@ -25,6 +29,12 @@ struct Meta {
 #pragma pack(pop)
 static_assert(sizeof(Meta) == 160);
 
+uint64_t boottime() {  // same clock as VisionIpcBufExtra::timestamp_eof
+  timespec t;
+  clock_gettime(CLOCK_BOOTTIME, &t);
+  return t.tv_sec * 1'000'000'000ull + t.tv_nsec;
+}
+
 void allocate_nv12(VisionBuf &buf) {
   buf.allocate(VENUS_BUFFER_SIZE(COLOR_FMT_NV12, 512, 256));
   buf.init_yuv(512, 256, VENUS_Y_STRIDE(COLOR_FMT_NV12, 512),
@@ -35,6 +45,9 @@ struct Stream {
   VisionStreamType type;
   VisionBuf input, staged[2];  // staged: receive-thread warp double buffer; input: encoder input
   VisionIpcBufExtra staged_extra{};
+  uint64_t staged_recv = 0, staged_warp = 0;  // receive-thread times of the staged frame (guarded by Camera::mtx)
+  uint64_t t_packet = 0;  // last packet callback (guarded by mutex)
+  bool key = false;  // Venus keyframe flag of the last packet (guarded by mutex)
   int front = 0;
   bool fresh = false;  // staged[front] holds a frame not yet encoded (guarded by Camera::mtx)
   chipmunk::WarpLut warp;
@@ -60,7 +73,9 @@ struct Stream {
       if (config) header.assign(data, data + size);
       else {
         packet = key ? header : std::vector<uint8_t>{};
+        this->key = key;
         packet.insert(packet.end(), data, data + size);
+        t_packet = boottime();
         ready.notify_one();
       }
     };
@@ -97,12 +112,13 @@ struct Stream {
     input.sync(VISIONBUF_SYNC_TO_DEVICE);
     encoder->encode_frame(&input, &extra);
   }
-  size_t collect(uint8_t *out) {
+  size_t collect(uint8_t *out, bool &is_key) {
     std::unique_lock<std::mutex> lock(mutex);
     if (!ready.wait_for(lock, std::chrono::milliseconds(200), [this]{ return released && !packet.empty(); }))
       throw std::runtime_error("hardware encoder deadline");
     if (packet.size() > LIMIT) throw std::runtime_error("HEVC segment exceeds FRAME limit");
     std::memcpy(out, packet.data(), packet.size());
+    is_key = key;
     return packet.size();
   }
 };
@@ -129,6 +145,11 @@ struct Camera {
   }
   void receive(int side) {
     Stream &s = side ? wide : road;
+    // dev-sp-npu bigmodeld: road receive thread on core 2, wide on core 6. Sharing {2,6} let one warp wait for the other.
+    cpu_set_t cpus;
+    CPU_ZERO(&cpus);
+    CPU_SET(side ? 6 : 2, &cpus);
+    pthread_setaffinity_np(pthread_self(), sizeof(cpus), &cpus);  // best effort: keeps the inherited set if refused
     // Created here: msgq wakes the thread that created the subscriber, so recv must run on this thread.
     VisionIpcClient camera("camerad", s.type, true);
     int back = 1;
@@ -140,6 +161,7 @@ struct Camera {
       VisionIpcBufExtra extra;
       VisionBuf *buf = camera.recv(&extra, 100);
       if (!buf || buf->get_frame_id() != extra.frame_id) continue;
+      uint64_t t_recv = boottime();
       float m[9];
       {
         std::lock_guard<std::mutex> lock(mtx);
@@ -154,6 +176,8 @@ struct Camera {
         std::lock_guard<std::mutex> lock(mtx);
         s.front = back;
         s.staged_extra = extra;
+        s.staged_recv = t_recv;
+        s.staged_warp = boottime();
         s.fresh = true;
       }
       back ^= 1;
@@ -174,10 +198,14 @@ void lean_set_bitrate(Camera *camera, int bitrate) {
   camera->road.encoder->set_bitrate(bitrate);
   camera->wide.encoder->set_bitrate(bitrate);
 }
-// meta supplies warp matrices and receives the encoded frame IDs/EOFs.
-int lean_capture(Camera *camera, Meta *meta, bool reset, uint8_t *road, uint8_t *wide, uint32_t *sizes) {
+// meta supplies warp matrices and receives the encoded frame IDs/EOFs. times (BOOTTIME ns, all 0 unless 1 is
+// returned): road EOF, then on the stream whose warp finished last: recv, warp done; pair seen, both submitted,
+// last packet, both collected (packet out and input buffer returned). sizes: road, wide, keyframe bits (1 road, 2 wide).
+int lean_capture(Camera *camera, Meta *meta, bool reset, uint8_t *road, uint8_t *wide, uint32_t *sizes, uint64_t *times) {
+  std::memset(times, 0, 7 * sizeof(uint64_t));
   try {
     VisionIpcBufExtra extra[2];
+    uint64_t recv, warp;
     {
       std::unique_lock<std::mutex> lock(camera->mtx);
       std::memcpy(camera->matrix, meta->matrix, sizeof(camera->matrix));
@@ -191,6 +219,10 @@ int lean_capture(Camera *camera, Meta *meta, bool reset, uint8_t *road, uint8_t 
         return false;
       });
       if (!paired) { error = "no road/wide pair within 100 ms"; return 0; }
+      times[3] = boottime();
+      Stream &late = camera->road.staged_warp >= camera->wide.staged_warp ? camera->road : camera->wide;
+      recv = late.staged_recv;
+      warp = late.staged_warp;
       for (Stream *s : {&camera->road, &camera->wide}) {
         std::memcpy(s->input.addr, s->staged[s->front].addr, s->input.len);
         s->fresh = false;
@@ -204,8 +236,14 @@ int lean_capture(Camera *camera, Meta *meta, bool reset, uint8_t *road, uint8_t 
     camera->road.submit(extra[0], reset);
     camera->wide.submit(extra[1], reset || camera->sequence == 10);
     ++camera->sequence;
-    sizes[0] = camera->road.collect(road);
-    sizes[1] = camera->wide.collect(wide);
+    uint64_t submitted = boottime();
+    bool key[2];
+    sizes[0] = camera->road.collect(road, key[0]);
+    sizes[1] = camera->wide.collect(wide, key[1]);
+    sizes[2] = key[0] | key[1] << 1;
+    uint64_t collected = boottime();
+    times[0] = extra[0].timestamp_eof; times[1] = recv; times[2] = warp; times[4] = submitted;
+    times[5] = std::max(camera->road.t_packet, camera->wide.t_packet); times[6] = collected;
     return 1;
   } catch (const std::exception &e) { error = e.what(); return -1; }
 }

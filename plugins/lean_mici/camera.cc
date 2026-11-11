@@ -7,6 +7,8 @@
 #include <stdexcept>
 #include <string>
 #include <thread>
+#include <pthread.h>
+#include <sched.h>
 #include <time.h>
 #include <media/msm_media_info.h>
 #include "system/loggerd/encoder/v4l_encoder.h"
@@ -143,6 +145,11 @@ struct Camera {
   }
   void receive(int side) {
     Stream &s = side ? wide : road;
+    // dev-sp-npu bigmodeld: road receive thread on core 2, wide on core 6. Sharing {2,6} let one warp wait for the other.
+    cpu_set_t cpus;
+    CPU_ZERO(&cpus);
+    CPU_SET(side ? 6 : 2, &cpus);
+    pthread_setaffinity_np(pthread_self(), sizeof(cpus), &cpus);  // best effort: keeps the inherited set if refused
     // Created here: msgq wakes the thread that created the subscriber, so recv must run on this thread.
     VisionIpcClient camera("camerad", s.type, true);
     int back = 1;

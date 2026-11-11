@@ -10,7 +10,7 @@ from plugins.lean_mici import worker,wire,network
 def child(path,parent,address,root,orphan=False):
  from openpilot.tesla import manifest
  manifest.INSTALL_DIR=Path(root)
- count=0
+ count=captures=0
  class Capture:
   def __init__(self,bitrate):
    nonlocal count
@@ -22,10 +22,17 @@ def child(path,parent,address,root,orphan=False):
   def capture(self,meta,reset):
    if orphan:
     (Path(root)/'orphan-camera-ready').touch();time.sleep(.2);return None
-   import av
-   errors=[ValueError('calibration not ready'),RuntimeError('encoder failed'),struct.error('bad input'),av.error.InvalidDataError(1,'bad HEVC')]
-   if count<=len(errors):raise errors[count-1]
-   while (m:=worker.metadata(self.fd)) is None or m[3]==self.last:time.sleep(.001)
+   nonlocal captures
+   captures+=1
+   # Per capture call: calibration not ready only skips the frame (0.8.10); the rest drop the link, so connections
+   # 2-5 each end in one failure. The encoder persists across reconnects since 0.8.13; RuntimeError rebuilds it.
+   errors={1:ValueError('calibration not ready'),2:RuntimeError('encoder failed'),3:struct.error('bad input'),
+           4:RuntimeError('hardware encoder deadline'),5:OSError('bad input')}
+   if captures in errors:raise errors[captures]
+   end=time.monotonic()+.1  # like the real camera: no new frame within 100 ms returns None
+   while (m:=worker.metadata(self.fd)) is None or m[3]==self.last and not reset:
+    if time.monotonic()>end:return None
+    time.sleep(.001)
    self.last=m[3]
    return 3 if reset else 1,b'road',b'wide',m
  calls=0

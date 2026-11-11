@@ -1,4 +1,16 @@
-# lean_mici 0.8.6
+# lean_mici 0.8.13
+
+0.8.13 (2026-11-11): self-recovery and desire level.
+- A supervisor (forked before modeld loads its model) restarts the worker after a crash, or when its heartbeat
+  (BOOTTIME ns at mailbox byte 160) is older than 5 s, e.g. blocked in `V4LEncoder::encoder_close`. Backoff 1 s
+  doubling to 30 s, reset after 60 s of uptime.
+- Reconnect retries the last good (pinned) address; discovery runs after three failed attempts.
+- A network drop keeps the encoders; only an encoder fault, or 10 s without a link, closes them.
+- Socket and REPLY deadlines 1 s (were 0.2 s), so a short Wi-Fi stall no longer drops the link.
+- Accepts META ABI 1 and 2. With ABI 2 the host sends the desire level and the worker sends one pulse per rising
+  edge on frames it actually sends; a new sequence (dual IDR) re-sends a desire that is still on.
+- `lean_mici.link` adds the phone's REPLY telemetry: `srv_recv/prep/htp/total_ms` and `net_ms` (rtt - srv_total).
+Test: `tests/link_e2e.py`.
 
 0.8.6: preserve phone replies when modeld briefly holds the mailbox read lock.
 
@@ -44,7 +56,7 @@ Both camera IDs/EOFs must match modeld metadata, and SOFs must pair within 10 ms
 Both encoders submit before either output is awaited. Header bytes precede actual
 IDRs; flags are parsed from the actual Annex-B NALs. Recovery requests dual IDR.
 The wire index uses the existing 50 ms time slots and the mailbox maps replies
-back to modeld's exact frame ID/EOF. The worker closes both encoders on reconnect.
+back to modeld's exact frame ID/EOF. Since 0.8.13 the encoders survive a reconnect (see above).
 
 `prepare_install()` checks the stock model/warp and loads the prebuilt bridge;
 it neither starts cameras nor imports PyAV. A malformed saved peer shape is

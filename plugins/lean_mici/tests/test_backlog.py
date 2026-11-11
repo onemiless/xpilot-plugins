@@ -10,7 +10,7 @@ def test_busy_skips_encoding_without_reset():
                       isinstance(x.value, ast.Call) and isinstance(x.value.func, ast.Attribute) and
                       x.value.func.attr == 'capture' for x in c.body) for c in n.body))
   capture = next(i for i, n in enumerate(loop.body) if isinstance(n, ast.Try))
-  start = 2
+  start = 3  # skip beat(), failure check, 1 s report
   # Execute the actual sender prefix once, with an already full reply queue.
   body = loop.body[start:capture + 1]
   camera = Mock()

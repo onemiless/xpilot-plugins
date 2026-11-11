@@ -18,11 +18,12 @@ from openpilot.common.swaglog import cloudlog
 from openpilot.tesla.plugin_params import ParamsView
 
 from .network import Beacon, discover, gateway, scope
-from .wire import frame, hello, reply, receive, to_mailbox, receive_reply, vehicle, nav_ext
+from .wire import frame, hello, reply, receive, to_mailbox, receive_reply, vehicle, nav_ext, phone_timing
 
 META = struct.Struct('<4sIQIIQQ30f')
 ENVELOPE = struct.Struct('<QQQII')
 OFFSET, SIZE = 256, 16384
+HEARTBEAT = 160  # u64 BOOTTIME ns in the unused tail of the META slot [160, 256); the runner's supervisor reads it
 IN_FLIGHT = 2  # Chipmunk sender: one on the phone + one queued; busy skips encoding, never drops encoded frames
 
 
@@ -52,7 +53,22 @@ def metadata(fd):
     data = META.unpack(os.pread(fd, META.size, 0))
   finally:
     fcntl.lockf(fd, fcntl.LOCK_UN, OFFSET, 0)
-  return data if data[:2] == (b'XMS1', 1) else None
+  return data if data[:2] in ((b'XMS1', 1), (b'XMS1', 2)) else None
+
+
+def desire_class(meta):
+  return next((i for i, x in enumerate(meta[25:33]) if x > .5), 0)
+
+
+def with_desire(host, pulse):
+  return host if pulse else host[:25] + (0.,) * 8 + host[33:]
+
+
+def die_with_parent():
+  if sys.platform == 'linux':
+    libc = ctypes.CDLL(None, use_errno=True)
+    if libc.prctl(1, signal.SIGKILL, 0, 0, 0):
+      raise OSError(ctypes.get_errno(), 'PR_SET_PDEATHSIG')
 
 
 def get_bitrate(params):
@@ -64,11 +80,14 @@ def get_bitrate(params):
 def link_stats(stats, dropped, bitrate):
   """One line per second: the uplink stages dev-sp-npu publishes per frame in modelDataV2SP.bigStages."""
   def ms(key):
-    values = [row[key] for row in stats]
+    values = [row[key] for row in stats if key in row]
     return [round(float(x), 1) for x in np.percentile(values, (50, 95))] if values else None
   late = sum(row['eof_to_reply'] > 60 for row in stats)
+  # Phone-side times are absent (0) on older phone apps; then the network share stays unknown rather than negative.
   return dict(replies=len(stats), late=late, dropped=dropped, bitrate=bitrate, capture_ms=ms('capture'),
-              eof_to_send_ms=ms('eof_to_send'), rtt_ms=ms('rtt'), eof_to_reply_ms=ms('eof_to_reply'))
+              eof_to_send_ms=ms('eof_to_send'), rtt_ms=ms('rtt'), eof_to_reply_ms=ms('eof_to_reply'),
+              srv_recv_ms=ms('srv_recv'), srv_prep_ms=ms('srv_prep'), srv_htp_ms=ms('srv_htp'),
+              srv_total_ms=ms('srv_total'), net_ms=ms('net'))
 
 
 def replies(conn, pending, cv, fd, navigation, stats, failure):
@@ -95,8 +114,13 @@ def replies(conn, pending, cv, fd, navigation, stats, failure):
       with cv:
         if pending and pending[0] is sent:  # a reconnect may already have replaced the queue with its stop marker
           pending.popleft()
-        stats.append({'capture': capture_ms, 'eof_to_send': (sent_ns - eof) / 1e6, 'rtt': (arrival - sent_ns) / 1e6,
-                      'eof_to_reply': (arrival - eof) / 1e6})
+        row = {'capture': capture_ms, 'eof_to_send': (sent_ns - eof) / 1e6, 'rtt': (arrival - sent_ns) / 1e6,
+               'eof_to_reply': (arrival - eof) / 1e6}
+        timing = phone_timing(data)
+        if timing[3]:
+          row.update(zip(('srv_recv', 'srv_prep', 'srv_htp', 'srv_total'), (t / 1e3 for t in timing)))
+          row['net'] = row['rtt'] - row['srv_total']
+        stats.append(row)
         cv.notify_all()
       if navigation is not None and time.monotonic() - last_nav >= .5:
         last_nav = time.monotonic()
@@ -116,10 +140,11 @@ def replies(conn, pending, cv, fd, navigation, stats, failure):
 
 
 def main(path, parent, navigation=None):
+  die_with_parent()
   if sys.platform == 'linux':
-    libc = ctypes.CDLL(None, use_errno=True)
-    if libc.prctl(1, signal.SIGKILL, 0, 0, 0):
-      raise OSError(ctypes.get_errno(), 'PR_SET_PDEATHSIG')
+    # glibc reserves a 64 MB malloc arena per thread; on C3 nine of them put VmSize at 1013 MB of the 1 GiB
+    # RLIMIT_AS below (RSS 59 MB). Two arenas are plenty for this process.
+    ctypes.CDLL(None).mallopt(-8, 2)  # M_ARENA_MAX
     # dev-sp-npu bigmodeld placement: cores 2 and 6 at SCHED_FIFO 50, away from modeld (core 7, FIFO 54) and
     # controls/ui (cores 4/5, FIFO 53). Threads and the Venus encoder callbacks started later inherit it.
     os.sched_setaffinity(0, {2, 6} & os.sched_getaffinity(0) or os.sched_getaffinity(0))
@@ -142,41 +167,61 @@ def main(path, parent, navigation=None):
   pinned = p if isinstance(p, dict) and isinstance(p.get('name'), str) else None
   ignored = set()
   fd = os.open(path, os.O_RDWR)
+  shared = mmap.mmap(fd, SIZE)
+  def beat():
+    # Every loop that can block calls this; a worker stuck in native code (encoder_close) stops beating and is killed.
+    struct.pack_into('<Q', shared, HEARTBEAT, now())
   epoch = 0
+  # dev-sp-npu server_locator: retry the last good address, rediscover after three failed attempts.
+  cached, misses = None, 0
+  # One encoder pair across reconnects; only an encoder fault (RuntimeError) or 10 s without a link closes it.
+  camera, bitrate, lost = None, None, time.monotonic()
   try:
     while os.getppid() == parent:
+      beat()
       try:
         address, _ = scope('wlan0')
         with Beacon(address):
           while os.getppid() == parent:
-            camera = None
+            beat()
+            if camera is not None and time.monotonic() - lost > 10:
+              camera.close()
+              camera = None
             try:
-              peers = discover()
-              if pinned:
-                for peer in peers:
-                  if peer[0] != pinned['name'] and peer[0] not in ignored:
-                    print('lean_mici: ignoring unpinned advertiser', peer[0], flush=True)
-                    ignored.add(peer[0])
-                peers = [peer for peer in peers if peer[0] == pinned['name']]
-              if not peers and sys.platform == 'linux':
-                address = gateway()
-                peers = [('hotspot gateway', address, 7070)] if address else []
-              if len(peers) != 1:
-                time.sleep(1)
-                continue
+              if cached and misses < 3:
+                peers = [cached]
+              else:
+                cached = None
+                peers = discover()
+                if pinned:
+                  for peer in peers:
+                    if peer[0] != pinned['name'] and peer[0] not in ignored:
+                      print('lean_mici: ignoring unpinned advertiser', peer[0], flush=True)
+                      ignored.add(peer[0])
+                  peers = [peer for peer in peers if peer[0] == pinned['name']]
+                if not peers and sys.platform == 'linux':
+                  address = gateway()
+                  peers = [('hotspot gateway', address, 7070)] if address else []
+                if len(peers) != 1:
+                  time.sleep(1)
+                  continue
+              beat()
+              misses += 1
               with socket.create_connection(peers[0][1:], timeout=1) as conn:
-                conn.settimeout(.2)
+                conn.settimeout(1.)
                 conn.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
                 hello(receive(conn, 48))
+                cached, misses = peers[0], 0
                 if not pinned and peers[0][0] != 'hotspot gateway':
                   # HELLO instance_id changes on every server start; pin the NSD name, not that per-start identifier.
                   pinned = {'name': peers[0][0]}
                   params.put('ExtLeanMiciPeer', pinned)
-                bitrate = get_bitrate(params)
-                camera = Camera(bitrate)
+                if camera is None:
+                  bitrate = get_bitrate(params)
+                  camera = Camera(bitrate)
                 # A dup has its own timeout, so the reply thread's per-message deadlines never shorten a send.
                 reader = conn.dup()
-                reader.settimeout(.2)
+                reader.settimeout(1.)
                 pending, cv, stats, failure = deque(), threading.Condition(), [], []
                 thread = threading.Thread(target=replies, args=(reader, pending, cv, fd, navigation, stats, failure),
                                           daemon=True)
@@ -184,12 +229,14 @@ def main(path, parent, navigation=None):
                 first_eof = None
                 epoch += 1
                 host = used = None
+                latched = 0  # ABI 2: desire class of the last frame actually sent
                 paired = 0
                 reset = True
                 dropped = 0
                 last_report = time.monotonic()
                 try:
                   while os.getppid() == parent:
+                    beat()
                     if failure:
                       raise failure[0]
                     if time.monotonic() - last_report >= 1:
@@ -212,8 +259,12 @@ def main(path, parent, navigation=None):
                     if host is None:
                       time.sleep(.005)
                       continue
-                    meta = host if host[3] != used else host[:25] + (0.,) * 8 + host[33:]  # send a desire pulse once
-                    used = host[3]
+                    if host[1] == 1:  # ABI 1 host sends the rising edge on one frame; pass it on once
+                      meta = with_desire(host, host[3] != used)
+                      used = host[3]
+                    else:  # ABI 2 host sends the level; a new sequence (reset) clears the latch
+                      desire = desire_class(host)
+                      meta = with_desire(host, desire and desire != (0 if reset else latched))
                     started = now()
                     try:
                       encoded = camera.capture(meta, reset)
@@ -222,6 +273,10 @@ def main(path, parent, navigation=None):
                       # that never got a frame, and V4LEncoder::encoder_close then waits forever for EOS.
                       time.sleep(.005)
                       continue
+                    except RuntimeError:
+                      camera.close()
+                      camera = None
+                      raise
                     capture_ms = (now() - started) / 1e6
                     if encoded is None:
                       reset = True
@@ -250,7 +305,10 @@ def main(path, parent, navigation=None):
                       cv.notify_all()
                     conn.sendall(first)
                     conn.sendall(second)
+                    if host[1] != 1:
+                      latched = desire
                 finally:
+                  lost = time.monotonic()
                   with cv:
                     pending.clear()
                     pending.append(None)  # stop marker for the reply thread
@@ -262,11 +320,11 @@ def main(path, parent, navigation=None):
             except Exception:
               cloudlog.exception('lean_mici.link_lost')  # why the phone link dropped (each drop costs a reconnect and warm-up)
               time.sleep(.1)
-            finally:
-              if camera is not None:
-                camera.close()
       except Exception:
         cloudlog.exception('lean_mici.beacon_lost')
         time.sleep(1)
   finally:
+    if camera is not None:
+      camera.close()
+    shared.close()
     os.close(fd)

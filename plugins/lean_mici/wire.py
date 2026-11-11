@@ -50,6 +50,11 @@ def reply(data):
   return frame, struct.unpack_from('<Q', data, 16)[0], flags
 
 
+def phone_timing(data):
+  """REPLY telemetry at 8288: srv_recv_us, srv_prep_us, srv_htp_us, srv_total_us (bigmodeld frame_codec.h)."""
+  return struct.unpack_from('<4I', data, 8288)
+
+
 def vehicle(rpy, velocity, angular_velocity, event_ok, sensors_ok, inputs_ok, posenet_ok, calib_ok, timestamp, eof):
   if not timestamp or eof > timestamp + 100_000_000 or not all(math.isfinite(x) for x in rpy):
     return 0, -32768, 0
@@ -125,7 +130,7 @@ def to_mailbox(data, host_frame_id):
 
 
 def receive_reply(sock):
-  deadline = time.monotonic() + .2
+  deadline = time.monotonic() + 1.
   header = receive(sock, HEADER.size, deadline)
   magic, version, kind, flags, index, length = HEADER.unpack(header)
   if (magic, version) != (b'BGM1', 4):

@@ -52,7 +52,8 @@ def discover(interface='wlan0'):
             if ipaddress.IPv4Address(address) in subnet and int(port) == 7070:
               peers.add((name, address, int(port)))
     return sorted(peers)
-  process = subprocess.Popen(['avahi-browse', '-rp', '_bigmodel._tcp'], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
+  # -t: exit once the cache is dumped (about 1 s) instead of always running the 2 s cap.
+  process = subprocess.Popen(['avahi-browse', '-rpt', '_bigmodel._tcp'], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
   try:
     output, _ = process.communicate(timeout=2)
   except subprocess.TimeoutExpired:

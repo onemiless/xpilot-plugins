@@ -36,13 +36,13 @@
     {
       "id": "auto_speed",
       "name": "Auto Speed Limit",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "api": 1,
       "category": "longitudinal_planning",
       "author": "xpilot",
       "description": "Sets cruise speed to the car's speed limit plus an offset. Needs openpilot longitudinal and the vehicle bus.",
-      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/auto_speed-1.1.0.tar.gz",
-      "sha256": "19fb68b2c79d39017f1bea71daa8b75d8b073f13df8e236b7e02e00fbc3bb229",
+      "url": "https://raw.githubusercontent.com/onemiless/xpilot-plugins/main/dist/auto_speed-1.2.0.tar.gz",
+      "sha256": "a334acf4abe1c756ba24556c8c47b292644c931a2e2e28a6b0f3afff782f3450",
       "platform": null,
       "default": false,
       "claims": [

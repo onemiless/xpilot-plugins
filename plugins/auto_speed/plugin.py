@@ -1,6 +1,6 @@
 """Auto speed plugin: follows the car's own speed limit (DAS_fusedSpeedLimit, upstream carStateSP.speedLimit)
 plus an offset by sending single right scroll-wheel ticks (0x3C2) cloned from the car's idle frame.
-Panda permissions: plugin.json runtime rules. Params: TeslaAutoSpeedLimit(Offset)."""
+Panda permissions: plugin.json runtime rules. Params: TeslaAutoSpeedLimit(Offset), ExtAutoSpeedLimitOffsetMax."""
 from types import SimpleNamespace
 
 from opendbc.can import CANParser
@@ -26,6 +26,7 @@ class AutoSpeed(Plugin):
                                  tesla_speed_button_template=None, tesla_speed_button_template_nanos=0,
                                  tesla_manual_speed_adjustment_counter=0, tesla_speed_auto_resume_gesture_counter=0)
     self.offset = 0
+    self.offset_max = 0
     self._up_ns = self._down_ns = 0
     self._wait_idle = False
     dbc = DBC[CP.carFingerprint][Bus.party]
@@ -76,6 +77,9 @@ class AutoSpeed(Plugin):
   def publish_state(self, CS_SP) -> None:
     unit = MPH_TO_MS if self.state.tesla_speed_units == "MPH" else KPH_TO_MS
     target = CS_SP.speedLimit + self.offset * unit
+    # dev-sp-npu SpeedLimitOffsetMaxSpeed: no offset once limit + offset reaches the cap (car display units; 0 = off)
+    if self.offset_max > 0 and target >= self.offset_max * unit:
+      target = CS_SP.speedLimit
     self.state.tesla_speed_limit_target_valid = CS_SP.speedLimit > 0 and target > 0
     self.state.tesla_speed_limit_target = target if self.state.tesla_speed_limit_target_valid else 0.0
 
@@ -86,3 +90,4 @@ class AutoSpeed(Plugin):
   def service_params(self, params) -> None:
     self.state.tesla_speed_limit_assist_enabled = params.get_bool("TeslaAutoSpeedLimit")
     self.offset = params.get("TeslaAutoSpeedLimitOffset", return_default=True)
+    self.offset_max = params.get("ExtAutoSpeedLimitOffsetMax", return_default=True)

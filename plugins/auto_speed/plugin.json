@@ -1,7 +1,7 @@
 {
   "id": "auto_speed",
   "name": "Auto Speed Limit",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "api": 1,
   "use": "onroad",
   "category": "longitudinal_planning",
@@ -24,6 +24,17 @@
         "km/h|mph",
         1
       ]
+    },
+    {
+      "key": "ExtAutoSpeedLimitOffsetMax",
+      "label": "Disable Offset At or Above (0 = off)",
+      "range": [
+        0,
+        150,
+        5,
+        "km/h|mph",
+        1
+      ]
     }
   ],
   "params": {
@@ -35,6 +46,11 @@
       "type": "INT",
       "default": "0",
       "note": "car display units"
+    },
+    "ExtAutoSpeedLimitOffsetMax": {
+      "type": "INT",
+      "default": "0",
+      "note": "car display units; 0 = always apply the offset"
     }
   },
   "requires": {
